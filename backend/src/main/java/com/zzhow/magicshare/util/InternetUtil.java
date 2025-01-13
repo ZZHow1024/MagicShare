@@ -7,6 +7,10 @@ import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
 
+/**
+ * @author ZZHow
+ * @date 2025/1/13
+ */
 public class InternetUtil {
     /**
      * 获取内网 IPv4 地址

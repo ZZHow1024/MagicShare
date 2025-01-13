@@ -4,6 +4,10 @@ import com.zzhow.magicshare.ui.window.MainView;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * @author ZZHow
+ * @date 2025/1/12
+ */
 @SpringBootApplication
 public class MagicShareApplication {
     public static void main(String[] args) {

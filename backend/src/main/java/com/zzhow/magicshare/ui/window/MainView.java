@@ -6,6 +6,10 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * @author ZZHow
+ * @date 2025/1/12
+ */
 public class MainView extends javafx.application.Application {
     @Override
     public void start(Stage stage) throws IOException {

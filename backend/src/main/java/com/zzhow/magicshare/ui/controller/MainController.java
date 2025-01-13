@@ -6,6 +6,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
+/**
+ * @author ZZHow
+ * @date 2025/1/13
+ */
 public class MainController {
     @FXML
     private Label label1;
