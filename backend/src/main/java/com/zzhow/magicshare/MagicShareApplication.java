@@ -1,6 +1,6 @@
 package com.zzhow.magicshare;
 
-import com.zzhow.magicshare.ui.MainView;
+import com.zzhow.magicshare.ui.window.MainView;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

@@ -1,4 +1,4 @@
-package com.zzhow.magicshare.ui;
+package com.zzhow.magicshare.ui.window;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -10,7 +10,7 @@ public class MainView extends javafx.application.Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MainView.class.getResource("main-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 780, 596);
+        Scene scene = new Scene(fxmlLoader.load(), 600, 400);
         stage.setTitle("MagicShare");
         stage.setScene(scene);
         // Image icon = new Image(Objects.requireNonNull(MagicShareApplication.class.getResourceAsStream("/image/icon.png")));

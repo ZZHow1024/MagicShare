@@ -9,6 +9,6 @@ module com.zzhow.magicshare {
 
     opens com.zzhow.magicshare to javafx.fxml;
     exports com.zzhow.magicshare;
-    opens com.zzhow.magicshare.ui to javafx.fxml;
-    exports com.zzhow.magicshare.ui;
+    opens com.zzhow.magicshare.ui.window to javafx.fxml;
+    exports com.zzhow.magicshare.ui.window;
 }
