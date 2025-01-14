@@ -9,7 +9,7 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zzhow.magicshare.ui.controller.MainController">
    <children>
-      <AnchorPane prefHeight="365.0" prefWidth="600.0">
+      <AnchorPane onDragDropped="#onDragFile" onDragOver="#handleDragOver" prefHeight="365.0" prefWidth="600.0">
          <children>
             <Label layoutX="191.0" layoutY="14.0" text="MagicShare 1.0.0">
                <font>
@@ -27,6 +27,7 @@
             <TableView fx:id="tableView1" layoutY="165.0" prefHeight="200.0" prefWidth="600.0" />
             <Label fx:id="label5" layoutX="14.0" layoutY="149.0" text="分享的文件个数：" />
             <Label fx:id="label6" layoutX="118.0" layoutY="149.0" prefHeight="16.0" prefWidth="69.0" text="0" />
+            <Label fx:id="label7" layoutX="202.0" layoutY="149.0" text="拖拽待分享的文件夹到此处以获得路径" />
          </children>
       </AnchorPane>
       <Label layoutX="277.0" layoutY="378.0" text="ZZHow" />
