@@ -1,8 +1,6 @@
 package com.zzhow.magicshare.service;
 
-import com.zzhow.magicshare.pojo.entity.FileDetail;
-
-import java.util.List;
+import com.zzhow.magicshare.pojo.vo.FileListVO;
 
 /**
  * @author ZZHow
@@ -14,5 +12,5 @@ public interface FileService {
      *
      * @return 分享的文件列表
      */
-    List<FileDetail> getFileList();
+    FileListVO getFileList();
 }

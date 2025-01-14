@@ -22,6 +22,7 @@ public class FileUtil {
 
         if (files == null) return;
 
+        int count = 0;
         for (File file : files) {
             if (file.isDirectory()) {
                 find(file.getAbsolutePath(), res);
@@ -30,7 +31,7 @@ public class FileUtil {
                 String fileType = "unknown";
                 if (fileName.lastIndexOf(".") != -1)
                     fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
-                FileDetail fileDetail = new FileDetail(fileName, fileType, file.getAbsolutePath());
+                FileDetail fileDetail = new FileDetail(count++, fileName, fileType, file.getAbsolutePath());
                 res.add(fileDetail);
             }
         }

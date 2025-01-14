@@ -1,11 +1,9 @@
 package com.zzhow.magicshare.service.impl;
 
-import com.zzhow.magicshare.pojo.entity.FileDetail;
+import com.zzhow.magicshare.pojo.vo.FileListVO;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.service.FileService;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * @author ZZHow
@@ -19,7 +17,7 @@ public class FileServiceImpl implements FileService {
      * @return 分享的文件列表
      */
     @Override
-    public List<FileDetail> getFileList() {
-        return FileRepository.getFiles();
+    public FileListVO getFileList() {
+        return new FileListVO(FileRepository.getUuid(), FileRepository.getFiles());
     }
 }

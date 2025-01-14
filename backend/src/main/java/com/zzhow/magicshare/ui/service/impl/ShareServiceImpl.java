@@ -4,17 +4,13 @@ import com.zzhow.magicshare.util.Application;
 import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.util.InternetUtil;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
 
 /**
  * @author ZZHow
  * @date 2025/01/14
  */
 public class ShareServiceImpl implements ShareService {
-    private int port;
     private ConfigurableApplicationContext applicationContext;
 
     /**
@@ -44,13 +40,5 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public void stopService() {
         SpringApplication.exit(applicationContext, () -> 0);
-    }
-
-
-    @Bean
-    public ServletWebServerFactory servletContainer() {
-        TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
-        factory.setPort(port); // 设置端口
-        return factory;
     }
 }

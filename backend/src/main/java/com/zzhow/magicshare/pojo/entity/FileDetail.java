@@ -7,17 +7,31 @@ package com.zzhow.magicshare.pojo.entity;
  * @date 2025/01/14
  */
 public class FileDetail {
+    // 文件 ID
+    private Integer id;
+    // 文件名
     private String name;
+    // 文件类型
     private String type;
+    // 文件路径
     private String path;
 
     public FileDetail() {
     }
 
-    public FileDetail(String name, String type, String path) {
+    public FileDetail(Integer id, String name, String type, String path) {
+        this.id = id;
         this.name = name;
         this.type = type;
         this.path = path;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getName() {

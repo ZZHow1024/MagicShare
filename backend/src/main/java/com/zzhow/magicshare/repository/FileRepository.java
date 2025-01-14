@@ -4,12 +4,16 @@ import com.zzhow.magicshare.pojo.entity.FileDetail;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author ZZHow
  * @date 2025/01/14
  */
 public class FileRepository {
+    // 分享 ID
+    private static String uuid = "";
+    // 文件列表
     private static List<FileDetail> files = new ArrayList<>();
 
     private FileRepository() {
@@ -20,6 +24,7 @@ public class FileRepository {
     }
 
     public static void clearFiles() {
+        uuid = UUID.randomUUID().toString();
         files.clear();
     }
 
@@ -29,5 +34,9 @@ public class FileRepository {
 
     public static int size() {
         return files.size();
+    }
+
+    public static String getUuid() {
+        return uuid;
     }
 }
