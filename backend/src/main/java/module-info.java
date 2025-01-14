@@ -7,7 +7,6 @@ module com.zzhow.magicshare {
     requires spring.boot.autoconfigure;
     requires spring.context;
     requires spring.beans;
-    requires static lombok;
     requires spring.web;
 
 
