@@ -10,24 +10,27 @@ import java.util.List;
  */
 public class FileListVO {
     // 分享 ID
-    private String uuid;
+    private String shareId;
+    // 总文件数
+    private Integer count;
     // 文件列表
     private List<FileDetail> files;
 
     public FileListVO() {
     }
 
-    public FileListVO(String uuid, List<FileDetail> files) {
-        this.uuid = uuid;
+    public FileListVO(String shareId, Integer count, List<FileDetail> files) {
+        this.shareId = shareId;
+        this.count = count;
         this.files = files;
     }
 
-    public String getUuid() {
-        return uuid;
+    public String getShareId() {
+        return shareId;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setShareId(String shareId) {
+        this.shareId = shareId;
     }
 
     public List<FileDetail> getFiles() {
@@ -36,5 +39,13 @@ public class FileListVO {
 
     public void setFiles(List<FileDetail> files) {
         this.files = files;
+    }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
     }
 }

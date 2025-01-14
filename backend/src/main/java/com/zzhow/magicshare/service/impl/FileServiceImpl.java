@@ -18,6 +18,6 @@ public class FileServiceImpl implements FileService {
      */
     @Override
     public FileListVO getFileList() {
-        return new FileListVO(FileRepository.getUuid(), FileRepository.getFiles());
+        return new FileListVO(FileRepository.getUuid(), FileRepository.size(), FileRepository.getFiles());
     }
 }
