@@ -104,10 +104,7 @@ public class MainController {
         label6.setText("0");
         tableView1.getItems().clear();
 
-        String path = textField2.getText();
-        FileRepository.clearFiles();
-
-        FileUtil.find(path, FileRepository.getFiles());
+        shareService.searchFile(textField2.getText());
 
         for (FileDetail fileDetail : FileRepository.getFiles())
             tableView1.getItems().add(fileDetail);

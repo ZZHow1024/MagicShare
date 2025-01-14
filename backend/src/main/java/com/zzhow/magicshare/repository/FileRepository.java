@@ -13,6 +13,8 @@ import java.util.UUID;
 public class FileRepository {
     // 分享 ID
     private static String uuid = "";
+    // 文件基路径
+    private static String basePath = "";
     // 文件列表
     private static List<FileDetail> files = new ArrayList<>();
 
@@ -25,6 +27,7 @@ public class FileRepository {
 
     public static void clearFiles() {
         uuid = UUID.randomUUID().toString();
+        basePath = "";
         files.clear();
     }
 
@@ -38,5 +41,14 @@ public class FileRepository {
 
     public static String getUuid() {
         return uuid;
+    }
+
+    public static void setFiles(String bashPath, List<FileDetail> files) {
+        FileRepository.basePath = bashPath;
+        FileRepository.files = files;
+    }
+
+    public static String getBasePath() {
+        return basePath;
     }
 }

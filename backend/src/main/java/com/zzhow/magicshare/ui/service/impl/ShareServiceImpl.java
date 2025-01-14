@@ -1,7 +1,9 @@
 package com.zzhow.magicshare.ui.service.impl;
 
+import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.util.Application;
 import com.zzhow.magicshare.ui.service.ShareService;
+import com.zzhow.magicshare.util.FileUtil;
 import com.zzhow.magicshare.util.InternetUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -37,8 +39,22 @@ public class ShareServiceImpl implements ShareService {
         }
     }
 
+    /**
+     * 停止 MagicShare 服务
+     */
     @Override
     public void stopService() {
         SpringApplication.exit(applicationContext, () -> 0);
+    }
+
+    /**
+     * 查找文件
+     *
+     * @param path 路径
+     */
+    @Override
+    public void searchFile(String path) {
+        FileRepository.clearFiles();
+        FileUtil.find(path, FileRepository.getFiles());
     }
 }

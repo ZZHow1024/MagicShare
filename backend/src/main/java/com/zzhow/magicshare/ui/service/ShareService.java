@@ -17,4 +17,11 @@ public interface ShareService {
      * 停止 MagicShare 服务
      */
     void stopService();
+
+    /**
+     * 查找文件
+     *
+     * @param path 路径
+     */
+    void searchFile(String path);
 }
