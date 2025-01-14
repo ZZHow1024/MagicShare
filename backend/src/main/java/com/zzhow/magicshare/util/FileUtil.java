@@ -1,6 +1,7 @@
 package com.zzhow.magicshare.util;
 
 import com.zzhow.magicshare.pojo.entity.FileDetail;
+import com.zzhow.magicshare.repository.FileRepository;
 
 import java.io.File;
 import java.util.List;
@@ -31,7 +32,7 @@ public class FileUtil {
                 String fileType = "unknown";
                 if (fileName.lastIndexOf(".") != -1)
                     fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
-                FileDetail fileDetail = new FileDetail(count++, fileName, fileType, file.getAbsolutePath());
+                FileDetail fileDetail = new FileDetail(count++, fileName, fileType, file.getAbsolutePath().replace(FileRepository.getBasePath(), ""));
                 res.add(fileDetail);
             }
         }

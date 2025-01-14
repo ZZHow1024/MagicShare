@@ -48,6 +48,10 @@ public class FileRepository {
         FileRepository.files = files;
     }
 
+    public static void setBasePath(String basePath) {
+        FileRepository.basePath = basePath;
+    }
+
     public static String getBasePath() {
         return basePath;
     }

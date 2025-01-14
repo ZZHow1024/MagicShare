@@ -55,6 +55,7 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public void searchFile(String path) {
         FileRepository.clearFiles();
+        FileRepository.setBasePath(path);
         FileUtil.find(path, FileRepository.getFiles());
     }
 }

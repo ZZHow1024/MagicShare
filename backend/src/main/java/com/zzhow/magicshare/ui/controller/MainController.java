@@ -4,7 +4,6 @@ import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.ui.service.impl.ShareServiceImpl;
-import com.zzhow.magicshare.util.FileUtil;
 import com.zzhow.magicshare.util.InternetUtil;
 import com.zzhow.magicshare.util.MessageBox;
 import javafx.beans.property.SimpleStringProperty;
@@ -57,7 +56,7 @@ public class MainController {
         fileNameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
         TableColumn<FileDetail, String> fileTypeCol = new TableColumn<>("文件类型");
         fileTypeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getType()));
-        TableColumn<FileDetail, String> filePathCol = new TableColumn<>("文件路径");
+        TableColumn<FileDetail, String> filePathCol = new TableColumn<>("文件相对路径");
         filePathCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPath()));
         tableView1.getColumns().addAll(fileNameCol, fileTypeCol, filePathCol);
         tableView1.setPlaceholder(new Label("文件为空"));
