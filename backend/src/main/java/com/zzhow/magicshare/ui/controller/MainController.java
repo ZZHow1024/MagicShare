@@ -6,10 +6,9 @@ import com.zzhow.magicshare.ui.service.impl.ShareServiceImpl;
 import com.zzhow.magicshare.util.FileUtil;
 import com.zzhow.magicshare.util.InternetUtil;
 import com.zzhow.magicshare.util.MessageBox;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +27,10 @@ public class MainController {
     @FXML
     private Label label4;
     @FXML
+    private Label label5;
+    @FXML
+    private Label label6;
+    @FXML
     private TextField textField1;
     @FXML
     private TextField textField2;
@@ -35,6 +38,8 @@ public class MainController {
     private Button button1;
     @FXML
     private Button button2;
+    @FXML
+    private TableView<FileDetail> tableView1;
 
     private final ShareService shareService = new ShareServiceImpl();
 
@@ -43,6 +48,23 @@ public class MainController {
     @FXML
     private void initialize() {
         label2.setText(InternetUtil.getLocalIpAddress());
+
+        // 创建列
+        TableColumn<FileDetail, String> fileNameCol = new TableColumn<>("文件名");
+        fileNameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
+        TableColumn<FileDetail, String> fileTypeCol = new TableColumn<>("文件类型");
+        fileTypeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getType()));
+        TableColumn<FileDetail, String> filePathCol = new TableColumn<>("文件路径");
+        filePathCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPath()));
+        tableView1.getColumns().addAll(fileNameCol, fileTypeCol, filePathCol);
+
+        // 设置列的宽度比例
+        tableView1.widthProperty().addListener((obs, oldWidth, newWidth) -> {
+            double totalWidth = newWidth.doubleValue();
+            fileNameCol.setPrefWidth(totalWidth * 0.3);
+            fileTypeCol.setPrefWidth(totalWidth * 0.1);
+            filePathCol.setPrefWidth(totalWidth * 0.6);
+        });
     }
 
     @FXML
@@ -75,9 +97,16 @@ public class MainController {
 
     @FXML
     private void onSearchFileClicked() {
+        label6.setText("0");
+        tableView1.getItems().clear();
+
         String path = textField2.getText();
         List<FileDetail> files = new ArrayList<>();
 
         FileUtil.find(path, files);
+
+        for (FileDetail fileDetail : files)
+            tableView1.getItems().add(fileDetail);
+        label6.setText(files.size() + "");
     }
 }
