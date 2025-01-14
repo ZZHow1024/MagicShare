@@ -1,5 +1,7 @@
 package com.zzhow.magicshare.pojo.entity;
 
+import java.util.Objects;
+
 /**
  * 文件实体类
  *
@@ -8,7 +10,7 @@ package com.zzhow.magicshare.pojo.entity;
  */
 public class FileDetail {
     // 文件 ID
-    private Integer id;
+    private Long id;
     // 文件名
     private String name;
     // 文件类型
@@ -19,18 +21,22 @@ public class FileDetail {
     public FileDetail() {
     }
 
-    public FileDetail(Integer id, String name, String type, String path) {
+    public FileDetail(Long id) {
+        this.id = id;
+    }
+
+    public FileDetail(Long id, String name, String type, String path) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.path = path;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -65,5 +71,17 @@ public class FileDetail {
                 ", type='" + type + '\'' +
                 ", path='" + path + '\'' +
                 "}\n";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        FileDetail that = (FileDetail) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

@@ -11,6 +11,8 @@ import java.util.List;
  * @date 2025/01/14
  */
 public class FileUtil {
+    public static final SnowflakeIdGenerator generator = new SnowflakeIdGenerator(1); // 设置机器 ID
+
     /**
      * 查找指定路径下的所有文件
      *
@@ -23,7 +25,6 @@ public class FileUtil {
 
         if (files == null) return;
 
-        int count = 0;
         for (File file : files) {
             if (file.isDirectory()) {
                 find(file.getAbsolutePath(), res);
@@ -32,7 +33,8 @@ public class FileUtil {
                 String fileType = "unknown";
                 if (fileName.lastIndexOf(".") != -1)
                     fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
-                FileDetail fileDetail = new FileDetail(count++, fileName, fileType, file.getAbsolutePath().replace(FileRepository.getBasePath(), ""));
+
+                FileDetail fileDetail = new FileDetail(generator.generateId(), fileName, fileType, file.getAbsolutePath().replace(FileRepository.getBasePath(), ""));
                 res.add(fileDetail);
             }
         }
