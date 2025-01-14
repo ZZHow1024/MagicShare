@@ -10,7 +10,7 @@ import java.util.Objects;
  */
 public class FileDetail {
     // 文件 ID
-    private long fileId;
+    private String fileId;
     // 文件名
     private String name;
     // 文件类型
@@ -21,22 +21,22 @@ public class FileDetail {
     public FileDetail() {
     }
 
-    public FileDetail(long fileId) {
+    public FileDetail(String fileId) {
         this.fileId = fileId;
     }
 
-    public FileDetail(long fileId, String name, String type, String path) {
+    public FileDetail(String fileId, String name, String type, String path) {
         this.fileId = fileId;
         this.name = name;
         this.type = type;
         this.path = path;
     }
 
-    public long getFileId() {
+    public String getFileId() {
         return fileId;
     }
 
-    public void setFileId(long fileId) {
+    public void setFileId(String fileId) {
         this.fileId = fileId;
     }
 
@@ -77,7 +77,7 @@ public class FileDetail {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         FileDetail that = (FileDetail) o;
-        return this.fileId == that.fileId;
+        return this.fileId.equals(that.fileId);
     }
 
     @Override

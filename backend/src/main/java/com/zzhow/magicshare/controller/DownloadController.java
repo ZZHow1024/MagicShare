@@ -23,7 +23,7 @@ import java.util.List;
 @RequestMapping("/api/download")
 public class DownloadController {
     @GetMapping("/{fileId}")
-    public ResponseEntity<Resource> downloadFile(String shareId, @PathVariable Long fileId) {
+    public ResponseEntity<Resource> downloadFile(String shareId, @PathVariable String fileId) {
         if (shareId == null || fileId == null) {
             return ResponseEntity.badRequest().build();
         }
