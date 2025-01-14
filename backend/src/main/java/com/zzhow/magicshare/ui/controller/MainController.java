@@ -1,5 +1,6 @@
 package com.zzhow.magicshare.ui.controller;
 
+import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.ui.service.impl.ShareServiceImpl;
@@ -13,7 +14,6 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -105,13 +105,13 @@ public class MainController {
         tableView1.getItems().clear();
 
         String path = textField2.getText();
-        List<FileDetail> files = new ArrayList<>();
+        FileRepository.clearFiles();
 
-        FileUtil.find(path, files);
+        FileUtil.find(path, FileRepository.getFiles());
 
-        for (FileDetail fileDetail : files)
+        for (FileDetail fileDetail : FileRepository.getFiles())
             tableView1.getItems().add(fileDetail);
-        label6.setText(files.size() + "");
+        label6.setText(FileRepository.size() + "");
     }
 
     @FXML
