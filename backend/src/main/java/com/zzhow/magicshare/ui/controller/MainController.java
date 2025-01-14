@@ -1,6 +1,9 @@
 package com.zzhow.magicshare.ui.controller;
 
+import com.zzhow.magicshare.ui.service.ShareService;
+import com.zzhow.magicshare.ui.service.impl.ShareServiceImpl;
 import com.zzhow.magicshare.util.InternetUtil;
+import com.zzhow.magicshare.util.MessageBox;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -26,8 +29,40 @@ public class MainController {
     @FXML
     private Button button1;
 
+    private final ShareService shareService = new ShareServiceImpl();
+
+    private boolean serviceIsStarted = false;
+
     @FXML
     private void initialize() {
         label2.setText(InternetUtil.getLocalIpAddress());
+    }
+
+    @FXML
+    private void onStartOrStopServiceClicked() {
+        if (serviceIsStarted) {
+            button1.setText("启动服务");
+            shareService.stopService();
+            MessageBox.success("停止成功", "MagicShare 服务停止成功");
+            serviceIsStarted = false;
+
+            return;
+        }
+
+
+        byte i = shareService.startService(textField1.getText());
+        switch (i) {
+            case 0 -> {
+                MessageBox.success("启动成功", "MagicShare 服务启动成功");
+                button1.setText("停止服务");
+                serviceIsStarted = true;
+            }
+            case 1 -> {
+                MessageBox.error("端口号错误", "端口号应为 0～65535 的整数");
+            }
+            case 2 -> {
+                MessageBox.error("端口被占用", "请尝试更换端口号");
+            }
+        }
     }
 }

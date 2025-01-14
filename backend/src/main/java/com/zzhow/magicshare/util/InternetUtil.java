@@ -1,9 +1,7 @@
 package com.zzhow.magicshare.util;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
+import java.io.IOException;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
 
@@ -52,5 +50,13 @@ public class InternetUtil {
         }
 
         return null;
+    }
+
+    public static boolean isPortInUse(int port) {
+        try (ServerSocket socket = new ServerSocket(port)) {
+            return false;
+        } catch (IOException e) {
+            return true;
+        }
     }
 }

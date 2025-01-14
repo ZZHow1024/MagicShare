@@ -58,6 +58,10 @@
             <artifactId>javafx-fxml</artifactId>
             <version>21</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
