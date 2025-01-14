@@ -46,7 +46,7 @@ const getFileList = async () => {
   data.value = res.data.data.files
 }
 
-const onDownloadFile = async (record) => {
+const onDownloadFile = (record) => {
   window.location.href = `http://localhost:1024/api/download/${record.fileId}?shareId=${encodeURIComponent(shareId.value)}`
 }
 

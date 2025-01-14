@@ -28,8 +28,6 @@ public class DownloadController {
             return ResponseEntity.badRequest().build();
         }
 
-        System.out.println(fileId);
-
         if (!shareId.equals(FileRepository.getUuid())) {
             return ResponseEntity.notFound().build();
         }
