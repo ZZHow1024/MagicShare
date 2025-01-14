@@ -21,4 +21,6 @@ module com.zzhow.magicshare {
     exports com.zzhow.magicshare.controller;
     exports com.zzhow.magicshare.util;
     opens com.zzhow.magicshare.util to javafx.fxml;
+
+    exports com.zzhow.magicshare.pojo.entity;
 }

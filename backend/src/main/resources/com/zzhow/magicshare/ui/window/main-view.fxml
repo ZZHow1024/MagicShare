@@ -24,6 +24,7 @@
             <Label fx:id="label4" layoutX="107.0" layoutY="118.0" text="分享的文件/文件夹：" />
             <TextField fx:id="textField2" layoutX="244.0" layoutY="114.0" prefHeight="24.0" prefWidth="235.0" />
             <ListView fx:id="listView1" layoutX="48.0" layoutY="169.0" prefHeight="173.0" prefWidth="504.0" />
+            <Button fx:id="button2" layoutX="482.0" layoutY="114.0" mnemonicParsing="false" onAction="#onSearchFileClicked" text="查找文件" />
          </children>
       </AnchorPane>
       <Label layoutX="277.0" layoutY="378.0" text="ZZHow" />
