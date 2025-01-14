@@ -1,13 +1,23 @@
 <script setup>
 import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-const selectedKeys = ref(['1'])
+const route = useRoute()
+const router = useRouter()
+const selectedKeys = ref([route.path])
+const onChangeMenu = (page) => {
+  if (selectedKeys.value === page) return
+
+  router.push(page)
+  selectedKeys.value = [page]
+}
 </script>
 
 <template>
   <div class="layout-container">
     <a-layout class="layout">
       <a-layout-header>
+        <span class="app-title">MagicShare</span>
         <div class="logo" />
         <a-menu
           v-model:selectedKeys="selectedKeys"
@@ -15,10 +25,9 @@ const selectedKeys = ref(['1'])
           mode="horizontal"
           :style="{ lineHeight: '64px' }"
         >
-          <a-menu-item key="1">文件浏览</a-menu-item>
-          <a-menu-item key="2">关于</a-menu-item>
+          <a-menu-item key="/home" @click="onChangeMenu('/home')">文件列表</a-menu-item>
+          <a-menu-item key="/about" @click="onChangeMenu('/about')">关于</a-menu-item>
         </a-menu>
-        <span class="app-title">MagicShare 1.0.0</span>
       </a-layout-header>
       <a-layout-content>
         <router-view></router-view>

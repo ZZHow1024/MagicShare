@@ -58,7 +58,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="home-container">
     <br />
-    <div style="font-size: 20px">总文件数：{{ count }}</div>
+    <div style="margin-left: 3vw; font-size: 20px">总文件数：{{ count }}</div>
     <div :style="{ background: '#fff', padding: '24px', minHeight: '280px' }">
       <!-- 表格 -->
       <a-table
