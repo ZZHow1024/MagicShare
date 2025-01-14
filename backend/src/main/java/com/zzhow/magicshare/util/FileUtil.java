@@ -21,6 +21,20 @@ public class FileUtil {
      */
     public static void find(String path, List<FileDetail> res) {
         File currentPath = new File(path);
+
+        if (!currentPath.exists())
+            return;
+
+        if (!currentPath.isDirectory()) {
+            String fileName = currentPath.getName();
+            String fileType = "unknown";
+            if (fileName.lastIndexOf(".") != -1)
+                fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
+            FileDetail fileDetail = new FileDetail(generator.generateId() + "", fileName, fileType, "");
+            res.add(fileDetail);
+            return;
+        }
+
         File[] files = currentPath.listFiles();
 
         if (files == null) return;
