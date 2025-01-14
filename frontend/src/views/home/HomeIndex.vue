@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { getFileListService } from '@/api/file.js'
 
 const columns = [
@@ -45,6 +45,14 @@ const getFileList = async () => {
   count.value = res.data.data.count
   data.value = res.data.data.files
 }
+
+const onDownloadFile = async (record) => {
+  window.location.href = `http://localhost:1024/api/download/${record.fileId}?shareId=${encodeURIComponent(shareId.value)}`
+}
+
+onBeforeUnmount(() => {
+  clearInterval(timer.value)
+})
 </script>
 
 <template>
@@ -70,7 +78,7 @@ const getFileList = async () => {
 
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'name'">
-            <a>
+            <a @click="onDownloadFile(record)">
               {{ record.name }}
             </a>
           </template>
@@ -85,7 +93,7 @@ const getFileList = async () => {
 
           <template v-else-if="column.key === 'action'">
             <span>
-              <a class="ant-dropdown-link"> 下载文件 </a>
+              <a class="ant-dropdown-link" @click="onDownloadFile(record)"> 下载文件 </a>
             </span>
           </template>
         </template>

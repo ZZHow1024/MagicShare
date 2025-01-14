@@ -28,6 +28,8 @@ public class DownloadController {
             return ResponseEntity.badRequest().build();
         }
 
+        System.out.println(fileId);
+
         if (!shareId.equals(FileRepository.getUuid())) {
             return ResponseEntity.notFound().build();
         }
@@ -35,7 +37,11 @@ public class DownloadController {
         try {
             // 构建文件路径
             List<FileDetail> files = FileRepository.getFiles();
-            String path = FileRepository.getBasePath() + files.get(files.indexOf(new FileDetail(fileId))).getPath();
+            int index = files.indexOf(new FileDetail(fileId));
+            if (index == -1)
+                return ResponseEntity.notFound().build();
+
+            String path = FileRepository.getBasePath() + files.get(index).getPath();
             Path filePath = new File(path).toPath();
 
             Resource resource = new UrlResource(filePath.toUri());
@@ -50,6 +56,7 @@ public class DownloadController {
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
                     .body(resource);
         } catch (Exception ex) {
+            ex.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
