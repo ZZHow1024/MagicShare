@@ -79,4 +79,15 @@ public class FileServiceImpl implements FileService {
         }
 
     }
+
+    /**
+     * 检查是否为当前分享
+     *
+     * @param shareId 分享 ID
+     * @return 是否为当前分享
+     */
+    @Override
+    public boolean checkCurrentShare(String shareId) {
+        return FileRepository.getUuid().equals(shareId);
+    }
 }

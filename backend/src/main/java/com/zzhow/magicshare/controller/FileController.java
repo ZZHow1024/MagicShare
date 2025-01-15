@@ -21,4 +21,9 @@ public class FileController {
     public Result<CryptoVO> fileList(@RequestBody CryptoDTO cryptoDTO) {
         return Result.success(fileService.getFileList(cryptoDTO.getPublicKey()));
     }
+
+    @GetMapping(path = "/check")
+    public Result<Boolean> checkCurrentShare(@RequestParam String shareId) {
+        return Result.success(fileService.checkCurrentShare(shareId));
+    }
 }

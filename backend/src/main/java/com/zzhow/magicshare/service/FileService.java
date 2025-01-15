@@ -15,4 +15,12 @@ public interface FileService {
      * @return 分享的文件列表（经过 AES 加密）
      */
     CryptoVO getFileList(String publicKey);
+
+    /**
+     * 检查是否为当前分享
+     *
+     * @param shareId 分享 ID
+     * @return 是否为当前分享
+     */
+    boolean checkCurrentShare(String shareId);
 }

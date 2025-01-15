@@ -12,7 +12,7 @@ import java.util.UUID;
  */
 public class FileRepository {
     // 分享 ID
-    private static String uuid = "";
+    private static String uuid = UUID.randomUUID().toString();
     // 文件基路径
     private static String basePath = "";
     // 文件列表
