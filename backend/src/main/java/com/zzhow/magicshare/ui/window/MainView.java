@@ -1,10 +1,13 @@
 package com.zzhow.magicshare.ui.window;
 
+import com.zzhow.magicshare.MagicShareApplication;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * @author ZZHow
@@ -17,8 +20,8 @@ public class MainView extends javafx.application.Application {
         Scene scene = new Scene(fxmlLoader.load(), 600, 400);
         stage.setTitle("MagicShare");
         stage.setScene(scene);
-        // Image icon = new Image(Objects.requireNonNull(MagicShareApplication.class.getResourceAsStream("/image/icon.png")));
-        // stage.getIcons().add(icon);
+        Image icon = new Image(Objects.requireNonNull(MagicShareApplication.class.getResourceAsStream("/image/icon.png")));
+        stage.getIcons().add(icon);
         stage.setResizable(false);
         stage.setOnHiding(windowEvent -> {
             System.exit(0);

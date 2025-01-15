@@ -1,7 +1,11 @@
 package com.zzhow.magicshare.util;
 
+import com.zzhow.magicshare.MagicShareApplication;
 import javafx.scene.control.Alert;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
+
+import java.util.Objects;
 
 /**
  * @author ZZHow
@@ -16,8 +20,8 @@ public class MessageBox {
         alert.setContentText(contentText);
 
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-        // Image icon = new Image(Objects.requireNonNull(MagicShareApplication.class.getResourceAsStream("/image/icon.png")));
-        // stage.getIcons().add(icon);
+        Image icon = new Image(Objects.requireNonNull(MagicShareApplication.class.getResourceAsStream("/image/icon.png")));
+        stage.getIcons().add(icon);
 
         alert.showAndWait();
     }
