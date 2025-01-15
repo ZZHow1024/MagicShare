@@ -1,37 +1,28 @@
 import forge from 'node-forge'
 
 // 生成公私钥对
-const generateKeyPair = async () => {
-  const keyPair = await window.crypto.subtle.generateKey(
-    {
-      name: 'RSA-OAEP',
-      modulusLength: 2048,
-      publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-      hash: { name: 'SHA-256' },
-    },
-    true, // 是否可以导出密钥
-    ['encrypt', 'decrypt'],
-  )
+export const generateKeyPair = async () => {
+  // 创建 RSA 密钥对
+  const rsa = forge.pki.rsa
+  const keyPair = await new Promise((resolve, reject) => {
+    rsa.generateKeyPair({ bits: 2048, e: 0x10001 }, (err, keyPair) => {
+      if (err) reject(err)
+      resolve(keyPair)
+    })
+  })
 
   // 导出公钥和私钥为 PEM 格式
-  const publicKey = await window.crypto.subtle.exportKey('spki', keyPair.publicKey)
-  const privateKey = await window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey)
+  const publicKey = forge.pki.publicKeyToPem(keyPair.publicKey)
+  const privateKey = forge.pki.privateKeyToPem(keyPair.privateKey)
 
   return {
-    publicKey: arrayBufferToPem(publicKey, 'PUBLIC KEY'),
-    privateKey: arrayBufferToPem(privateKey, 'PRIVATE KEY'),
+    publicKey,
+    privateKey,
   }
 }
 
-// 将 ArrayBuffer 转换为 PEM 格式
-const arrayBufferToPem = (buffer, type) => {
-  const base64String = btoa(String.fromCharCode(...new Uint8Array(buffer)))
-  const formatted = base64String.match(/.{1,64}/g).join('\n')
-  return `-----BEGIN ${type}-----\n${formatted}\n-----END ${type}-----`
-}
-
 // RSA 加密
-const encryptRSA = (publicKeyPem, aesKey) => {
+export const encryptRSA = (publicKeyPem, aesKey) => {
   const publicKey = forge.pki.publicKeyFromPem(publicKeyPem)
 
   const encrypted = publicKey.encrypt(aesKey, 'RSA-OAEP', {
@@ -45,7 +36,7 @@ const encryptRSA = (publicKeyPem, aesKey) => {
 }
 
 // RSA 解密
-const decryptRSA = async (privateKeyPem, encryptedBase64) => {
+export const decryptRSA = async (privateKeyPem, encryptedBase64) => {
   const privateKey = forge.pki.privateKeyFromPem(privateKeyPem)
   const encryptedData = forge.util.decode64(encryptedBase64)
 
@@ -60,7 +51,7 @@ const decryptRSA = async (privateKeyPem, encryptedBase64) => {
 }
 
 // ASE 加密
-const encryptASE = (data) => {
+export const encryptASE = (data) => {
   // 生成 AES 密钥
   const aesKey = forge.random.getBytesSync(32) // 32 字节 = 256 位密钥
   const iv = forge.random.getBytesSync(16) // 16 字节的 IV（初始化向量）
@@ -85,7 +76,7 @@ const encryptASE = (data) => {
 }
 
 // ASE 解密
-const decryptASE = (aesKey, ivBase64, encryptedBase64) => {
+export const decryptASE = (aesKey, ivBase64, encryptedBase64) => {
   // 解码 Base64 编码的加密数据和 IV
   const iv = forge.util.decode64(ivBase64)
   const encryptedData = forge.util.decode64(encryptedBase64)
@@ -103,5 +94,3 @@ const decryptASE = (aesKey, ivBase64, encryptedBase64) => {
     return null
   }
 }
-
-export { generateKeyPair, encryptRSA, decryptRSA, encryptASE, decryptASE }

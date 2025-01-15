@@ -23,9 +23,6 @@ importers:
       scss:
         specifier: ^0.2.4
         version: 0.2.4
-      subtle-crypto:
-        specifier: ^0.0.0
-        version: 0.0.0
       vue:
         specifier: ^3.5.13
         version: 3.5.13
@@ -1585,9 +1582,6 @@ packages:
 
   stylis@4.3.5:
     resolution: {integrity: sha512-K7npNOKGRYuhAFFzkzMGfxFDpN6gDwf8hcMiE+uveTVbBgm93HrNP3ZDUpKqzZ4pG7TP6fmb+EMAQPjq9FqqvA==}
-
-  subtle-crypto@0.0.0:
-    resolution: {integrity: sha512-F1x1HFdCstetBCpG9t3DtYXjQYSfxc6UFb391JLi+OGdAz1NZnJWV+wb4HMMFkzrrbTd0bz8t5RBYXSnLTDM0Q==}
 
   superjson@2.2.2:
     resolution: {integrity: sha512-5JRxVqC8I8NuOUjzBbvVJAKNM8qoVuH0O77h4WInc/qC2q5IreqKxYwgkga3PfA22OayK2ikceb/B26dztPl+Q==}
@@ -3267,8 +3261,6 @@ snapshots:
   strip-json-comments@3.1.1: {}
 
   stylis@4.3.5: {}
-
-  subtle-crypto@0.0.0: {}
 
   superjson@2.2.2:
     dependencies:
