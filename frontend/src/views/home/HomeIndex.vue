@@ -47,7 +47,16 @@ const getFileList = async () => {
 }
 
 const onDownloadFile = (record) => {
-  window.location.href = `http://localhost:1024/api/download/${record.fileId}?shareId=${encodeURIComponent(shareId.value)}`
+  const protocol = window.location.protocol
+  const hostname = window.location.hostname
+  const port = window.location.port
+  window.location.href =
+    protocol +
+    '//' +
+    hostname +
+    ':' +
+    port +
+    `/api/download/${record.fileId}?shareId=${encodeURIComponent(shareId.value)}`
 }
 
 onBeforeUnmount(() => {

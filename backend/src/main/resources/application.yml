@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: MagicShare
+
+  web:
+    resources:
+      static-locations: classpath:/static/

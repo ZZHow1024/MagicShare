@@ -1,0 +1,1 @@
+import{_ as s,e as o,h as e,j as t,g as c}from"./index-DL-TXIY7.js";const r={},n={class:"about-page"};function d(_,a){return c(),o("div",n,a[0]||(a[0]=[e("div",{class:"title"},[t(" MagicShare"),e("br"),t(" 神奇分享 ")],-1),e("div",{class:"content"},[t("Version：1.0.0"),e("br"),t("Author: ZZHow")],-1)]))}const l=s(r,[["render",d],["__scopeId","data-v-63c7a058"]]);export{l as default};
