@@ -10,7 +10,7 @@
         width="522"
         alt="MagicShareLogo"
       />
-      &#20; MagicShare<br />
+      &nbsp;MagicShare<br />
       神奇分享
     </div>
     <div class="content">Version：1.0.0<br />Author: ZZHow</div>

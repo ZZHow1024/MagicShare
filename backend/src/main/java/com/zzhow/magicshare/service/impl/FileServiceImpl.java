@@ -36,6 +36,8 @@ public class FileServiceImpl implements FileService {
         FileListVO fileListVO = new FileListVO(FileRepository.getUuid(), FileRepository.size(), FileRepository.getFiles());
 
         try {
+            // Base64 解码
+            publicKey = new String(Base64.getDecoder().decode(publicKey));
             // 去除 PEM 格式的头尾
             String publicKeyContent = publicKey.replaceAll("-----\\w+ PUBLIC KEY-----", "").replaceAll("\\s+", "");
             byte[] keyBytes = Base64.getDecoder().decode(publicKeyContent);

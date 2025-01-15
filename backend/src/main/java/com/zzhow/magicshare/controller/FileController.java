@@ -19,7 +19,7 @@ public class FileController {
 
     @PostMapping(path = "/list")
     public Result<CryptoVO> fileList(@RequestBody CryptoDTO cryptoDTO) {
-        return Result.success(fileService.getFileList(cryptoDTO.getPublicKey()));
+        return Result.success(fileService.getFileList(cryptoDTO.getKey()));
     }
 
     @GetMapping(path = "/check")

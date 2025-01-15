@@ -41,8 +41,16 @@ onMounted(() => {
 })
 
 const checkCurrentShare = async () => {
-  const res = await checkCurrentShareService(shareId.value)
-  if (res.data.data === false) getFileList()
+  if (!shareId.value || shareId.value === '') {
+    await getFileList()
+    return
+  }
+  const res = await checkCurrentShareService(shareId.value).catch(() => {
+    shareId.value = ''
+    count.value = 0
+    data.value = ''
+  })
+  if (res.data.data === false) await getFileList()
 }
 
 const getFileList = async () => {
@@ -55,7 +63,7 @@ const getFileList = async () => {
   })
 
   // 携带公钥发请求
-  const res = await getFileListService(publicKey)
+  const res = await getFileListService(btoa(publicKey))
 
   const aseKey = await decryptRSA(privateKeyPem, res.data.data.key)
   const ivBase64 = res.data.data.iv

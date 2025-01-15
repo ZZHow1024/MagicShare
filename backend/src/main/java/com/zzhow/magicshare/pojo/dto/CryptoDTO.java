@@ -5,20 +5,20 @@ package com.zzhow.magicshare.pojo.dto;
  * @date 2025/01/15
  */
 public class CryptoDTO {
-    private String publicKey;
+    private String key;
 
     public CryptoDTO() {
     }
 
-    public CryptoDTO(String publicKey) {
-        this.publicKey = publicKey;
+    public CryptoDTO(String key) {
+        this.key = key;
     }
 
-    public String getPublicKey() {
-        return publicKey;
+    public String getKey() {
+        return key;
     }
 
-    public void setPublicKey(String publicKey) {
-        this.publicKey = publicKey;
+    public void setKey(String key) {
+        this.key = key;
     }
 }

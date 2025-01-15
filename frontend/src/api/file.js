@@ -12,6 +12,6 @@ export const checkCurrentShareService = (shareId) => {
 // 查询分享的文件列表
 export const getFileListService = (publicKey) => {
   return request.post('/file/list', {
-    publicKey,
+    key: publicKey,
   })
 }
