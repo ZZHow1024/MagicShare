@@ -3,7 +3,8 @@ import axios from 'axios'
 const protocol = window.location.protocol
 const hostname = window.location.hostname
 const port = window.location.port
-const baseURL = protocol + '//' + hostname + ':' + port + '/api'
+// const baseURL = protocol + '//' + hostname + ':' + port + '/api'
+const baseURL = 'http://127.0.0.1:1024/api'
 
 const request = axios.create({
   baseURL: baseURL,

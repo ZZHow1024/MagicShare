@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { getFileListService } from '@/api/file.js'
+import { decryptASE, decryptRSA, generateKeyPair } from '@/utils/crypto.js'
 
 const columns = [
   {
@@ -27,10 +28,10 @@ const columns = [
     width: 'calc(10vw)',
   },
 ]
-const data = ref()
 const shareId = ref()
-const timer = ref()
 const count = ref(0)
+const data = ref()
+const timer = ref()
 
 onMounted(() => {
   getFileList()
@@ -40,10 +41,27 @@ onMounted(() => {
 })
 
 const getFileList = async () => {
-  const res = await getFileListService()
-  shareId.value = res.data.data.shareId
-  count.value = res.data.data.count
-  data.value = res.data.data.files
+  // 调用生成公私钥对
+  let publicKey
+  let privateKeyPem
+  await generateKeyPair().then((keys) => {
+    publicKey = keys.publicKey
+    privateKeyPem = keys.privateKey
+  })
+
+  // 携带公钥发请求
+  const res = await getFileListService(publicKey)
+
+  const aseKey = await decryptRSA(privateKeyPem, res.data.data.key)
+  const ivBase64 = res.data.data.iv
+  const encryptedDataBase64 = res.data.data.data
+
+  const decryptedData = decryptASE(aseKey, ivBase64, encryptedDataBase64)
+  let obj = JSON.parse(decryptedData)
+
+  shareId.value = obj.shareId
+  count.value = obj.count
+  data.value = obj.files
 }
 
 const onDownloadFile = (record) => {
