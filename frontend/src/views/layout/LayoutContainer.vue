@@ -18,7 +18,15 @@ const onChangeMenu = (page) => {
     <a-layout class="layout">
       <a-layout-header>
         <span class="app-title">MagicShare</span>
-        <div class="logo" />
+        <div class="logo" @click="onChangeMenu('/home')">
+          <img
+            class="logo-img"
+            src="@/assets/MagicShare.png"
+            height="488"
+            width="522"
+            alt="MagicShareLogo"
+          />
+        </div>
         <a-menu
           v-model:selectedKeys="selectedKeys"
           theme="dark"
@@ -47,31 +55,33 @@ const onChangeMenu = (page) => {
   height: 100vh;
 }
 
-.app-title {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  font-size: 2.5vw;
-  color: white;
-}
-
 .site-layout-content {
   min-height: 280px;
   padding: 24px;
   background: #fff;
 }
-#components-layout-demo-top .logo {
-  float: left;
-  width: 120px;
-  height: 31px;
-  margin: 16px 24px 16px 0;
-  background: rgba(255, 255, 255, 0.3);
-}
-.ant-row-rtl #components-layout-demo-top .logo {
-  float: right;
-  margin: 16px 0 16px 24px;
+.layout {
+  .app-title {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 2.5vw;
+    color: white;
+  }
+
+  .logo {
+    position: fixed;
+    right: 3vw;
+    height: 8vh;
+    width: auto;
+    cursor: pointer;
+    .logo-img {
+      width: 100%;
+      height: 100%;
+    }
+  }
 }
 
 [data-theme='dark'] .site-layout-content {

@@ -3,7 +3,14 @@
 <template>
   <div class="about-page">
     <div class="title">
-      MagicShare<br />
+      <img
+        class="logo"
+        src="@/assets/MagicShare.png"
+        height="488"
+        width="522"
+        alt="MagicShareLogo"
+      />
+      &#20; MagicShare<br />
       神奇分享
     </div>
     <div class="content">Version：1.0.0<br />Author: ZZHow</div>
@@ -11,6 +18,10 @@
 </template>
 
 <style scoped lang="scss">
+.logo {
+  width: 28vw;
+  height: auto;
+}
 .title {
   display: flex;
   margin-top: 5vh;
