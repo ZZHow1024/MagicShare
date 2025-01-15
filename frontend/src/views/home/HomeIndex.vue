@@ -1,6 +1,6 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { getFileListService } from '@/api/file.js'
+import { checkCurrentShareService, getFileListService } from '@/api/file.js'
 import { decryptASE, decryptRSA, generateKeyPair } from '@/utils/crypto.js'
 
 const columns = [
@@ -36,9 +36,14 @@ const timer = ref()
 onMounted(() => {
   getFileList()
   timer.value = setInterval(() => {
-    getFileList()
+    checkCurrentShare()
   }, 1000)
 })
+
+const checkCurrentShare = async () => {
+  const res = await checkCurrentShareService(shareId.value)
+  if (res.data.data === false) getFileList()
+}
 
 const getFileList = async () => {
   // 调用生成公私钥对
