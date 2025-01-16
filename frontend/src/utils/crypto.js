@@ -50,8 +50,8 @@ export const decryptRSA = async (privateKeyPem, encryptedBase64) => {
   return decrypted
 }
 
-// ASE 加密
-export const encryptASE = (data) => {
+// AES 加密
+export const encryptAES = (data) => {
   // 生成 AES 密钥
   const aesKey = forge.random.getBytesSync(32) // 32 字节 = 256 位密钥
   const iv = forge.random.getBytesSync(16) // 16 字节的 IV（初始化向量）
@@ -75,22 +75,33 @@ export const encryptASE = (data) => {
   }
 }
 
-// ASE 解密
-export const decryptASE = (aesKey, ivBase64, encryptedBase64) => {
-  // 解码 Base64 编码的加密数据和 IV
-  const iv = forge.util.decode64(ivBase64)
-  const encryptedData = forge.util.decode64(encryptedBase64)
-
+// AES 解密
+export const decryptAES = (aesKey, iv, encrypted) => {
   // 解密数据
   const decipher = forge.cipher.createDecipher('AES-CBC', aesKey)
   decipher.start({ iv: iv })
-  decipher.update(forge.util.createBuffer(encryptedData))
+  decipher.update(forge.util.createBuffer(encrypted))
   const success = decipher.finish()
 
   if (success) {
-    const decryptedData = decipher.output.toString()
-    return decryptedData
+    return decipher.output.toString()
   } else {
+    return null
+  }
+}
+
+// AES 解密
+export const decryptBufferAES = async (aesKey, iv, encryptedData) => {
+  const cipher = forge.cipher.createDecipher('AES-CBC', aesKey)
+  cipher.start({ iv: iv }) // 使用 IV 初始化解密器
+  await cipher.update(forge.util.createBuffer(encryptedData)) // 加密的块
+
+  const result = await cipher.finish() // 完成解密
+
+  if (result) {
+    return cipher.output.getBytes() // 解密成功
+  } else {
+    console.error('Decryption failed') // 解密失败
     return null
   }
 }

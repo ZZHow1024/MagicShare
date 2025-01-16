@@ -1,7 +1,8 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { checkCurrentShareService, getFileListService } from '@/api/file.js'
-import { decryptASE, decryptRSA, generateKeyPair } from '@/utils/crypto.js'
+import { decryptAES, decryptBufferAES, decryptRSA, generateKeyPair } from '@/utils/crypto.js'
+import forge from 'node-forge'
 
 const columns = [
   {
@@ -69,7 +70,12 @@ const getFileList = async () => {
   const ivBase64 = res.data.data.iv
   const encryptedDataBase64 = res.data.data.data
 
-  const decryptedData = decryptASE(aseKey, ivBase64, encryptedDataBase64)
+  const decryptedData = decryptAES(
+    aseKey,
+    forge.util.decode64(ivBase64),
+    forge.util.decode64(encryptedDataBase64),
+  )
+
   let obj = JSON.parse(decryptedData)
 
   shareId.value = obj.shareId
@@ -93,12 +99,71 @@ const onDownloadFile = (record) => {
 onBeforeUnmount(() => {
   clearInterval(timer.value)
 })
+
+const downloadEncryptedFile = async () => {
+  // 调用生成公私钥对
+  let publicKey
+  let privateKeyPem
+  await generateKeyPair().then((keys) => {
+    publicKey = keys.publicKey
+    privateKeyPem = keys.privateKey
+  })
+
+  // 携带公钥发请求
+  const response = await fetch('http://localhost:1024/api/download/download', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    mode: 'cors',
+    body: JSON.stringify(btoa(publicKey)),
+  })
+  const encryptedAesKey = response.headers.get('X-Aes-Key')
+  const iv = response.headers.get('X-Aes-Iv')
+  const aesKey = await decryptRSA(privateKeyPem, encryptedAesKey) // 使用私钥解密AES密钥
+
+  const reader = response.body.getReader()
+
+  let done, value
+  let result = ''
+  while (({ done, value } = await reader.read())) {
+    if (done) {
+      break
+    }
+
+    const decryptedChunk = await decryptBufferAES(
+      aesKey,
+      forge.util.decode64(iv),
+      new Uint8Array(value),
+    ) // 使用AES解密文件块
+    result += decryptedChunk
+  }
+
+  // 拼接所有解密后的块
+  const finalDecryptedData = forge.util.createBuffer(result)
+
+  // 创建 Blob 进行下载或保存为文件
+  const byteArray = new Uint8Array(
+    finalDecryptedData
+      .getBytes()
+      .split('')
+      .map((char) => char.charCodeAt(0)),
+  )
+
+  const blob = new Blob([byteArray], { type: 'application/octet-stream' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'download.png'
+  a.click()
+}
 </script>
 
 <template>
   <div class="home-container">
     <br />
     <div style="margin-left: 3vw; font-size: 20px">总文件数：{{ count }}</div>
+    <a-button @click="downloadEncryptedFile">test</a-button>
     <div :style="{ background: '#fff', padding: '24px', minHeight: '280px' }">
       <!-- 表格 -->
       <a-table
