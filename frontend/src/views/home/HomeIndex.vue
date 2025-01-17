@@ -157,13 +157,120 @@ const downloadEncryptedFile = async () => {
   a.download = 'download.png'
   a.click()
 }
+
+const open = ref(false)
+const showDrawer = () => {
+  open.value = true
+}
+const onClose = () => {
+  open.value = false
+}
+
+// WebSocket 加密传输相关
+const progress = ref(null)
+let socket = null
+
+const aesKey = ref('')
+const iv = ref('')
+const chunks = ref([])
+const fileName = ref('')
+progress.value = ref(null)
+
+const encryptedDownload = (record) => {
+  const fileId = record.fileId
+  fileName.value = record.name
+  socket = new WebSocket('ws://localhost:1024/ws/download') // WebSocket URL
+
+  socket.onopen = async () => {
+    console.log('连接成功')
+    progress.value = 0
+
+    // 调用生成公私钥对
+    let publicKey
+    let privateKeyPem
+    await generateKeyPair().then((keys) => {
+      publicKey = keys.publicKey
+      privateKeyPem = keys.privateKey
+    })
+
+    socket.send('a,' + btoa(publicKey))
+
+    socket.onmessage = async (event) => {
+      if (event.data.startsWith('key#')) {
+        const data = event.data.split(',')
+        const encryptedAesKey = data[0].split('#')[1]
+        iv.value = data[1].split('#')[1]
+        aesKey.value = await decryptRSA(privateKeyPem, encryptedAesKey)
+
+        socket.send('b,' + fileId)
+      } else if (event.data.startsWith('fin')) {
+        // 在传输完成后，拼接所有解密后的块为一个大的 Uint8Array
+        const finalDecryptedData = new Uint8Array(
+          chunks.value.reduce((acc, chunk) => acc + chunk.length, 0),
+        )
+
+        let offset = 0
+        for (const chunk of chunks.value) {
+          finalDecryptedData.set(chunk, offset) // 将每个 chunk 拷贝至最终的 Uint8Array 中
+          offset += chunk.length
+        }
+
+        const blob = new Blob([finalDecryptedData], { type: 'application/octet-stream' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = fileName.value
+        a.click()
+
+        socket.close()
+      } else {
+        const decryptedChunk = await decryptBufferAES(
+          aesKey.value,
+          forge.util.decode64(iv.value),
+          new Uint8Array(
+            atob(event.data)
+              .split('')
+              .map(function (c) {
+                return c.charCodeAt(0)
+              }),
+          ),
+        )
+
+        progress.value++
+        const decryptedChunkUint8 = new Uint8Array(decryptedChunk.length)
+        for (let i = 0; i < decryptedChunkUint8.length; i++) {
+          decryptedChunkUint8[i] = decryptedChunk.charCodeAt(i)
+        }
+        chunks.value.push(decryptedChunkUint8)
+      }
+    }
+  }
+
+  socket.onerror = (error) => {
+    console.error('WebSocket 错误', error)
+  }
+
+  socket.onclose = () => {
+    progress.value = null
+    aesKey.value = ''
+    iv.value = ''
+    chunks.value = []
+    fileName.value = ''
+
+    console.log('连接关闭')
+  }
+}
 </script>
 
 <template>
   <div class="home-container">
     <br />
-    <div style="margin-left: 3vw; font-size: 20px">总文件数：{{ count }}</div>
-    <a-button @click="downloadEncryptedFile">test</a-button>
+    <div style="width: 100vw">
+      <span style="margin-left: 3vw; font-size: 20px">总文件数：{{ count }}</span>
+      <a-button style="position: absolute; margin-left: 37vw" type="primary" @click="showDrawer"
+        >加密下载进度</a-button
+      >
+    </div>
     <div :style="{ background: '#fff', padding: '24px', minHeight: '280px' }">
       <!-- 表格 -->
       <a-table
@@ -199,12 +306,39 @@ const downloadEncryptedFile = async () => {
           <template v-else-if="column.key === 'action'">
             <span>
               <a class="ant-dropdown-link" @click="onDownloadFile(record)"> 下载文件 </a>
+              <a class="ant-dropdown-link" @click="encryptedDownload(record)">加密下载文件</a>
             </span>
           </template>
         </template>
       </a-table>
     </div>
+
+    <a-drawer :width="500" title="加密下载进度" placement="bottom" :open="open" @close="onClose">
+      <template #extra>
+        <a-button style="margin-right: 8px" @click="onClose">关闭</a-button>
+      </template>
+      <div class="download-process-container">
+        <div>
+          <a-progress type="circle" :percent="0" />
+          <div class="download-process-container">建立连接</div>
+        </div>
+        <div>
+          <a-progress type="circle" :percent="0" />
+          <div class="download-process-container">加密传输</div>
+        </div>
+        <div>
+          <a-progress type="circle" :percent="0" />
+          <div class="download-process-container">合并文件</div>
+        </div>
+      </div>
+    </a-drawer>
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.download-process-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>
