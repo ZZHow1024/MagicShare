@@ -17,21 +17,24 @@ const onChangeMenu = (page) => {
   <div class="layout-container">
     <a-layout class="layout">
       <a-layout-header>
-        <span class="app-title">MagicShare</span>
-        <div class="logo" @click="onChangeMenu('/home')">
-          <img
-            class="logo-img"
-            src="@/assets/MagicShare.png"
-            height="488"
-            width="522"
-            alt="MagicShareLogo"
-          />
+        <div class="logo">
+          <span class="app-title" @click="onChangeMenu('/home')">MagicShare</span>
+          <span>
+            <img
+              class="logo-img"
+              src="@/assets/MagicShare.png"
+              height="488"
+              width="522"
+              alt="MagicShareLogo"
+              @click="onChangeMenu('/home')"
+            />
+          </span>
         </div>
         <a-menu
           v-model:selectedKeys="selectedKeys"
           theme="dark"
           mode="horizontal"
-          :style="{ lineHeight: '64px' }"
+          :style="{ lineHeight: '64px', marginLeft: '-5px' }"
         >
           <a-menu-item key="/home" @click="onChangeMenu('/home')">文件列表</a-menu-item>
           <a-menu-item key="/about" @click="onChangeMenu('/about')">关于</a-menu-item>
@@ -61,25 +64,28 @@ const onChangeMenu = (page) => {
   background: #fff;
 }
 .layout {
-  .app-title {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    font-size: 2.5vw;
-    color: white;
-  }
-
   .logo {
     position: fixed;
     right: 3vw;
     height: 8vh;
     width: auto;
-    cursor: pointer;
-    .logo-img {
+    display: flex;
+
+    .app-title {
+      position: relative;
+      top: 0;
+      right: 3vw;
       width: 100%;
+      text-align: center;
+      font-size: 2.5vw;
+      cursor: pointer;
+      color: white;
+    }
+
+    .logo-img {
+      width: auto;
       height: 100%;
+      cursor: pointer;
     }
   }
 }
