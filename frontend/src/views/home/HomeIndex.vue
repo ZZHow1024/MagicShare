@@ -153,24 +153,6 @@ const encryptedDownload = (record) => {
 
         socket.send('b,' + fileId)
       } else if (event.data.startsWith('fin')) {
-        // 在传输完成后，拼接所有解密后的块为一个大的 Uint8Array
-        const finalDecryptedData = new Uint8Array(
-          chunks.value.reduce((acc, chunk) => acc + chunk.length, 0),
-        )
-
-        let offset = 0
-        for (const chunk of chunks.value) {
-          finalDecryptedData.set(chunk, offset) // 将每个 chunk 拷贝至最终的 Uint8Array 中
-          offset += chunk.length
-        }
-
-        const blob = new Blob([finalDecryptedData], { type: 'application/octet-stream' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = fileName.value
-        a.click()
-
         socket.close()
       } else {
         downloadProgress.value.currentBlock++
@@ -192,6 +174,8 @@ const encryptedDownload = (record) => {
         }
         chunks.value.push(decryptedChunkUint8)
         downloadProgress.value.decryptionBlock++
+        if (downloadProgress.value.decryptionBlock >= downloadProgress.value.totalBlock)
+          mergeFiles()
       }
     }
   }
@@ -208,6 +192,26 @@ const encryptedDownload = (record) => {
     console.log('连接关闭')
   }
 }
+
+const mergeFiles = () => {
+  // 在传输完成后，拼接所有解密后的块为一个大的 Uint8Array
+  const finalDecryptedData = new Uint8Array(
+    chunks.value.reduce((acc, chunk) => acc + chunk.length, 0),
+  )
+
+  let offset = 0
+  for (const chunk of chunks.value) {
+    finalDecryptedData.set(chunk, offset) // 将每个 chunk 拷贝至最终的 Uint8Array 中
+    offset += chunk.length
+  }
+
+  const blob = new Blob([finalDecryptedData], { type: 'application/octet-stream' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName.value
+  a.click()
+}
 </script>
 
 <template>
@@ -215,8 +219,8 @@ const encryptedDownload = (record) => {
     <br />
     <div style="width: 100vw">
       <span style="margin-left: 3vw; font-size: 20px">总文件数：{{ count }}</span>
-      <a-button style="position: absolute; margin-left: 37vw" type="primary" @click="showDrawer"
-        >加密下载进度</a-button
+      <a-button style="position: relative; margin-left: 36vw" type="primary" @click="showDrawer"
+        >查看加密下载进度</a-button
       >
     </div>
     <div :style="{ background: '#fff', padding: '24px', minHeight: '280px' }">
@@ -245,7 +249,7 @@ const encryptedDownload = (record) => {
 
           <template v-else-if="column.key === 'action'">
             <span>
-              <a class="ant-dropdown-link" @click="onDownloadFile(record)"> 普通下载 </a>
+              <a class="ant-dropdown-link" @click="onDownloadFile(record)"> 高速下载 </a>
               <br />
               <a class="ant-dropdown-link" @click="encryptedDownload(record)"> 加密下载 </a>
             </span>
@@ -254,7 +258,14 @@ const encryptedDownload = (record) => {
       </a-table>
     </div>
 
-    <a-drawer :width="500" title="加密下载进度" placement="bottom" :open="open" @close="onClose">
+    <a-drawer
+      class="drawer"
+      :width="500"
+      title="加密下载进度"
+      placement="bottom"
+      :open="open"
+      @close="onClose"
+    >
       <template #extra>
         <a-button style="margin-right: 8px" @click="onClose">关闭</a-button>
       </template>
@@ -266,6 +277,7 @@ const encryptedDownload = (record) => {
           <a-progress type="circle" :percent="downloadProgress.connection" />
           <div class="download-process-container">建立连接</div>
         </div>
+        &nbsp;
         <div>
           <a-progress
             type="circle"
@@ -278,6 +290,7 @@ const encryptedDownload = (record) => {
           />
           <div class="download-process-container">加密传输</div>
         </div>
+        &nbsp;
         <div>
           <a-progress
             type="circle"
@@ -291,14 +304,25 @@ const encryptedDownload = (record) => {
           <div class="download-process-container">解密文件</div>
         </div>
       </div>
+      <br />
+      <div class="content-container">RSA + AES 混合加密</div>
+      <div class="content-container">保障数据安全</div>
     </a-drawer>
   </div>
 </template>
 
 <style scoped lang="scss">
-.download-process-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.drawer {
+  .download-process-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .content-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 </style>
