@@ -29,7 +29,7 @@ import java.util.List;
  * @date 2025/01/16
  */
 public class FileWebSocketHandler extends TextWebSocketHandler {
-    private static int CHUNK_SIZE = 8192;
+    private static final int CHUNK_SIZE = 8192;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -44,9 +44,19 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        // 消息格式：a,publicKey
+        // 消息格式：a,publicKey,fileId
         if (message.getPayload().charAt(0) == 'a') {
             String[] split = message.getPayload().split(",");
+
+            // 计算分块数量
+            List<FileDetail> files = FileRepository.getFiles();
+            int index = files.indexOf(new FileDetail(split[2]));
+            if (index == -1) {
+                session.sendMessage(new TextMessage("Not found"));
+                session.close(CloseStatus.NOT_ACCEPTABLE);
+                return;
+            }
+            int block = (int)Math.ceil(files.get(index).getSize() / (CHUNK_SIZE / 1024.0));
 
             // Base64 解码
             String key = new String(Base64.getDecoder().decode(split[1]));
@@ -76,9 +86,9 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
             byte[] encryptedAesKey = rsaCipher.doFinal(aesKey.getEncoded());
 
             AesKeyRepository.set(session.getId(), aesKey, iv);
-            session.sendMessage(new TextMessage("key#" + Base64.getEncoder().encodeToString(encryptedAesKey) + ",iv#" + Base64.getEncoder().encodeToString(iv)));
+            session.sendMessage(new TextMessage("key#" + Base64.getEncoder().encodeToString(encryptedAesKey) + ",iv#" + Base64.getEncoder().encodeToString(iv) + ",block#" + block));
 
-            // 消息格式：b,filePath
+            // 消息格式：b,fileId
         } else if ((message.getPayload().charAt(0) == 'b')) {
             String[] split = message.getPayload().split(",");
 

@@ -104,23 +104,34 @@ const onClose = () => {
 }
 
 // WebSocket 加密传输相关
-const progress = ref(null)
 let socket = null
 
 const aesKey = ref('')
 const iv = ref('')
 const chunks = ref([])
-const fileName = ref('')
-progress.value = ref(null)
+const fileName = ref('暂无')
+const downloadProgress = ref({
+  connection: 0,
+  totalBlock: 0,
+  currentBlock: 0,
+  decryptionBlock: 0,
+})
 
 const encryptedDownload = (record) => {
+  downloadProgress.value = {
+    connection: 0,
+    totalBlock: 0,
+    currentBlock: 0,
+    decryptionBlock: 0,
+  }
+  showDrawer()
   const fileId = record.fileId
   fileName.value = record.name
   socket = new WebSocket('ws://localhost:1024/ws/download') // WebSocket URL
 
   socket.onopen = async () => {
     console.log('连接成功')
-    progress.value = 0
+    downloadProgress.value.connection = 100
 
     // 调用生成公私钥对
     let publicKey
@@ -130,7 +141,7 @@ const encryptedDownload = (record) => {
       privateKeyPem = keys.privateKey
     })
 
-    socket.send('a,' + btoa(publicKey))
+    socket.send('a,' + btoa(publicKey) + ',' + fileId)
 
     socket.onmessage = async (event) => {
       if (event.data.startsWith('key#')) {
@@ -138,6 +149,7 @@ const encryptedDownload = (record) => {
         const encryptedAesKey = data[0].split('#')[1]
         iv.value = data[1].split('#')[1]
         aesKey.value = await decryptRSA(privateKeyPem, encryptedAesKey)
+        downloadProgress.value.totalBlock = parseInt(data[2].split('#')[1])
 
         socket.send('b,' + fileId)
       } else if (event.data.startsWith('fin')) {
@@ -161,6 +173,7 @@ const encryptedDownload = (record) => {
 
         socket.close()
       } else {
+        downloadProgress.value.currentBlock++
         const decryptedChunk = await decryptBufferAES(
           aesKey.value,
           forge.util.decode64(iv.value),
@@ -173,12 +186,12 @@ const encryptedDownload = (record) => {
           ),
         )
 
-        progress.value++
         const decryptedChunkUint8 = new Uint8Array(decryptedChunk.length)
         for (let i = 0; i < decryptedChunkUint8.length; i++) {
           decryptedChunkUint8[i] = decryptedChunk.charCodeAt(i)
         }
         chunks.value.push(decryptedChunkUint8)
+        downloadProgress.value.decryptionBlock++
       }
     }
   }
@@ -188,11 +201,9 @@ const encryptedDownload = (record) => {
   }
 
   socket.onclose = () => {
-    progress.value = null
     aesKey.value = ''
     iv.value = ''
     chunks.value = []
-    fileName.value = ''
 
     console.log('连接关闭')
   }
@@ -247,18 +258,37 @@ const encryptedDownload = (record) => {
       <template #extra>
         <a-button style="margin-right: 8px" @click="onClose">关闭</a-button>
       </template>
+
+      <div>当前下载的文件：{{ fileName }}</div>
+      <br />
       <div class="download-process-container">
         <div>
-          <a-progress type="circle" :percent="0" />
+          <a-progress type="circle" :percent="downloadProgress.connection" />
           <div class="download-process-container">建立连接</div>
         </div>
         <div>
-          <a-progress type="circle" :percent="0" />
+          <a-progress
+            type="circle"
+            :percent="
+              Math.min(
+                ((downloadProgress.currentBlock / downloadProgress.totalBlock) * 100).toFixed(1),
+                100,
+              )
+            "
+          />
           <div class="download-process-container">加密传输</div>
         </div>
         <div>
-          <a-progress type="circle" :percent="0" />
-          <div class="download-process-container">合并文件</div>
+          <a-progress
+            type="circle"
+            :percent="
+              Math.min(
+                ((downloadProgress.decryptionBlock / downloadProgress.totalBlock) * 100).toFixed(1),
+                100,
+              )
+            "
+          />
+          <div class="download-process-container">解密文件</div>
         </div>
       </div>
     </a-drawer>
