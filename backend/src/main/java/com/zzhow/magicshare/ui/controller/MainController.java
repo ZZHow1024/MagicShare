@@ -4,6 +4,7 @@ import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.ui.service.impl.ShareServiceImpl;
+import com.zzhow.magicshare.ui.window.AboutWindow;
 import com.zzhow.magicshare.util.InternetUtil;
 import com.zzhow.magicshare.util.MessageBox;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -131,5 +132,10 @@ public class MainController {
         }
 
         onSearchFileClicked();
+    }
+
+    @FXML
+    private void onAboutClicked() {
+        AboutWindow.open();
     }
 }

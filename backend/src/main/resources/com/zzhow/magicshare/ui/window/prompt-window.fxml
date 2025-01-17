@@ -22,12 +22,12 @@
             <Font size="20.0" />
          </font>
       </Label>
-      <Button layoutX="414.0" layoutY="371.0" mnemonicParsing="false" onAction="#onAgreeClicked" text="同意">
+      <Button layoutX="294.0" layoutY="371.0" mnemonicParsing="false" onAction="#onExitClicked" text="退出">
          <font>
             <Font size="20.0" />
          </font>
       </Button>
-      <Button layoutX="294.0" layoutY="371.0" mnemonicParsing="false" onAction="#onExitClicked" text="退出">
+      <Button layoutX="414.0" layoutY="371.0" mnemonicParsing="false" onAction="#onAgreeClicked" text="同意">
          <font>
             <Font size="20.0" />
          </font>
