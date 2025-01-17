@@ -32,14 +32,8 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
     private static final int CHUNK_SIZE = 8192;
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        System.out.println(session.getId() + "连接成功");
-    }
-
-    @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         AesKeyRepository.delete(session.getId());
-        System.out.println(session.getId() + "断开连接");
     }
 
     @Override
@@ -56,7 +50,7 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
                 session.close(CloseStatus.NOT_ACCEPTABLE);
                 return;
             }
-            int block = (int)Math.ceil(files.get(index).getSize() / (CHUNK_SIZE / 1024.0));
+            int block = (int) Math.ceil(files.get(index).getSize() / (CHUNK_SIZE / 1024.0));
 
             // Base64 解码
             String key = new String(Base64.getDecoder().decode(split[1]));

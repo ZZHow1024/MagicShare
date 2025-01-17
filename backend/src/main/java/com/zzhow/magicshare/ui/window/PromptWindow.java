@@ -11,25 +11,30 @@ import java.util.Objects;
 
 /**
  * @author ZZHow
- * @date 2025/1/12
+ * @date 2025/01/17
  */
-public class MainView extends javafx.application.Application {
+public class PromptWindow extends javafx.application.Application {
+    private static Stage stage = null;
+
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(MainView.class.getResource("main-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 600, 400);
+        PromptWindow.stage = stage;
+        FXMLLoader fxmlLoader = new FXMLLoader(MainWindow.class.getResource("prompt-window.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 780, 450);
         stage.setTitle("MagicShare");
         stage.setScene(scene);
         Image icon = new Image(Objects.requireNonNull(MagicShareApplication.class.getResourceAsStream("/image/icon.png")));
         stage.getIcons().add(icon);
         stage.setResizable(false);
-        stage.setOnHiding(windowEvent -> {
-            System.exit(0);
-        });
         stage.show();
     }
 
-    public static void main(String[] args) {
+    public static void close() {
+        stage.close();
+        MainWindow.open();
+    }
+
+    public static void show() {
         launch();
     }
 }

@@ -1,6 +1,6 @@
 package com.zzhow.magicshare;
 
-import com.zzhow.magicshare.ui.window.MainView;
+import com.zzhow.magicshare.ui.window.PromptWindow;
 
 /**
  * @author ZZHow
@@ -8,7 +8,6 @@ import com.zzhow.magicshare.ui.window.MainView;
  */
 public class MagicShareApplication {
     public static void main(String[] args) {
-        // 启动主窗口
-        MainView.main(args);
+        PromptWindow.show();
     }
 }
