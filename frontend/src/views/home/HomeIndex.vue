@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { checkCurrentShareService, getFileListService } from '@/api/file.js'
 import { decryptAES, decryptBufferAES, decryptRSA, generateKeyPair } from '@/utils/crypto.js'
 import forge from 'node-forge'
+import { useAcceptStore } from '@/stores/index.js'
 
 const columns = [
   {
@@ -28,25 +29,35 @@ const shareId = ref()
 const count = ref(0)
 const data = ref()
 const timer = ref()
+const acceptStore = useAcceptStore()
 
 onMounted(() => {
-  getFileList()
+  if (acceptStore.status === true) getFileList()
   timer.value = setInterval(() => {
     checkCurrentShare()
   }, 1000)
 })
 
-const checkCurrentShare = async () => {
-  if (!shareId.value || shareId.value === '') {
-    await getFileList()
-    return
+let checkCurrentShare = async () => {
+  if (acceptStore.status === true) {
+    checkCurrentShare = async () => {
+      if (!shareId.value || shareId.value === '') {
+        await getFileList()
+        return
+      }
+      const res = await checkCurrentShareService(shareId.value).catch(() => {
+        shareId.value = ''
+        count.value = 0
+        data.value = ''
+      })
+      if (res.data.data === false) await getFileList()
+    }
+
+    clearInterval(timer.value)
+    timer.value = setInterval(() => {
+      checkCurrentShare()
+    })
   }
-  const res = await checkCurrentShareService(shareId.value).catch(() => {
-    shareId.value = ''
-    count.value = 0
-    data.value = ''
-  })
-  if (res.data.data === false) await getFileList()
 }
 
 const getFileList = async () => {
@@ -233,10 +244,7 @@ const mergeFiles = () => {
       >
         <template #headerCell="{ column }">
           <template v-if="column.key === 'name'">
-            <span>
-              <smile-outlined />
-              文件信息
-            </span>
+            <span> 文件信息 </span>
           </template>
         </template>
 
@@ -249,7 +257,7 @@ const mergeFiles = () => {
 
           <template v-else-if="column.key === 'action'">
             <span>
-              <a class="ant-dropdown-link" @click="onDownloadFile(record)"> 高速下载 </a>
+              <a class="ant-dropdown-link" @click="onDownloadFile(record)"> 快速下载 </a>
               <br />
               <a class="ant-dropdown-link" @click="encryptedDownload(record)"> 加密下载 </a>
             </span>
