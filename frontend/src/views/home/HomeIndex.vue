@@ -100,64 +100,6 @@ onBeforeUnmount(() => {
   clearInterval(timer.value)
 })
 
-const downloadEncryptedFile = async () => {
-  // 调用生成公私钥对
-  let publicKey
-  let privateKeyPem
-  await generateKeyPair().then((keys) => {
-    publicKey = keys.publicKey
-    privateKeyPem = keys.privateKey
-  })
-
-  // 携带公钥发请求
-  const response = await fetch('http://localhost:1024/api/download/download', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    mode: 'cors',
-    body: JSON.stringify(btoa(publicKey)),
-  })
-  const encryptedAesKey = response.headers.get('X-Aes-Key')
-  const iv = response.headers.get('X-Aes-Iv')
-  const aesKey = await decryptRSA(privateKeyPem, encryptedAesKey) // 使用私钥解密AES密钥
-
-  const reader = response.body.getReader()
-
-  let done, value
-  let result = ''
-  while (({ done, value } = await reader.read())) {
-    if (done) {
-      break
-    }
-
-    const decryptedChunk = await decryptBufferAES(
-      aesKey,
-      forge.util.decode64(iv),
-      new Uint8Array(value),
-    ) // 使用AES解密文件块
-    result += decryptedChunk
-  }
-
-  // 拼接所有解密后的块
-  const finalDecryptedData = forge.util.createBuffer(result)
-
-  // 创建 Blob 进行下载或保存为文件
-  const byteArray = new Uint8Array(
-    finalDecryptedData
-      .getBytes()
-      .split('')
-      .map((char) => char.charCodeAt(0)),
-  )
-
-  const blob = new Blob([byteArray], { type: 'application/octet-stream' })
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'download.png'
-  a.click()
-}
-
 const open = ref(false)
 const showDrawer = () => {
   open.value = true
