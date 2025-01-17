@@ -22,7 +22,7 @@
             <Font size="18.0" />
          </font>
       </Label>
-      <Label fx:id="Label3" alignment="CENTER" layoutX="22.0" layoutY="154.0" prefWidth="555.0" text="1. 自定义端口启动服务。&#10;2. 按文件夹/文件路径查找文件，生成文件列表。&#10;3. Web网页下载文件。&#10;&#9;- 支持通过HTTP协议快速下载文件&#10;&#9;- 支持通过WebSocket协议，使用RSA+AES混合加密下载文件" wrapText="true">
+      <Label fx:id="Label3" alignment="CENTER" layoutX="22.0" layoutY="154.0" prefWidth="555.0" text="1. 自定义端口启动服务。&#10;2. 按文件夹/文件路径查找文件并生成列表。&#10;3. Web网页下载文件。&#10;&#9;- 支持通过HTTP协议快速下载文件&#10;&#9;- 支持通过WebSocket协议并使用RSA+AES混合加密下载文件" wrapText="true">
          <font>
             <Font size="18.0" />
          </font>
