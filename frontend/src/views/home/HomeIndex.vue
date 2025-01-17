@@ -6,27 +6,22 @@ import forge from 'node-forge'
 
 const columns = [
   {
-    title: '文件名',
+    title: '文件信息',
     dataIndex: 'name',
     key: 'name',
-    width: 'calc(25vw)',
+    width: 'calc(35vw)',
   },
   {
-    title: '文件类型',
-    dataIndex: 'type',
-    key: 'type',
-    width: 'calc(10vw)',
-  },
-  {
-    title: '文件路径',
+    title: '路径',
     dataIndex: 'path',
     key: 'path',
-    width: 'calc(45vw)',
+    width: 'calc(25vw)',
   },
   {
     title: '操作',
     key: 'action',
-    width: 'calc(10vw)',
+    width: 'calc(25vw)',
+    align: 'center',
   },
 ]
 const shareId = ref()
@@ -225,30 +220,23 @@ const encryptedDownload = (record) => {
           <template v-if="column.key === 'name'">
             <span>
               <smile-outlined />
-              文件名
+              文件信息
             </span>
           </template>
         </template>
 
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'name'">
-            <a @click="onDownloadFile(record)">
-              {{ record.name }}
-            </a>
-          </template>
-
-          <template v-else-if="column.key === 'type'">
-            <span>
-              <a-tag :key="record.type" color="black">
-                {{ record.type }}
-              </a-tag>
-            </span>
+            {{ record.name }}<br />
+            <a-tag :key="record.type" color="black"> {{ record.type }} </a-tag><br />
+            {{ record.size }} KB
           </template>
 
           <template v-else-if="column.key === 'action'">
             <span>
-              <a class="ant-dropdown-link" @click="onDownloadFile(record)"> 下载文件 </a>
-              <a class="ant-dropdown-link" @click="encryptedDownload(record)">加密下载文件</a>
+              <a class="ant-dropdown-link" @click="onDownloadFile(record)"> 普通下载 </a>
+              <br />
+              <a class="ant-dropdown-link" @click="encryptedDownload(record)"> 加密下载 </a>
             </span>
           </template>
         </template>
