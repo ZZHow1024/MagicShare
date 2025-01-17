@@ -4,7 +4,6 @@ import com.zzhow.magicshare.pojo.entity.AesCrypto;
 import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.AesKeyRepository;
 import com.zzhow.magicshare.repository.FileRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
