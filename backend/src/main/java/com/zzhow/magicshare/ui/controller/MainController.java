@@ -6,6 +6,7 @@ import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.ui.service.impl.ShareServiceImpl;
 import com.zzhow.magicshare.util.InternetUtil;
 import com.zzhow.magicshare.util.MessageBox;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -54,19 +55,22 @@ public class MainController {
         // 创建列
         TableColumn<FileDetail, String> fileNameCol = new TableColumn<>("文件名");
         fileNameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
-        TableColumn<FileDetail, String> fileTypeCol = new TableColumn<>("文件类型");
+        TableColumn<FileDetail, String> fileTypeCol = new TableColumn<>("类型");
         fileTypeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getType()));
-        TableColumn<FileDetail, String> filePathCol = new TableColumn<>("文件相对路径");
+        TableColumn<FileDetail, String> fileSizeCol = new TableColumn<>("大小(KB)");
+        fileSizeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSize() + ""));
+        TableColumn<FileDetail, String> filePathCol = new TableColumn<>("相对路径");
         filePathCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPath()));
-        tableView1.getColumns().addAll(fileNameCol, fileTypeCol, filePathCol);
+        tableView1.getColumns().addAll(fileNameCol, fileTypeCol, fileSizeCol, filePathCol);
         tableView1.setPlaceholder(new Label("文件为空"));
 
         // 设置列的宽度比例
         tableView1.widthProperty().addListener((obs, oldWidth, newWidth) -> {
             double totalWidth = newWidth.doubleValue();
-            fileNameCol.setPrefWidth(totalWidth * 0.3);
-            fileTypeCol.setPrefWidth(totalWidth * 0.1);
-            filePathCol.setPrefWidth(totalWidth * 0.6);
+            fileNameCol.setPrefWidth(totalWidth * 0.25);
+            fileTypeCol.setPrefWidth(totalWidth * 0.12);
+            fileSizeCol.setPrefWidth(totalWidth * 0.13);
+            filePathCol.setPrefWidth(totalWidth * 0.50);
         });
     }
 

@@ -15,6 +15,8 @@ public class FileDetail {
     private String name;
     // 文件类型
     private String type;
+    // 文件大小（KB）
+    private double size;
     // 文件路径
     private String path;
 
@@ -25,10 +27,11 @@ public class FileDetail {
         this.fileId = fileId;
     }
 
-    public FileDetail(String fileId, String name, String type, String path) {
+    public FileDetail(String fileId, String name, String type, double size, String path) {
         this.fileId = fileId;
         this.name = name;
         this.type = type;
+        this.size = size;
         this.path = path;
     }
 
@@ -54,6 +57,14 @@ public class FileDetail {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public double getSize() {
+        return size;
+    }
+
+    public void setSize(double size) {
+        this.size = size;
     }
 
     public String getPath() {

@@ -19,8 +19,6 @@ import java.util.List;
 @RestController()
 @RequestMapping("/api/download")
 public class DownloadController {
-    private static final int CHUNK_SIZE = 1024 * 1024 * 2; // 每块 2MB
-
     @GetMapping("/{fileId}")
     public ResponseEntity<Resource> downloadFile(String shareId, @PathVariable String fileId) {
         if (shareId == null || fileId == null) {
