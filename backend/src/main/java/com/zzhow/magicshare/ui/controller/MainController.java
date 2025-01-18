@@ -84,6 +84,9 @@ public class MainController {
     @FXML
     private void onStartOrStopServiceClicked() {
         if (serviceIsStarted) {
+            textField1.setDisable(false);
+            label1.setText("内网IPv4地址：");
+            label2.setText(InternetUtil.getLocalIpAddress());
             button1.setText("启动服务");
             shareService.stopService();
             MessageBox.success("停止成功", "MagicShare 服务停止成功");
@@ -96,6 +99,9 @@ public class MainController {
         byte i = shareService.startService(textField1.getText());
         switch (i) {
             case 0 -> {
+                textField1.setDisable(true);
+                label1.setText("分享URL：");
+                label2.setText("http://" + InternetUtil.getLocalIpAddress() + ":" + textField1.getText());
                 MessageBox.success("启动成功", "MagicShare 服务启动成功");
                 button1.setText("停止服务");
                 serviceIsStarted = true;

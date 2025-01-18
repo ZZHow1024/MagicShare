@@ -16,12 +16,12 @@
                   <Font size="25.0" />
                </font>
             </Label>
-            <Label fx:id="label1" layoutX="110.0" layoutY="60.0" text="您的内网IPv4地址：" />
-            <Label fx:id="label2" layoutX="244.0" layoutY="60.0" text="---.---.---.---" />
-            <Label fx:id="label3" layoutX="177.0" layoutY="86.0" text="端口号：" />
+            <Label fx:id="label1" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="99.0" layoutY="60.0" prefHeight="16.0" prefWidth="130.0" text="内网IPv4地址：" textAlignment="RIGHT" />
+            <Label fx:id="label2" layoutX="244.0" layoutY="60.0" prefHeight="16.0" prefWidth="235.0" text="---.---.---.---" />
+            <Label fx:id="label3" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="149.0" layoutY="86.0" prefHeight="16.0" prefWidth="80.0" text="端口号：" />
             <TextField fx:id="textField1" layoutX="244.0" layoutY="82.0" prefHeight="24.0" prefWidth="112.0" promptText="0～65535" text="1024" />
-            <Button fx:id="button1" layoutX="409.0" layoutY="82.0" mnemonicParsing="false" onAction="#onStartOrStopServiceClicked" text="启动服务" />
-            <Label fx:id="label4" layoutX="107.0" layoutY="118.0" text="分享的文件/文件夹：" />
+            <Button fx:id="button1" layoutX="359.0" layoutY="82.0" mnemonicParsing="false" onAction="#onStartOrStopServiceClicked" text="启动服务" />
+            <Label fx:id="label4" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="84.0" layoutY="118.0" prefHeight="16.0" prefWidth="145.0" text="分享的文件/文件夹：" />
             <TextField fx:id="textField2" layoutX="244.0" layoutY="114.0" onKeyPressed="#onSearchFileKeyDown" prefHeight="24.0" prefWidth="235.0" />
             <Button fx:id="button2" layoutX="482.0" layoutY="114.0" mnemonicParsing="false" onAction="#onSelectFileClicked" text="查找文件" />
             <TableView fx:id="tableView1" layoutY="165.0" prefHeight="200.0" prefWidth="600.0" />
