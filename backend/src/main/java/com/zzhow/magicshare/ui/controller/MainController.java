@@ -82,6 +82,12 @@ public class MainController {
     }
 
     @FXML
+    private void onStartOrStopServiceKeyDown(KeyEvent keyEvent) {
+        if (keyEvent.getCode().equals(KeyCode.ENTER))
+            onStartOrStopServiceClicked();
+    }
+
+    @FXML
     private void onStartOrStopServiceClicked() {
         if (serviceIsStarted) {
             textField1.setDisable(false);
