@@ -25,7 +25,7 @@ const columns = [
     align: 'center',
   },
 ]
-const shareId = ref()
+const shareId = ref('')
 const count = ref(0)
 const data = ref()
 const timer = ref()
@@ -38,25 +38,29 @@ onMounted(() => {
   }, 1000)
 })
 
+const isConnectionLost = ref(false)
 let checkCurrentShare = async () => {
   if (acceptStore.status === true) {
     checkCurrentShare = async () => {
-      if (!shareId.value || shareId.value === '') {
-        await getFileList()
-        return
-      }
-      const res = await checkCurrentShareService(shareId.value).catch(() => {
+      let isCurrentConnection = true
+      const res = await checkCurrentShareService(shareId.value).catch((e) => {
+        isCurrentConnection = false
+        isConnectionLost.value = true
         shareId.value = ''
         count.value = 0
         data.value = ''
       })
-      if (res.data.data === false) await getFileList()
+
+      if (isCurrentConnection && res.data.data === false) {
+        await getFileList()
+        isConnectionLost.value = false
+      }
     }
 
     clearInterval(timer.value)
     timer.value = setInterval(() => {
       checkCurrentShare()
-    })
+    }, 1000)
   }
 }
 
@@ -154,7 +158,13 @@ const encryptedDownload = (record) => {
   showDrawer()
   const fileId = record.fileId
   fileName.value = record.name
-  socket = new WebSocket('ws://localhost:1024/ws/download') // WebSocket URL
+
+  const hostname = window.location.hostname
+  const port = window.location.port
+  const webSocketUrl = 'ws://' + hostname + ':' + port + '/ws/download'
+  // const webSocketUrl = 'ws://localhost:1024/ws/download' //开发使用
+
+  socket = new WebSocket(webSocketUrl) // 开发使用 WebSocket URL
 
   socket.onopen = async () => {
     downloadProgress.value.connection = 100
@@ -254,7 +264,7 @@ const mergeFiles = () => {
       <a-table
         :columns="columns"
         :data-source="data"
-        :locale="{ emptyText: '暂无分享的文件' }"
+        :locale="{ emptyText: '分享列表为空' }"
         :scroll="{ y: 'calc(60vh)' }"
       >
         <template #headerCell="{ column }">
@@ -279,6 +289,12 @@ const mergeFiles = () => {
           </template>
         </template>
       </a-table>
+      <div
+        v-if="isConnectionLost"
+        style="display: flex; align-items: center; justify-content: center; margin-top: 10vh"
+      >
+        <span style="font-size: 5vw">连接断开</span>
+      </div>
 
       <a-modal
         centered

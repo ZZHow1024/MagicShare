@@ -15,6 +15,7 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -120,13 +121,13 @@ public class MainController {
 
     @FXML
     private void onSelectFileClicked() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("打开文件/文件夹");
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("选择文件夹");
         try {
-            textField2.setText(chooser.showOpenDialog(MainWindow.getStage()).getAbsolutePath());
+            textField2.setText(directoryChooser.showDialog(MainWindow.getStage()).getAbsolutePath());
             onSearchFileClicked();
         } catch (NullPointerException e) {
-            // 未选择文件/文件夹
+            // 未选择文件夹
         }
     }
 

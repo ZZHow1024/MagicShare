@@ -42,6 +42,9 @@ public class MainWindow extends javafx.application.Application {
             Pane load = FXMLLoader.load(Objects.requireNonNull(MainWindow.class.getResource("main-window.fxml")));
             Scene scene = new Scene(load);
             stage.setScene(scene);
+            stage.setOnHiding(windowEvent -> {
+                System.exit(0);
+            });
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
