@@ -121,6 +121,7 @@ const aesKey = ref('')
 const iv = ref('')
 const chunks = ref([])
 const fileName = ref('暂无')
+const isEncryptedDownload = ref(false)
 const downloadProgress = ref({
   connection: 0,
   totalBlock: 0,
@@ -128,7 +129,22 @@ const downloadProgress = ref({
   decryptionBlock: 0,
 })
 
+// 加密下载任务被占用提示对话框
+const modelOpen = ref(false)
+const handleCancel = () => {
+  modelOpen.value = false
+}
+const handleOk = () => {
+  modelOpen.value = false //关闭对话框
+  open.value = true //打开加密下载进度
+}
+
 const encryptedDownload = (record) => {
+  if (isEncryptedDownload.value === true) {
+    modelOpen.value = true
+    return
+  }
+  isEncryptedDownload.value = true
   downloadProgress.value = {
     connection: 0,
     totalBlock: 0,
@@ -141,7 +157,6 @@ const encryptedDownload = (record) => {
   socket = new WebSocket('ws://localhost:1024/ws/download') // WebSocket URL
 
   socket.onopen = async () => {
-    console.log('连接成功')
     downloadProgress.value.connection = 100
 
     // 调用生成公私钥对
@@ -192,15 +207,15 @@ const encryptedDownload = (record) => {
   }
 
   socket.onerror = (error) => {
-    console.error('WebSocket 错误', error)
+    isEncryptedDownload.value = false
+    console.error('WebSocket Error: ', error)
   }
 
   socket.onclose = () => {
     aesKey.value = ''
     iv.value = ''
     chunks.value = []
-
-    console.log('连接关闭')
+    isEncryptedDownload.value = false
   }
 }
 
@@ -264,6 +279,18 @@ const mergeFiles = () => {
           </template>
         </template>
       </a-table>
+
+      <a-modal
+        centered
+        v-model:open="modelOpen"
+        title="MagicShare 提示"
+        cancel-text="取消"
+        @cancel="handleCancel"
+        ok-text="查看当前加密下载进度"
+        @ok="handleOk"
+      >
+        加密下载任务被占用，不支持同时加密下载多个文件。
+      </a-modal>
     </div>
 
     <a-drawer

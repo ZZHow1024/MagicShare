@@ -20,7 +20,7 @@ const handleOk = (e) => {
   open.value = false
 }
 const handleCancel = () => {
-  window.open('', '_self').close()
+  window.open('about:blank', '_self').close()
 }
 </script>
 
