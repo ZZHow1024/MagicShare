@@ -7,12 +7,12 @@
 
 <AnchorPane prefHeight="450.0" prefWidth="780.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zzhow.magicshare.ui.controller.PromptController">
    <children>
-      <Label layoutX="265.0" layoutY="32.0" text="MagicShare 1.0.0">
+      <Label layoutX="319.0" layoutY="33.0" text="MagicShare">
          <font>
             <Font size="28.0" />
          </font>
       </Label>
-      <Label layoutX="291.0" layoutY="67.0" text="神奇分享 1.0.0">
+      <Label layoutX="334.0" layoutY="67.0" text="神奇分享">
          <font>
             <Font size="28.0" />
          </font>
@@ -22,6 +22,7 @@
             <Font size="20.0" />
          </font>
       </Label>
+      <Label layoutX="353.0" layoutY="329.0" text="Version: 1.0.0" />
       <Button layoutX="294.0" layoutY="371.0" mnemonicParsing="false" onAction="#onExitClicked" text="退出">
          <font>
             <Font size="20.0" />
@@ -32,6 +33,6 @@
             <Font size="20.0" />
          </font>
       </Button>
-      <Label layoutX="364.0" layoutY="428.0" text="ZZHow" />
+      <Label layoutX="369.0" layoutY="428.0" text="ZZHow" />
    </children>
 </AnchorPane>

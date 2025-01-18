@@ -1,2 +1,4 @@
 
 /.idea
+/backend/out
+/backend/src/main/resources/META-INF
