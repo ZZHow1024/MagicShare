@@ -76,12 +76,12 @@ const getFileList = async () => {
   // 携带公钥发请求
   const res = await getFileListService(btoa(publicKey))
 
-  const aseKey = await decryptRSA(privateKeyPem, res.data.data.key)
+  const aesKey = await decryptRSA(privateKeyPem, res.data.data.key)
   const ivBase64 = res.data.data.iv
   const encryptedDataBase64 = res.data.data.data
 
   const decryptedData = decryptAES(
-    aseKey,
+    aesKey,
     forge.util.decode64(ivBase64),
     forge.util.decode64(encryptedDataBase64),
   )
