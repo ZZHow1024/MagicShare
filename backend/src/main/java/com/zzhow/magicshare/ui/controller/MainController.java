@@ -5,14 +5,20 @@ import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.ui.service.impl.ShareServiceImpl;
 import com.zzhow.magicshare.ui.window.AboutWindow;
+import com.zzhow.magicshare.ui.window.MainWindow;
 import com.zzhow.magicshare.util.InternetUtil;
 import com.zzhow.magicshare.util.MessageBox;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.util.List;
@@ -101,6 +107,24 @@ public class MainController {
                 MessageBox.error("端口被占用", "请尝试更换端口号");
             }
         }
+    }
+
+    @FXML
+    private void onSelectFileClicked() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("打开文件/文件夹");
+        try {
+            textField2.setText(chooser.showOpenDialog(MainWindow.getStage()).getAbsolutePath());
+            onSearchFileClicked();
+        } catch (NullPointerException e) {
+            // 未选择文件/文件夹
+        }
+    }
+
+    @FXML
+    private void onSearchFileKeyDown(KeyEvent keyEvent) {
+        if (keyEvent.getCode() == KeyCode.ENTER)
+            onSearchFileClicked();
     }
 
     @FXML

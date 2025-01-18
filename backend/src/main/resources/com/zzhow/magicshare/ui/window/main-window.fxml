@@ -22,12 +22,12 @@
             <TextField fx:id="textField1" layoutX="244.0" layoutY="82.0" prefHeight="24.0" prefWidth="112.0" promptText="0～65535" text="1024" />
             <Button fx:id="button1" layoutX="409.0" layoutY="82.0" mnemonicParsing="false" onAction="#onStartOrStopServiceClicked" text="启动服务" />
             <Label fx:id="label4" layoutX="107.0" layoutY="118.0" text="分享的文件/文件夹：" />
-            <TextField fx:id="textField2" layoutX="244.0" layoutY="114.0" prefHeight="24.0" prefWidth="235.0" />
-            <Button fx:id="button2" layoutX="482.0" layoutY="114.0" mnemonicParsing="false" onAction="#onSearchFileClicked" text="查找文件" />
+            <TextField fx:id="textField2" layoutX="244.0" layoutY="114.0" onKeyPressed="#onSearchFileKeyDown" prefHeight="24.0" prefWidth="235.0" />
+            <Button fx:id="button2" layoutX="482.0" layoutY="114.0" mnemonicParsing="false" onAction="#onSelectFileClicked" text="查找文件" />
             <TableView fx:id="tableView1" layoutY="165.0" prefHeight="200.0" prefWidth="600.0" />
             <Label fx:id="label5" layoutX="14.0" layoutY="149.0" text="分享的文件个数：" />
             <Label fx:id="label6" layoutX="118.0" layoutY="149.0" prefHeight="16.0" prefWidth="69.0" text="0" />
-            <Label fx:id="label7" layoutX="202.0" layoutY="149.0" text="拖拽待分享的文件夹到此处以获得路径" />
+            <Label fx:id="label7" layoutX="174.0" layoutY="149.0" text="拖拽待分享的文件/文件夹到此处以获得路径" />
          </children>
       </AnchorPane>
       <Label layoutX="277.0" layoutY="378.0" text="ZZHow" />

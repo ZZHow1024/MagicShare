@@ -15,6 +15,8 @@ import java.util.Objects;
  * @date 2025/1/12
  */
 public class MainWindow extends javafx.application.Application {
+    private static Stage stage = null;
+
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MainWindow.class.getResource("main-window.fxml"));
@@ -44,6 +46,10 @@ public class MainWindow extends javafx.application.Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static Stage getStage() {
+        return stage;
     }
 
     public static void show() {
