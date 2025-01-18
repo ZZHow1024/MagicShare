@@ -25,7 +25,7 @@ public class ShareServiceImpl implements ShareService {
     public byte startService(String portStr) {
         try {
             int port = Integer.parseInt(portStr);
-            if (port < 0 || port > 65535)
+            if (port < 1 || port > 65535)
                 return 1;
             if (InternetUtil.isPortInUse(port))
                 return 2;

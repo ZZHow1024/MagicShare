@@ -19,7 +19,7 @@
             <Label fx:id="label1" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="75.0" layoutY="55.0" prefHeight="16.0" prefWidth="130.0" text="内网IPv4地址：" textAlignment="RIGHT" />
             <Label fx:id="label2" layoutX="205.0" layoutY="55.0" prefHeight="16.0" prefWidth="235.0" text="---.---.---.---" />
             <Label fx:id="label3" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="124.0" layoutY="85.0" prefHeight="16.0" prefWidth="80.0" text="端口号：" />
-            <TextField fx:id="textField1" layoutX="205.0" layoutY="80.0" onKeyPressed="#onStartOrStopServiceKeyDown" prefHeight="24.0" prefWidth="112.0" promptText="0～65535" text="1024" />
+            <TextField fx:id="textField1" layoutX="205.0" layoutY="80.0" onKeyPressed="#onStartOrStopServiceKeyDown" prefHeight="24.0" prefWidth="112.0" promptText="1～65535" text="80" />
             <Button fx:id="button1" layoutX="320.0" layoutY="80.0" mnemonicParsing="false" onAction="#onStartOrStopServiceClicked" text="启动服务" />
             <Label fx:id="label4" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="60.0" layoutY="115.0" prefHeight="16.0" prefWidth="145.0" text="分享的文件/文件夹：" />
             <TextField fx:id="textField2" layoutX="205.0" layoutY="110.0" onKeyPressed="#onSearchFileKeyDown" prefHeight="24.0" prefWidth="235.0" />

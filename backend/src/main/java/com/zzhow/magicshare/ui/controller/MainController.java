@@ -111,7 +111,7 @@ public class MainController {
                 serviceIsStarted = true;
             }
             case 1 -> {
-                MessageBox.error("端口号错误", "端口号应为 0～65535 的整数");
+                MessageBox.error("端口号错误", "端口号应为 1～65535 的整数");
             }
             case 2 -> {
                 MessageBox.error("端口被占用", "请尝试更换端口号");

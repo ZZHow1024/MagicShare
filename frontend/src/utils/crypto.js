@@ -77,7 +77,6 @@ export const encryptAES = (data) => {
 
 // AES 解密
 export const decryptAES = (aesKey, iv, encrypted) => {
-  // 解密数据
   const decipher = forge.cipher.createDecipher('AES-CBC', aesKey)
   decipher.start({ iv: iv })
   decipher.update(forge.util.createBuffer(encrypted))
@@ -86,6 +85,7 @@ export const decryptAES = (aesKey, iv, encrypted) => {
   if (success) {
     return decipher.output.toString()
   } else {
+    console.error('Decryption failed')
     return null
   }
 }
@@ -93,15 +93,15 @@ export const decryptAES = (aesKey, iv, encrypted) => {
 // AES 解密
 export const decryptBufferAES = async (aesKey, iv, encryptedData) => {
   const cipher = forge.cipher.createDecipher('AES-CBC', aesKey)
-  cipher.start({ iv: iv }) // 使用 IV 初始化解密器
-  await cipher.update(forge.util.createBuffer(encryptedData)) // 加密的块
+  cipher.start({ iv: iv })
+  await cipher.update(forge.util.createBuffer(encryptedData))
 
-  const result = await cipher.finish() // 完成解密
+  const result = await cipher.finish()
 
   if (result) {
-    return cipher.output.getBytes() // 解密成功
+    return cipher.output.getBytes()
   } else {
-    console.error('Decryption failed') // 解密失败
+    console.error('Decryption failed')
     return null
   }
 }
