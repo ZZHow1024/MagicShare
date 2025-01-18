@@ -8,16 +8,13 @@ import com.zzhow.magicshare.ui.window.AboutWindow;
 import com.zzhow.magicshare.ui.window.MainWindow;
 import com.zzhow.magicshare.util.InternetUtil;
 import com.zzhow.magicshare.util.MessageBox;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -69,7 +66,7 @@ public class MainController {
         TableColumn<FileDetail, String> filePathCol = new TableColumn<>("相对路径");
         filePathCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPath()));
         tableView1.getColumns().addAll(fileNameCol, fileTypeCol, fileSizeCol, filePathCol);
-        tableView1.setPlaceholder(new Label("文件为空"));
+        tableView1.setPlaceholder(new Label("分享列表为空"));
 
         // 设置列的宽度比例
         tableView1.widthProperty().addListener((obs, oldWidth, newWidth) -> {
@@ -131,6 +128,12 @@ public class MainController {
         } catch (NullPointerException e) {
             // 未选择文件/文件夹
         }
+    }
+
+    @FXML
+    private void onClearFileClicked() {
+        textField2.setText("");
+        onSearchFileClicked();
     }
 
     @FXML
