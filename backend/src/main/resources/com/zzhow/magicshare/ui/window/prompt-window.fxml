@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="450.0" prefWidth="780.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zzhow.magicshare.ui.controller.PromptController">
+   <children>
+      <Label layoutX="319.0" layoutY="33.0" text="MagicShare">
+         <font>
+            <Font size="28.0" />
+         </font>
+      </Label>
+      <Label layoutX="334.0" layoutY="67.0" text="神奇分享">
+         <font>
+            <Font size="28.0" />
+         </font>
+      </Label>
+      <Label layoutX="12.0" layoutY="137.0" prefWidth="755.0" text="使用本软件前，请仔细阅读：&#10;&#10;合法使用： 本软件仅限于合法文件分享，严禁分享任何侵犯版权、涉及色情、暴力、欺诈、违法或其他有害内容的文件。&#10;个人责任： 您对分享内容的合法性负全部责任，请确保您拥有分享文件的合法授权。&#10;风险提示： 本软件无法保证所分享文件的安全性，请您自行检查文件的安全性。&#10;免责声明： 软件作者不对因使用本软件造成的任何直接或间接损失承担责任。" wrapText="true">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="350.0" layoutY="343.0" text="Version: 1.0.0" />
+      <Button layoutX="301.0" layoutY="370.0" mnemonicParsing="false" onAction="#onExitClicked" text="退出">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Button>
+      <Button layoutX="413.0" layoutY="370.0" mnemonicParsing="false" onAction="#onAgreeClicked" text="同意">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Button>
+      <Label layoutX="369.0" layoutY="428.0" text="ZZHow" />
+   </children>
+</AnchorPane>

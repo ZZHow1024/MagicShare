@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zzhow.magicshare.ui.window.AboutWindow">
+   <children>
+      <Label layoutX="197.0" layoutY="43.0" text="MagicShare 1.0.0">
+         <font>
+            <Font size="28.0" />
+         </font>
+      </Label>
+      <Label layoutX="212.0" layoutY="77.0" text="神奇分享 1.0.0">
+         <font>
+            <Font size="28.0" />
+         </font>
+      </Label>
+      <Label fx:id="Label2" layoutX="14.0" layoutY="121.0" prefHeight="23.0" prefWidth="90.0" text="新特性：">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="Label3" alignment="CENTER" layoutX="22.0" layoutY="154.0" prefWidth="555.0" text="1. 自定义端口启动服务。&#10;2. 按文件夹/文件路径查找文件并生成列表。&#10;3. Web网页下载文件。&#10;&#9;- 支持通过HTTP协议快速下载文件&#10;&#9;- 支持通过WebSocket协议并使用RSA+AES混合加密下载文件" wrapText="true">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label layoutX="248.0" layoutY="360.0" text="ZZHow.com">
+         <font>
+            <Font size="20.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>
