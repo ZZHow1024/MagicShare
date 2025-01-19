@@ -12,7 +12,7 @@ assignees: ''
 
 ### Desired outcome | 期望的结果
 
-### MagicEncoding version ｜ MagicEncoding 版本
+### MagicShare version ｜ MagicShare 版本
 
 ### Operating system version ｜ 操作系统版本
 
