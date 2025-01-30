@@ -1,6 +1,7 @@
 package com.zzhow.magicshare.util;
 
 import com.zzhow.magicshare.MagicShareApplication;
+import com.zzhow.magicshare.repository.LanguageRepository;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
@@ -28,14 +29,14 @@ public class MessageBox {
 
     public static void error(String headerText, String contentText) {
         alert(Alert.AlertType.ERROR,
-                "错误",
+                LanguageRepository.bundle.getString("error"),
                 headerText,
                 contentText);
     }
 
     public static void success(String headerText, String contentText) {
         alert(Alert.AlertType.INFORMATION,
-                "成功",
+                LanguageRepository.bundle.getString("success"),
                 headerText,
                 contentText);
     }

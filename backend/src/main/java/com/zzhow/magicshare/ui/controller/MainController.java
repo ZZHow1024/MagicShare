@@ -20,7 +20,6 @@ import javafx.scene.input.TransferMode;
 import javafx.stage.DirectoryChooser;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -125,11 +124,11 @@ public class MainController {
     private void onStartOrStopServiceClicked() {
         if (serviceIsStarted) {
             textField1.setDisable(false);
-            label1.setText("内网IPv4地址：");
+            label1.setText(LanguageRepository.bundle.getString("label1"));
             label2.setText(InternetUtil.getLocalIpAddress());
-            button1.setText("启动服务");
+            button1.setText(LanguageRepository.bundle.getString("button1"));
             shareService.stopService();
-            MessageBox.success("停止成功", "MagicShare 服务停止成功");
+            MessageBox.success(LanguageRepository.bundle.getString("stopSuccess"), LanguageRepository.bundle.getString("stopSuccessContent"));
             serviceIsStarted = false;
 
             return;
@@ -140,17 +139,17 @@ public class MainController {
         switch (i) {
             case 0 -> {
                 textField1.setDisable(true);
-                label1.setText("分享URL：");
+                label1.setText(LanguageRepository.bundle.getString("shareUrl")); // 分享URL：
                 label2.setText("http://" + InternetUtil.getLocalIpAddress() + ":" + textField1.getText());
-                MessageBox.success("启动成功", "MagicShare 服务启动成功");
-                button1.setText("停止服务");
+                MessageBox.success(LanguageRepository.bundle.getString("startupSuccess"), LanguageRepository.bundle.getString("startupSuccessContent"));
+                button1.setText(LanguageRepository.bundle.getString("stopService")); // 停止服务
                 serviceIsStarted = true;
             }
             case 1 -> {
-                MessageBox.error("端口号错误", "端口号应为 1～65535 的整数");
+                MessageBox.error(LanguageRepository.bundle.getString("wrongPortNumber"), LanguageRepository.bundle.getString("wrongPortNumberContent")); // 端口号错误
             }
             case 2 -> {
-                MessageBox.error("端口被占用", "请尝试更换端口号");
+                MessageBox.error(LanguageRepository.bundle.getString("portIsOccupied"), LanguageRepository.bundle.getString("portIsOccupiedContent")); // 端口被占用
             }
         }
     }
@@ -158,7 +157,7 @@ public class MainController {
     @FXML
     private void onSelectFileClicked() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("选择文件夹");
+        directoryChooser.setTitle(LanguageRepository.bundle.getString("selectFolder")); // 选择文件夹
         try {
             textField2.setText(directoryChooser.showDialog(MainWindow.getStage()).getAbsolutePath());
             onSearchFileClicked();
@@ -236,12 +235,17 @@ public class MainController {
         columns.get(3).setText(bundle.getString("relativePath"));
         tableView1.setPlaceholder(new Label(bundle.getString("shareListIsEmpty")));
 
-        label1.setText(bundle.getString("label1"));
+        if (serviceIsStarted) {
+            label1.setText(bundle.getString("shareUrl"));
+            button1.setText(bundle.getString("stopService"));
+        } else {
+            label1.setText(bundle.getString("label1"));
+            button1.setText(bundle.getString("button1"));
+        }
         label3.setText(bundle.getString("label3"));
         label4.setText(bundle.getString("label4"));
         label5.setText(bundle.getString("label5"));
         label7.setText(bundle.getString("label7"));
-        button1.setText(bundle.getString("button1"));
         button2.setText(bundle.getString("button2"));
         button3.setText(bundle.getString("button3"));
         button4.setText(bundle.getString("button4"));
