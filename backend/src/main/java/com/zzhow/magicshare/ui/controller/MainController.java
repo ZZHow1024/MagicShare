@@ -10,6 +10,7 @@ import com.zzhow.magicshare.ui.window.MainWindow;
 import com.zzhow.magicshare.util.InternetUtil;
 import com.zzhow.magicshare.util.MessageBox;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
@@ -19,6 +20,7 @@ import javafx.scene.input.TransferMode;
 import javafx.stage.DirectoryChooser;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -41,6 +43,8 @@ public class MainController {
     @FXML
     private Label label6;
     @FXML
+    private Label label7;
+    @FXML
     private TextField textField1;
     @FXML
     private TextField textField2;
@@ -48,6 +52,10 @@ public class MainController {
     private Button button1;
     @FXML
     private Button button2;
+    @FXML
+    private Button button3;
+    @FXML
+    private Button button4;
     @FXML
     private TableView<FileDetail> tableView1;
     @FXML
@@ -62,16 +70,16 @@ public class MainController {
         label2.setText(InternetUtil.getLocalIpAddress());
 
         // 创建列
-        TableColumn<FileDetail, String> fileNameCol = new TableColumn<>("文件名");
+        TableColumn<FileDetail, String> fileNameCol = new TableColumn<>("File name");
         fileNameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
-        TableColumn<FileDetail, String> fileTypeCol = new TableColumn<>("类型");
+        TableColumn<FileDetail, String> fileTypeCol = new TableColumn<>("Type");
         fileTypeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getType()));
-        TableColumn<FileDetail, String> fileSizeCol = new TableColumn<>("大小(KB)");
+        TableColumn<FileDetail, String> fileSizeCol = new TableColumn<>("Size(KB)");
         fileSizeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSize() + ""));
-        TableColumn<FileDetail, String> filePathCol = new TableColumn<>("相对路径");
+        TableColumn<FileDetail, String> filePathCol = new TableColumn<>("Relative path");
         filePathCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPath()));
         tableView1.getColumns().addAll(fileNameCol, fileTypeCol, fileSizeCol, filePathCol);
-        tableView1.setPlaceholder(new Label("分享列表为空"));
+        tableView1.setPlaceholder(new Label("Share list is empty"));
 
         // 设置列的宽度比例
         tableView1.widthProperty().addListener((obs, oldWidth, newWidth) -> {
@@ -221,8 +229,21 @@ public class MainController {
 
         ResourceBundle bundle = LanguageRepository.bundle;
 
+        ObservableList<TableColumn<FileDetail, ?>> columns = tableView1.getColumns();
+        columns.get(0).setText(bundle.getString("fileName"));
+        columns.get(1).setText(bundle.getString("type"));
+        columns.get(2).setText(bundle.getString("size"));
+        columns.get(3).setText(bundle.getString("relativePath"));
+        tableView1.setPlaceholder(new Label(bundle.getString("shareListIsEmpty")));
+
         label1.setText(bundle.getString("label1"));
         label3.setText(bundle.getString("label3"));
         label4.setText(bundle.getString("label4"));
+        label5.setText(bundle.getString("label5"));
+        label7.setText(bundle.getString("label7"));
+        button1.setText(bundle.getString("button1"));
+        button2.setText(bundle.getString("button2"));
+        button3.setText(bundle.getString("button3"));
+        button4.setText(bundle.getString("button4"));
     }
 }

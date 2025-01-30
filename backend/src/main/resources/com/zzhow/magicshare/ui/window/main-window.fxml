@@ -10,31 +10,31 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zzhow.magicshare.ui.controller.MainController">
    <children>
-      <AnchorPane onDragDropped="#onDragFile" onDragOver="#handleDragOver" prefHeight="365.0" prefWidth="600.0">
+      <AnchorPane onDragDropped="#onDragFile" onDragOver="#handleDragOver" prefHeight="450.0" prefWidth="700.0">
          <children>
-            <Label layoutX="237.0" layoutY="14.0" text="MagicShare">
+            <Label layoutX="287.0" layoutY="14.0" text="MagicShare">
                <font>
                   <Font size="25.0" />
                </font>
             </Label>
-            <Label fx:id="label1" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="75.0" layoutY="55.0" prefHeight="16.0" prefWidth="130.0" text="内网IPv4地址：" textAlignment="RIGHT" />
-            <Label fx:id="label2" layoutX="205.0" layoutY="55.0" prefHeight="16.0" prefWidth="235.0" text="---.---.---.---" />
-            <Label fx:id="label3" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="124.0" layoutY="85.0" prefHeight="16.0" prefWidth="80.0" text="端口号：" />
-            <TextField fx:id="textField1" layoutX="205.0" layoutY="80.0" onKeyPressed="#onStartOrStopServiceKeyDown" prefHeight="24.0" prefWidth="112.0" promptText="1～65535" text="80" />
-            <Button fx:id="button1" layoutX="320.0" layoutY="80.0" mnemonicParsing="false" onAction="#onStartOrStopServiceClicked" text="启动服务" />
-            <Label fx:id="label4" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="60.0" layoutY="115.0" prefHeight="16.0" prefWidth="145.0" text="分享的文件/文件夹：" />
-            <TextField fx:id="textField2" layoutX="205.0" layoutY="110.0" onKeyPressed="#onSearchFileKeyDown" prefHeight="24.0" prefWidth="235.0" />
-            <Button fx:id="button2" layoutX="443.0" layoutY="110.0" mnemonicParsing="false" onAction="#onSelectFileClicked" text="选择文件夹" />
-            <TableView fx:id="tableView1" layoutY="165.0" prefHeight="200.0" prefWidth="600.0" />
-            <Label fx:id="label5" layoutX="11.0" layoutY="144.0" text="分享的文件个数：" />
-            <Label fx:id="label6" layoutX="115.0" layoutY="144.0" prefHeight="16.0" prefWidth="69.0" text="0" />
-            <Label fx:id="label7" layoutX="174.0" layoutY="144.0" text="拖拽待分享的文件/文件夹到此处以获得路径" />
-            <Button fx:id="button3" layoutX="430.0" layoutY="140.0" mnemonicParsing="false" onAction="#onClearFileClicked" text="清空分享列表" />
+            <Label fx:id="label1" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="92.0" layoutY="56.0" prefHeight="16.0" prefWidth="130.0" text="内网IPv4地址：" textAlignment="RIGHT" />
+            <Label fx:id="label2" layoutX="232.0" layoutY="55.0" prefHeight="16.0" prefWidth="235.0" text="---.---.---.---" />
+            <Label fx:id="label3" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="141.0" layoutY="86.0" prefHeight="16.0" prefWidth="80.0" text="端口号：" />
+            <TextField fx:id="textField1" layoutX="232.0" layoutY="81.0" onKeyPressed="#onStartOrStopServiceKeyDown" prefHeight="24.0" prefWidth="112.0" promptText="1～65535" text="80" />
+            <Button fx:id="button1" layoutX="351.0" layoutY="81.0" mnemonicParsing="false" onAction="#onStartOrStopServiceClicked" text="启动服务" />
+            <Label fx:id="label4" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="77.0" layoutY="116.0" prefHeight="16.0" prefWidth="145.0" text="分享的文件/文件夹：" />
+            <TextField fx:id="textField2" layoutX="232.0" layoutY="110.0" onKeyPressed="#onSearchFileKeyDown" prefHeight="24.0" prefWidth="235.0" />
+            <Button fx:id="button2" layoutX="474.0" layoutY="110.0" mnemonicParsing="false" onAction="#onSelectFileClicked" text="选择文件夹" />
+            <TableView fx:id="tableView1" layoutY="182.0" prefHeight="220.0" prefWidth="700.0" />
+            <Label fx:id="label5" layoutX="14.0" layoutY="158.0" text="分享的文件个数：" />
+            <Label fx:id="label6" layoutX="140.0" layoutY="158.0" prefHeight="16.0" prefWidth="69.0" text="0" />
+            <Label fx:id="label7" layoutX="225.0" layoutY="158.0" text="拖拽待分享的文件/文件夹到此处以获得路径" />
+            <Button fx:id="button3" layoutX="573.0" layoutY="154.0" mnemonicParsing="false" onAction="#onClearFileClicked" text="清空分享列表" />
+            <Button fx:id="button4" layoutX="10.0" layoutY="413.0" mnemonicParsing="false" onAction="#onAboutClicked" text="关于" />
+            <Label layoutX="515.0" layoutY="418.0" text="Language:" />
+            <ChoiceBox fx:id="languageSelector" layoutX="582.0" layoutY="413.0" onAction="#switchLanguage" prefHeight="26.0" prefWidth="88.0" />
+            <Label layoutX="329.0" layoutY="418.0" text="ZZHow" />
          </children>
       </AnchorPane>
-      <Label layoutX="279.0" layoutY="378.0" text="ZZHow" />
-      <Button layoutX="14.0" layoutY="370.0" mnemonicParsing="false" onAction="#onAboutClicked" text="关于" />
-      <Label layoutX="431.0" layoutY="375.0" text="Language:" />
-      <ChoiceBox fx:id="languageSelector" layoutX="498.0" layoutY="370.0" onAction="#switchLanguage" prefHeight="26.0" prefWidth="88.0" />
    </children>
 </AnchorPane>
