@@ -2,6 +2,7 @@ package com.zzhow.magicshare.ui.controller;
 
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.pojo.entity.FileDetail;
+import com.zzhow.magicshare.repository.LanguageRepository;
 import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.ui.service.impl.ShareServiceImpl;
 import com.zzhow.magicshare.ui.window.AboutWindow;
@@ -16,10 +17,11 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * @author ZZHow
@@ -48,6 +50,8 @@ public class MainController {
     private Button button2;
     @FXML
     private TableView<FileDetail> tableView1;
+    @FXML
+    private ChoiceBox<String> languageSelector;
 
     private final ShareService shareService = new ShareServiceImpl();
 
@@ -77,6 +81,30 @@ public class MainController {
             fileSizeCol.setPrefWidth(totalWidth * 0.13);
             filePathCol.setPrefWidth(totalWidth * 0.50);
         });
+
+        languageSelector.getItems().addAll("简体中文", "繁體中文", "English");
+        String language = Locale.getDefault().toLanguageTag();
+        if (language.contains("zh")) {
+            if (language.contains("Hans"))
+                language = "zh_Hans";
+            else if (language.contains("Hant"))
+                language = "zh_Hant";
+            else if (language.contains("CN"))
+                language = "zh_Hans";
+            else
+                language = "zh_Hant";
+        } else {
+            language = "en_US";
+        }
+
+        language = switch (language) {
+            case "zh_Hans" -> "简体中文";
+            case "zh_Hant" -> "繁體中文";
+            case "en_US" -> "English";
+            default -> "简体中文";
+        };
+        languageSelector.setValue(language);
+        switchLanguage();
     }
 
     @FXML
@@ -177,5 +205,24 @@ public class MainController {
     @FXML
     private void onAboutClicked() {
         AboutWindow.open();
+    }
+
+    @FXML
+    private void switchLanguage() {
+        String selectorValue = languageSelector.getValue();
+        selectorValue = switch (selectorValue) {
+            case "简体中文" -> "zh_Hans";
+            case "繁體中文" -> "zh_Hant";
+            case "English" -> "en_US";
+            default -> "zh_Hans";
+        };
+
+        LanguageRepository.setLanguage(selectorValue);
+
+        ResourceBundle bundle = LanguageRepository.bundle;
+
+        label1.setText(bundle.getString("label1"));
+        label3.setText(bundle.getString("label3"));
+        label4.setText(bundle.getString("label4"));
     }
 }
