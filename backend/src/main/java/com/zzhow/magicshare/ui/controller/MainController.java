@@ -44,9 +44,13 @@ public class MainController {
     @FXML
     private Label label7;
     @FXML
+    private Label label8;
+    @FXML
     private TextField textField1;
     @FXML
     private TextField textField2;
+    @FXML
+    private TextField textField3;
     @FXML
     private Button button1;
     @FXML
@@ -55,6 +59,8 @@ public class MainController {
     private Button button3;
     @FXML
     private Button button4;
+    @FXML
+    private CheckBox checkBox1;
     @FXML
     private TableView<FileDetail> tableView1;
     @FXML
@@ -246,6 +252,8 @@ public class MainController {
         label4.setText(bundle.getString("label4"));
         label5.setText(bundle.getString("label5"));
         label7.setText(bundle.getString("label7"));
+        label8.setText(bundle.getString("label8"));
+        checkBox1.setText(bundle.getString("checkBox1"));
         button2.setText(bundle.getString("button2"));
         button3.setText(bundle.getString("button3"));
         button4.setText(bundle.getString("button4"));

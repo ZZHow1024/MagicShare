@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableView?>
@@ -10,7 +11,7 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zzhow.magicshare.ui.controller.MainController">
    <children>
-      <AnchorPane onDragDropped="#onDragFile" onDragOver="#handleDragOver" prefHeight="450.0" prefWidth="700.0">
+      <AnchorPane onDragDropped="#onDragFile" onDragOver="#handleDragOver" prefHeight="500.0" prefWidth="700.0">
          <children>
             <Label layoutX="287.0" layoutY="14.0" text="MagicShare">
                <font>
@@ -23,17 +24,20 @@
             <TextField fx:id="textField1" layoutX="232.0" layoutY="81.0" onKeyPressed="#onStartOrStopServiceKeyDown" prefHeight="24.0" prefWidth="112.0" promptText="1～65535" text="80" />
             <Button fx:id="button1" layoutX="351.0" layoutY="81.0" mnemonicParsing="false" onAction="#onStartOrStopServiceClicked" text="启动服务" />
             <Label fx:id="label4" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="77.0" layoutY="116.0" prefHeight="16.0" prefWidth="145.0" text="分享的文件/文件夹：" />
-            <TextField fx:id="textField2" layoutX="232.0" layoutY="110.0" onKeyPressed="#onSearchFileKeyDown" prefHeight="24.0" prefWidth="235.0" />
+            <TextField fx:id="textField2" layoutX="232.0" layoutY="111.0" onKeyPressed="#onSearchFileKeyDown" prefHeight="24.0" prefWidth="235.0" />
             <Button fx:id="button2" layoutX="474.0" layoutY="110.0" mnemonicParsing="false" onAction="#onSelectFileClicked" text="选择文件夹" />
-            <TableView fx:id="tableView1" layoutY="182.0" prefHeight="220.0" prefWidth="700.0" />
-            <Label fx:id="label5" layoutX="14.0" layoutY="158.0" text="分享的文件个数：" />
-            <Label fx:id="label6" layoutX="140.0" layoutY="158.0" prefHeight="16.0" prefWidth="69.0" text="0" />
-            <Label fx:id="label7" layoutX="225.0" layoutY="158.0" text="拖拽待分享的文件/文件夹到此处以获得路径" />
-            <Button fx:id="button3" layoutX="573.0" layoutY="154.0" mnemonicParsing="false" onAction="#onClearFileClicked" text="清空分享列表" />
-            <Button fx:id="button4" layoutX="10.0" layoutY="413.0" mnemonicParsing="false" onAction="#onAboutClicked" text="关于" />
-            <Label layoutX="515.0" layoutY="418.0" text="Language:" />
-            <ChoiceBox fx:id="languageSelector" layoutX="582.0" layoutY="413.0" onAction="#switchLanguage" prefHeight="26.0" prefWidth="88.0" />
-            <Label layoutX="329.0" layoutY="418.0" text="ZZHow" />
+            <Label fx:id="label8" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="77.0" layoutY="146.0" prefHeight="17.0" prefWidth="145.0" text="连接密码：" />
+            <TextField fx:id="textField3" layoutX="232.0" layoutY="142.0" onKeyPressed="#onSearchFileKeyDown" prefHeight="24.0" prefWidth="235.0" />
+            <CheckBox fx:id="checkBox1" layoutX="475.0" layoutY="146.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="170.0" selected="true" text="启用密码" />
+            <TableView fx:id="tableView1" layoutY="216.0" prefHeight="220.0" prefWidth="700.0" />
+            <Label fx:id="label5" layoutX="17.0" layoutY="194.0" text="分享的文件个数：" />
+            <Label fx:id="label6" layoutX="143.0" layoutY="194.0" prefHeight="16.0" prefWidth="69.0" text="0" />
+            <Label fx:id="label7" layoutX="228.0" layoutY="194.0" text="拖拽待分享的文件/文件夹到此处以获得路径" />
+            <Button fx:id="button3" layoutX="576.0" layoutY="190.0" mnemonicParsing="false" onAction="#onClearFileClicked" text="清空分享列表" />
+            <Button fx:id="button4" layoutX="14.0" layoutY="460.0" mnemonicParsing="false" onAction="#onAboutClicked" text="关于" />
+            <Label layoutX="515.0" layoutY="465.0" text="Language:" />
+            <ChoiceBox fx:id="languageSelector" layoutX="580.0" layoutY="461.0" onAction="#switchLanguage" prefHeight="26.0" prefWidth="88.0" />
+            <Label layoutX="329.0" layoutY="465.0" text="ZZHow" />
          </children>
       </AnchorPane>
    </children>
