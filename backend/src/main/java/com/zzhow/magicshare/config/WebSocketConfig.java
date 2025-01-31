@@ -1,6 +1,7 @@
 package com.zzhow.magicshare.config;
 
 import com.zzhow.magicshare.websocket.FileWebSocketHandler;
+import com.zzhow.magicshare.websocket.UserWebSocketHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -17,5 +18,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         // 注册 WebSocket 端点并指定处理器
         registry.addHandler(new FileWebSocketHandler(), "/ws/download").setAllowedOrigins("*");
+        registry.addHandler(new UserWebSocketHandler(), "/ws/connect").setAllowedOrigins("*");
     }
 }
