@@ -23,8 +23,6 @@ export const generateKeyPair = async () => {
 
 // RSA 加密
 export const encryptRSA = (publicKeyPem, data) => {
-  console.log(publicKeyPem)
-  console.log('data', data)
   const publicKey = forge.pki.publicKeyFromPem(publicKeyPem)
   const encrypted = publicKey.encrypt(data, 'RSA-OAEP', {
     md: forge.md.sha256.create(),

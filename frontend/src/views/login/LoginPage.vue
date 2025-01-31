@@ -19,7 +19,6 @@ const onSubmit = async () => {
     return e
   }
 
-  console.log(formState.password)
   pwdCheck(formState.password)
 }
 
@@ -33,6 +32,10 @@ const connect = () => {
   const webSocketUrl = 'ws://localhost:1024/ws/connect' //开发使用
 
   wSocket = new WebSocket(webSocketUrl) // 开发使用 WebSocket URL
+
+  wSocket.onerror = () => {
+    networkErrModelOpen.value = true
+  }
 
   wSocket.onopen = () => {
     wSocket.send('ClientHello')
@@ -54,10 +57,20 @@ const connect = () => {
 }
 // 发起密码校验
 const pwdCheck = async (pwd) => {
-  if (wSocket === null) return false
+  if (publicKey.value === null || publicKey.value === '') {
+    networkErrModelOpen.value = true
+    return
+  }
 
   const data = await encryptRSA(publicKey.value, pwd)
   wSocket.send('Syn#' + data)
+}
+
+// 连接异常提示框
+const networkErrModelOpen = ref(false)
+const networkErrHandleOk = () => {
+  networkErrModelOpen.value = false
+  connect()
 }
 </script>
 
@@ -115,6 +128,17 @@ const pwdCheck = async (pwd) => {
 
       <a-layout-footer style="text-align: center"> ZZHow </a-layout-footer>
     </a-layout>
+
+    <a-modal
+      v-model:open="networkErrModelOpen"
+      title="连接异常"
+      style="width: auto"
+      @ok="networkErrHandleOk"
+      centered
+      cancelText="取消"
+      okText="重试"
+    >
+    </a-modal>
   </div>
 </template>
 
