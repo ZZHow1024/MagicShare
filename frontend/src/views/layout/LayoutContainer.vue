@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAcceptStore } from '@/stores/index.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -11,16 +10,6 @@ const onChangeMenu = (page) => {
 
   router.push(page)
   selectedKeys.value = [page]
-}
-
-const open = ref(true)
-const acceptStore = useAcceptStore()
-const handleOk = (e) => {
-  acceptStore.accept()
-  open.value = false
-}
-const handleCancel = () => {
-  window.open('about:blank', '_self').close()
 }
 </script>
 
@@ -57,29 +46,6 @@ const handleCancel = () => {
 
       <a-layout-footer style="text-align: center"> ZZHow </a-layout-footer>
     </a-layout>
-
-    <a-modal
-      v-model:open="open"
-      title="MagicShare"
-      style="width: auto"
-      @ok="handleOk"
-      @cancel="handleCancel"
-      centered
-      :maskClosable="false"
-      :keyboard="false"
-      :closable="false"
-      cancelText="退出"
-      okText="同意"
-    >
-      <p>使用本软件前，请仔细阅读：&#10;&#10;</p>
-      <p>
-        合法使用：
-        本软件仅限于合法文件分享，严禁分享任何侵犯版权、涉及色情、暴力、欺诈、违法或其他有害内容的文件。&#10;
-      </p>
-      <p>个人责任： 您对分享内容的合法性负全部责任，请确保您拥有分享文件的合法授权。&#10;</p>
-      <p>风险提示： 本软件无法保证所分享文件的安全性，请您自行检查文件的安全性。&#10;</p>
-      <p>免责声明： 软件作者不对因使用本软件造成的任何直接或间接损失承担责任。</p>
-    </a-modal>
   </div>
 </template>
 

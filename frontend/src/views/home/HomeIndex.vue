@@ -1,7 +1,6 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { checkCurrentShareService, getFileListService } from '@/api/file.js'
-import { decryptAES, decryptBufferAES, decryptRSA, generateKeyPair } from '@/utils/crypto.js'
+import { ref } from 'vue'
+import { decryptBufferAES, decryptRSA, encryptRSA, generateKeyPair } from '@/utils/crypto.js'
 import forge from 'node-forge'
 import { useAcceptStore } from '@/stores/index.js'
 
@@ -25,73 +24,8 @@ const columns = [
     align: 'center',
   },
 ]
-const shareId = ref('')
 const count = ref(0)
-const data = ref()
-const timer = ref()
-const acceptStore = useAcceptStore()
-
-onMounted(() => {
-  if (acceptStore.status === true) getFileList()
-  timer.value = setInterval(() => {
-    checkCurrentShare()
-  }, 1000)
-})
-
-const isConnectionLost = ref(false)
-let checkCurrentShare = async () => {
-  if (acceptStore.status === true) {
-    checkCurrentShare = async () => {
-      let isCurrentConnection = true
-      const res = await checkCurrentShareService(shareId.value).catch((e) => {
-        isCurrentConnection = false
-        isConnectionLost.value = true
-        shareId.value = ''
-        count.value = 0
-        data.value = ''
-      })
-
-      if (isCurrentConnection && res.data.data === false) {
-        await getFileList()
-        isConnectionLost.value = false
-      }
-    }
-
-    clearInterval(timer.value)
-    timer.value = setInterval(() => {
-      checkCurrentShare()
-    }, 1000)
-  }
-}
-
-const getFileList = async () => {
-  // 调用生成公私钥对
-  let publicKey
-  let privateKeyPem
-  await generateKeyPair().then((keys) => {
-    publicKey = keys.publicKey
-    privateKeyPem = keys.privateKey
-  })
-
-  // 携带公钥发请求
-  const res = await getFileListService(btoa(publicKey))
-
-  const aesKey = await decryptRSA(privateKeyPem, res.data.data.key)
-  const ivBase64 = res.data.data.iv
-  const encryptedDataBase64 = res.data.data.data
-
-  const decryptedData = decryptAES(
-    aesKey,
-    forge.util.decode64(ivBase64),
-    forge.util.decode64(encryptedDataBase64),
-  )
-
-  let obj = JSON.parse(decryptedData)
-
-  shareId.value = obj.shareId
-  count.value = obj.count
-  data.value = obj.files
-}
+const shareId = ref('')
 
 const onDownloadFile = (record) => {
   const protocol = window.location.protocol
@@ -105,10 +39,6 @@ const onDownloadFile = (record) => {
     port +
     `/api/download/${record.fileId}?shareId=${encodeURIComponent(shareId.value)}`
 }
-
-onBeforeUnmount(() => {
-  clearInterval(timer.value)
-})
 
 const open = ref(false)
 const showDrawer = () => {
@@ -248,6 +178,17 @@ const mergeFiles = () => {
   a.download = fileName.value
   a.click()
 }
+
+// 用户许可协议弹窗
+const promptOpen = ref(true)
+const acceptStore = useAcceptStore()
+const promptHandleOk = () => {
+  acceptStore.accept()
+  promptOpen.value = false
+}
+const promptHandleCancel = () => {
+  window.open('about:blank', '_self').close()
+}
 </script>
 
 <template>
@@ -359,6 +300,29 @@ const mergeFiles = () => {
       <div class="content-container">RSA + AES 混合加密</div>
       <div class="content-container">保障数据安全</div>
     </a-drawer>
+
+    <a-modal
+      v-model:open="promptOpen"
+      title="MagicShare"
+      style="width: auto"
+      @ok="promptHandleOk"
+      @cancel="promptHandleCancel"
+      centered
+      :maskClosable="false"
+      :keyboard="false"
+      :closable="false"
+      cancelText="退出"
+      okText="同意"
+    >
+      <p>使用本软件前，请仔细阅读：&#10;&#10;</p>
+      <p>
+        合法使用：
+        本软件仅限于合法文件分享，严禁分享任何侵犯版权、涉及色情、暴力、欺诈、违法或其他有害内容的文件。&#10;
+      </p>
+      <p>个人责任： 您对分享内容的合法性负全部责任，请确保您拥有分享文件的合法授权。&#10;</p>
+      <p>风险提示： 本软件无法保证所分享文件的安全性，请您自行检查文件的安全性。&#10;</p>
+      <p>免责声明： 软件作者不对因使用本软件造成的任何直接或间接损失承担责任。</p>
+    </a-modal>
   </div>
 </template>
 
