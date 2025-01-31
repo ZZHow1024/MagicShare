@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue'
-import { decryptBufferAES, decryptRSA, encryptRSA, generateKeyPair } from '@/utils/crypto.js'
+import { onMounted, ref } from 'vue'
+import { decryptBufferAES, decryptRSA, generateKeyPair } from '@/utils/crypto.js'
 import forge from 'node-forge'
-import { useAcceptStore } from '@/stores/index.js'
+import { useAcceptStore, useWSocketStore } from '@/stores/index.js'
+import { useRouter } from 'vue-router'
 
 const columns = [
   {
@@ -188,6 +189,16 @@ const promptHandleOk = () => {
 }
 const promptHandleCancel = () => {
   window.open('about:blank', '_self').close()
+}
+
+// test
+const router = useRouter()
+const { wSocket } = useWSocketStore()
+wSocket.onerror = () => {
+  router.replace('/login')
+}
+wSocket.onclose = () => {
+  router.replace('/login')
 }
 </script>
 

@@ -2,6 +2,8 @@
 import { onMounted, reactive, ref } from 'vue'
 import { encryptRSA } from '@/utils/crypto.js'
 import { message } from 'ant-design-vue'
+import { useWSocketStore } from '@/stores/modules/wSocket.js'
+import { useRouter } from 'vue-router'
 
 onMounted(() => {
   connect()
@@ -23,9 +25,11 @@ const onSubmit = async () => {
 }
 
 // 建立 WS 连接
+const router = useRouter()
+const wSocketStore = useWSocketStore()
 const publicKey = ref('')
 let wSocket = null
-const connect = () => {
+const connect = async () => {
   // const hostname = window.location.hostname
   // const port = window.location.port
   // const webSocketUrl = 'ws://' + hostname + ':' + port + '/ws/connect'
@@ -46,7 +50,9 @@ const connect = () => {
       } else if (event.data.startsWith('Syn#')) {
         if (event.data.split('#')[1] === '200') {
           // 密码正确
+          wSocketStore.setWSocket(wSocket)
           message.success('提取码正确')
+          router.replace('/home')
         } else {
           // 密码错误
           message.error('提取码错误')
@@ -55,9 +61,15 @@ const connect = () => {
     }
   }
 }
+
 // 发起密码校验
 const pwdCheck = async (pwd) => {
   if (publicKey.value === null || publicKey.value === '') {
+    networkErrModelOpen.value = true
+    return
+  }
+
+  if (wSocket === null || wSocket.readyState !== WebSocket.OPEN) {
     networkErrModelOpen.value = true
     return
   }
@@ -134,10 +146,14 @@ const networkErrHandleOk = () => {
       title="连接异常"
       style="width: auto"
       @ok="networkErrHandleOk"
+      :maskClosable="false"
+      :keyboard="false"
+      :closable="false"
       centered
-      cancelText="取消"
-      okText="重试"
+      :cancel-button-props="{ style: { display: 'none' } }"
+      okText="重新连接"
     >
+      <strong>已取消分享</strong>或<strong>网络出现异常</strong>
     </a-modal>
   </div>
 </template>
