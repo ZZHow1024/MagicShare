@@ -4,10 +4,7 @@ import { encryptRSA } from '@/utils/crypto.js'
 import { message } from 'ant-design-vue'
 import { useWSocketStore } from '@/stores/modules/wSocket.js'
 import { useRouter } from 'vue-router'
-
-onMounted(() => {
-  connect()
-})
+import { useAcceptStore } from '@/stores/index.js'
 
 // 表单数据
 const formState = reactive({
@@ -29,7 +26,7 @@ const router = useRouter()
 const wSocketStore = useWSocketStore()
 const publicKey = ref('')
 let wSocket = null
-const connect = async () => {
+const connect = () => {
   // const hostname = window.location.hostname
   // const port = window.location.port
   // const webSocketUrl = 'ws://' + hostname + ':' + port + '/ws/connect'
@@ -84,6 +81,22 @@ const networkErrHandleOk = () => {
   networkErrModelOpen.value = false
   connect()
 }
+
+// 用户许可协议弹窗
+const acceptStore = useAcceptStore()
+const promptOpen = ref(false)
+onMounted(() => {
+  promptOpen.value = !acceptStore.status
+  if (acceptStore.status && wSocketStore.wSocket === null) networkErrModelOpen.value = true
+})
+const promptHandleOk = () => {
+  connect()
+  acceptStore.accept()
+  promptOpen.value = false
+}
+const promptHandleCancel = () => {
+  window.open('about:blank', '_self').close()
+}
 </script>
 
 <template>
@@ -104,7 +117,7 @@ const networkErrHandleOk = () => {
         </div>
       </a-layout-header>
       <a-layout-content>
-        <div class="content-container">
+        <div class="content-container" v-show="!promptOpen">
           <div class="content-title">请输入文件提取码</div>
           <a-form
             ref="formRef"
@@ -154,6 +167,29 @@ const networkErrHandleOk = () => {
       okText="重新连接"
     >
       <strong>已取消分享</strong>或<strong>网络出现异常</strong>
+    </a-modal>
+
+    <a-modal
+      v-model:open="promptOpen"
+      title="MagicShare"
+      style="width: auto"
+      @ok="promptHandleOk"
+      @cancel="promptHandleCancel"
+      centered
+      :maskClosable="false"
+      :keyboard="false"
+      :closable="false"
+      cancelText="退出"
+      okText="同意"
+    >
+      <p>使用本软件前，请仔细阅读：&#10;&#10;</p>
+      <p>
+        合法使用：
+        本软件仅限于合法文件分享，严禁分享任何侵犯版权、涉及色情、暴力、欺诈、违法或其他有害内容的文件。&#10;
+      </p>
+      <p>个人责任： 您对分享内容的合法性负全部责任，请确保您拥有分享文件的合法授权。&#10;</p>
+      <p>风险提示： 本软件无法保证所分享文件的安全性，请您自行检查文件的安全性。&#10;</p>
+      <p>免责声明： 软件作者不对因使用本软件造成的任何直接或间接损失承担责任。</p>
     </a-modal>
   </div>
 </template>

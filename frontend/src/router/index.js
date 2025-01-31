@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useWSocketStore } from '@/stores/index.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,6 +28,14 @@ const router = createRouter({
       component: () => import('@/views/login/LoginPage.vue'),
     },
   ],
+})
+
+router.beforeEach(async (to) => {
+  const wSocketStore = useWSocketStore()
+
+  if (wSocketStore.wSocket === null && to.name !== 'LoginPage') {
+    return { name: 'LoginPage' }
+  }
 })
 
 export default router

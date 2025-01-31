@@ -1,8 +1,8 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { decryptBufferAES, decryptRSA, generateKeyPair } from '@/utils/crypto.js'
 import forge from 'node-forge'
-import { useAcceptStore, useWSocketStore } from '@/stores/index.js'
+import { useWSocketStore } from '@/stores/index.js'
 import { useRouter } from 'vue-router'
 
 const columns = [
@@ -180,25 +180,18 @@ const mergeFiles = () => {
   a.click()
 }
 
-// 用户许可协议弹窗
-const promptOpen = ref(true)
-const acceptStore = useAcceptStore()
-const promptHandleOk = () => {
-  acceptStore.accept()
-  promptOpen.value = false
-}
-const promptHandleCancel = () => {
-  window.open('about:blank', '_self').close()
-}
-
-// test
+// WS 连接状态管理
 const router = useRouter()
-const { wSocket } = useWSocketStore()
-wSocket.onerror = () => {
-  router.replace('/login')
-}
-wSocket.onclose = () => {
-  router.replace('/login')
+const { wSocket, clearWSocket } = useWSocketStore()
+if (wSocket) {
+  wSocket.onerror = () => {
+    clearWSocket()
+    router.replace('/login')
+  }
+  wSocket.onclose = () => {
+    clearWSocket()
+    router.replace('/login')
+  }
 }
 </script>
 
@@ -241,12 +234,6 @@ wSocket.onclose = () => {
           </template>
         </template>
       </a-table>
-      <div
-        v-if="isConnectionLost"
-        style="display: flex; align-items: center; justify-content: center; margin-top: 10vh"
-      >
-        <span style="font-size: 5vw">连接断开</span>
-      </div>
 
       <a-modal
         centered
@@ -311,29 +298,6 @@ wSocket.onclose = () => {
       <div class="content-container">RSA + AES 混合加密</div>
       <div class="content-container">保障数据安全</div>
     </a-drawer>
-
-    <a-modal
-      v-model:open="promptOpen"
-      title="MagicShare"
-      style="width: auto"
-      @ok="promptHandleOk"
-      @cancel="promptHandleCancel"
-      centered
-      :maskClosable="false"
-      :keyboard="false"
-      :closable="false"
-      cancelText="退出"
-      okText="同意"
-    >
-      <p>使用本软件前，请仔细阅读：&#10;&#10;</p>
-      <p>
-        合法使用：
-        本软件仅限于合法文件分享，严禁分享任何侵犯版权、涉及色情、暴力、欺诈、违法或其他有害内容的文件。&#10;
-      </p>
-      <p>个人责任： 您对分享内容的合法性负全部责任，请确保您拥有分享文件的合法授权。&#10;</p>
-      <p>风险提示： 本软件无法保证所分享文件的安全性，请您自行检查文件的安全性。&#10;</p>
-      <p>免责声明： 软件作者不对因使用本软件造成的任何直接或间接损失承担责任。</p>
-    </a-modal>
   </div>
 </template>
 
