@@ -74,6 +74,23 @@ export const encryptAES = (data) => {
   }
 }
 
+// AES 加密
+export const encryptWAES = (aesKey, iv, data) => {
+  // 加密数据
+  const cipher = forge.cipher.createCipher('AES-CBC', aesKey)
+  cipher.start({ iv: iv })
+  cipher.update(forge.util.createBuffer(data))
+  cipher.finish()
+
+  // 获取加密结果
+  const encryptedData = cipher.output
+  const encryptedBase64 = forge.util.encode64(encryptedData.getBytes())
+
+  return {
+    encryptedDataBase64: encryptedBase64,
+  }
+}
+
 // AES 解密
 export const decryptAES = (aesKey, iv, encrypted) => {
   const decipher = forge.cipher.createDecipher('AES-CBC', aesKey)

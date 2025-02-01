@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { decryptBufferAES, decryptRSA, generateKeyPair } from '@/utils/crypto.js'
 import forge from 'node-forge'
 import { useWSocketStore } from '@/stores/index.js'
@@ -25,6 +25,7 @@ const columns = [
     align: 'center',
   },
 ]
+const data = ref([])
 const count = ref(0)
 const shareId = ref('')
 
@@ -182,17 +183,61 @@ const mergeFiles = () => {
 
 // WS 连接状态管理
 const router = useRouter()
-const { wSocket, clearWSocket } = useWSocketStore()
-if (wSocket) {
-  wSocket.onerror = () => {
-    clearWSocket()
-    router.replace('/login')
+const wSocketStore = useWSocketStore()
+let wSocket = wSocketStore.wSocket
+let wAesKey = wSocketStore.wAesKey
+let wIv = wSocketStore.wIv
+onMounted(async () => {
+  if (wSocket) {
+    wSocket.onerror = () => {
+      wSocketStore.clearWSocket()
+      router.replace('/login')
+    }
+    wSocket.onclose = () => {
+      wSocketStore.clearWSocket()
+      router.replace('/login')
+    }
+
+    // 交换密钥
+    let publicKey, privateKey
+    if (wAesKey === null || wIv === null) {
+      const keyPair = await generateKeyPair()
+      publicKey = keyPair.publicKey
+      privateKey = keyPair.privateKey
+      wSocket.send('Exc#' + btoa(publicKey))
+    } else wSocket.send('List#')
+
+    wSocket.onmessage = async (event) => {
+      if (event.data.startsWith('Exc#')) {
+        wAesKey = await decryptRSA(privateKey, event.data.split('#')[1])
+        wSocketStore.setWAesKey(wAesKey)
+        wIv = atob(event.data.split('#')[2])
+        wSocketStore.setWIv(wIv)
+        wSocket.send('List#')
+      } else if (event.data.startsWith('List#')) {
+        if (wAesKey === null || wIv === null) return
+
+        const decryptedData = decryptBufferAES(
+          wAesKey,
+          wIv,
+          new Uint8Array(
+            atob(event.data.split('#')[1])
+              .split('')
+              .map(function (c) {
+                return c.charCodeAt(0)
+              }),
+          ),
+        )
+
+        let obj = JSON.parse(await decryptedData)
+
+        shareId.value = obj.shareId
+        count.value = obj.count
+        data.value = obj.files
+      }
+    }
   }
-  wSocket.onclose = () => {
-    clearWSocket()
-    router.replace('/login')
-  }
-}
+})
 </script>
 
 <template>
