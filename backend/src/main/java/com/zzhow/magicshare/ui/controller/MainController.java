@@ -46,6 +46,10 @@ public class MainController {
     @FXML
     private Label label8;
     @FXML
+    private Label label9;
+    @FXML
+    private Label label10;
+    @FXML
     private TextField textField1;
     @FXML
     private TextField textField2;
@@ -253,6 +257,7 @@ public class MainController {
         label5.setText(bundle.getString("label5"));
         label7.setText(bundle.getString("label7"));
         label8.setText(bundle.getString("label8"));
+        label9.setText(bundle.getString("label9"));
         checkBox1.setText(bundle.getString("checkBox1"));
         button2.setText(bundle.getString("button2"));
         button3.setText(bundle.getString("button3"));
