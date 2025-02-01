@@ -48,7 +48,7 @@ public class FileUtil {
                 if (fileName.lastIndexOf(".") != -1)
                     fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
 
-                FileDetail fileDetail = new FileDetail(generator.generateId() + "", fileName, fileType, Math.round(file.length() / 1024.0 * 10.0) / 10.0, file.getAbsolutePath().replace(FileRepository.getBasePath(), ""));
+                FileDetail fileDetail = new FileDetail(generator.generateId() + "", fileName, fileType, Math.round(file.length() / 1024.0 * 10.0) / 10.0, file.getAbsolutePath().replace(path, ""));
                 res.add(fileDetail);
             }
         }
