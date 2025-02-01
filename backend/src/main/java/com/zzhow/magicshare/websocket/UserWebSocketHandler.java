@@ -1,7 +1,5 @@
 package com.zzhow.magicshare.websocket;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zzhow.magicshare.pojo.vo.CryptoVO;
 import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.service.FileService;
 import org.springframework.web.socket.CloseStatus;
@@ -20,7 +18,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
 import java.util.Base64;
 
 import static org.springframework.web.socket.CloseStatus.SERVER_ERROR;
@@ -61,7 +58,7 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                 String password = new String(rsaCipher.doFinal(encryptedPassword));
 
                 if (UserRepository.getPassword().equals(password)) {
-                    UserRepository.addUser(session.getId());
+                    UserRepository.addUser(session.getId(), session);
                     session.sendMessage(new TextMessage("Syn#200"));
                 } else {
                     session.sendMessage(new TextMessage("Syn#401"));

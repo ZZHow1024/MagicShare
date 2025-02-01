@@ -1,5 +1,6 @@
 package com.zzhow.magicshare.ui.service.impl;
 
+import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.util.Application;
 import com.zzhow.magicshare.ui.service.ShareService;
@@ -7,6 +8,9 @@ import com.zzhow.magicshare.util.FileUtil;
 import com.zzhow.magicshare.util.InternetUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author ZZHow
@@ -54,8 +58,8 @@ public class ShareServiceImpl implements ShareService {
      */
     @Override
     public void searchFile(String path) {
-        FileRepository.clearFiles();
-        FileRepository.setBasePath(path);
-        FileUtil.find(path, FileRepository.getFiles());
+        List<FileDetail> res = new ArrayList<>();
+        FileUtil.find(path, res);
+        FileRepository.setFiles(path, res);
     }
 }

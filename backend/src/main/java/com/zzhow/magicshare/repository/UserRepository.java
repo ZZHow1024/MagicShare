@@ -1,15 +1,17 @@
 package com.zzhow.magicshare.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zzhow.magicshare.pojo.entity.AesCrypto;
+import com.zzhow.magicshare.pojo.vo.FileListVO;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.List;
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import java.io.IOException;
+import java.security.*;
+import java.util.*;
 
 /**
  * @author ZZHow
@@ -19,7 +21,7 @@ public class UserRepository {
     private static AesCrypto aesCrypto = null;
     private static KeyPair keyPair = null;
     private static String password = "123";
-    private static final List<String> users = new ArrayList<>();
+    private static final Map<String, WebSocketSession> users = new HashMap<>();
 
     static {
         try {
@@ -62,8 +64,8 @@ public class UserRepository {
         UserRepository.password = null;
     }
 
-    public static void addUser(String sessionId) {
-        users.add(sessionId);
+    public static void addUser(String sessionId, WebSocketSession session) {
+        users.put(sessionId, session);
     }
 
     public static void removeUser(String sessionId) {
@@ -71,6 +73,39 @@ public class UserRepository {
     }
 
     public static boolean containsUser(String sessionId) {
-        return users.contains(sessionId);
+        return users.get(sessionId) != null;
+    }
+
+    public static void sendListToAll() {
+        Set<String> strings = users.keySet();
+        for (String sessionId : strings) {
+            WebSocketSession session = users.get(sessionId);
+            if (session.isOpen()) {
+                FileListVO fileListVO = new FileListVO(FileRepository.getUuid(), FileRepository.size(), FileRepository.getFiles());
+
+                try {
+                    // 初始化 AES 加密器
+                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                    IvParameterSpec ivSpec = new IvParameterSpec(UserRepository.getAesCrypto().getIv());
+                    cipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
+
+                    // 加密数据
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonString = objectMapper.writeValueAsString(fileListVO); // 将对象序列化为 JSON 字符串
+                    byte[] encryptedData = cipher.doFinal(jsonString.getBytes());
+
+                    // 发送加密数据
+                    session.sendMessage(new TextMessage("List#" + Base64.getEncoder().encodeToString(encryptedData)));
+                } catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException |
+                         InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
+                         InvalidKeyException e) {
+                    try {
+                        session.close(CloseStatus.SERVER_ERROR);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+        }
     }
 }
