@@ -136,7 +136,7 @@ const promptHandleCancel = () => {
                 {
                   min: 3,
                   max: 10,
-                  message: '长度为 3-10 个字符',
+                  message: '长度应为 3-10 个字符',
                   trigger: 'blur',
                 },
               ]"
