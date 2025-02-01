@@ -48,11 +48,11 @@ const connect = () => {
         if (event.data.split('#')[1] === '200') {
           // 密码正确
           wSocketStore.setWSocket(wSocket)
-          message.success('提取码正确')
+          message.success('密码正确')
           router.replace('/home')
         } else {
           // 密码错误
-          message.error('提取码错误')
+          message.error('密码错误')
         }
       }
     }
@@ -118,7 +118,7 @@ const promptHandleCancel = () => {
       </a-layout-header>
       <a-layout-content>
         <div class="content-container" v-show="!promptOpen">
-          <div class="content-title">请输入文件提取码</div>
+          <div class="content-title">请输入连接密码</div>
           <a-form
             ref="formRef"
             class="login-form"
@@ -129,10 +129,10 @@ const promptHandleCancel = () => {
             autocomplete="off"
           >
             <a-form-item
-              label="提取码："
+              label="连接密码："
               name="password"
               :rules="[
-                { required: true, message: '请输入提取码' },
+                { required: true, message: '请输入连接密码' },
                 {
                   min: 3,
                   max: 10,
