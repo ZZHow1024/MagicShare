@@ -168,6 +168,12 @@ public class MainController {
             case 2 -> {
                 MessageBox.error(LanguageRepository.bundle.getString("portIsOccupied"), LanguageRepository.bundle.getString("portIsOccupiedContent")); // 端口被占用
             }
+            case 3 -> {
+                MessageBox.error(LanguageRepository.bundle.getString("wrongConnectionPassword"), LanguageRepository.bundle.getString("wrongConnectionPasswordContent1")); // 连接密码不能为空
+            }
+            case 4 -> {
+                MessageBox.error(LanguageRepository.bundle.getString("wrongConnectionPassword"), LanguageRepository.bundle.getString("wrongConnectionPasswordContent2")); // 连接密码错误
+            }
         }
     }
 
