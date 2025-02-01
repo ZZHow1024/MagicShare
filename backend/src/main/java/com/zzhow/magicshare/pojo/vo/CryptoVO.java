@@ -6,16 +6,14 @@ package com.zzhow.magicshare.pojo.vo;
  */
 public class CryptoVO {
     private String key;
-    private String iv;
-    private String data;
+    private byte[] iv;
 
     public CryptoVO() {
     }
 
-    public CryptoVO(String key, String iv, String data) {
+    public CryptoVO(String key, byte[] iv) {
         this.key = key;
         this.iv = iv;
-        this.data = data;
     }
 
     public String getKey() {
@@ -26,19 +24,11 @@ public class CryptoVO {
         this.key = key;
     }
 
-    public String getIv() {
+    public byte[] getIv() {
         return iv;
     }
 
-    public void setIv(String iv) {
+    public void setIv(byte[] iv) {
         this.iv = iv;
-    }
-
-    public String getData() {
-        return data;
-    }
-
-    public void setData(String data) {
-        this.data = data;
     }
 }

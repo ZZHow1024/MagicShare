@@ -1,6 +1,9 @@
 package com.zzhow.magicshare.websocket;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zzhow.magicshare.pojo.vo.CryptoVO;
 import com.zzhow.magicshare.repository.UserRepository;
+import com.zzhow.magicshare.service.FileService;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -12,8 +15,12 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Base64;
 
 import static org.springframework.web.socket.CloseStatus.SERVER_ERROR;
@@ -23,6 +30,12 @@ import static org.springframework.web.socket.CloseStatus.SERVER_ERROR;
  * @date 2025/1/30
  */
 public class UserWebSocketHandler extends TextWebSocketHandler {
+    private FileService fileService;
+
+    public UserWebSocketHandler(FileService fileService) {
+        this.fileService = fileService;
+    }
+
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         UserRepository.removeUser(session.getId());
@@ -56,13 +69,59 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
             } catch (InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException |
                      NoSuchAlgorithmException | IOException |
                      BadPaddingException e) {
-                e.printStackTrace();
                 try {
                     session.close(SERVER_ERROR);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
             }
+        } else if (message.getPayload().startsWith("Exc")) {
+            try {
+                // Base64 解码
+                String publicKey = new String(Base64.getDecoder().decode(message.getPayload().split("#")[1]));
+                // 去除 PEM 格式的头尾
+                String publicKeyContent = publicKey.replaceAll("-----\\w+ PUBLIC KEY-----", "").replaceAll("\\s+", "");
+                byte[] keyBytes = Base64.getDecoder().decode(publicKeyContent);
+
+                // 加载公钥
+                X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                PublicKey clientPublicKey = keyFactory.generatePublic(spec);
+
+                // 使用 RSA 加密 AES 密钥
+                Cipher rsaCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+                rsaCipher.init(Cipher.ENCRYPT_MODE, clientPublicKey);
+                byte[] encryptedAesKey = rsaCipher.doFinal(UserRepository.getAesCrypto().getKey().getEncoded());
+
+                // 返回加密的 AES 密钥和 IV
+                session.sendMessage(new TextMessage("Exc#" + Base64.getEncoder().encodeToString(encryptedAesKey) + "#" + Base64.getEncoder().encodeToString(UserRepository.getAesCrypto().getIv())));
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchPaddingException |
+                     IllegalBlockSizeException | BadPaddingException | IOException | InvalidKeyException e) {
+                try {
+                    session.close(CloseStatus.SERVER_ERROR);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        } else if (message.getPayload().startsWith("List")) {
+            if (!UserRepository.containsUser(session.getId())) {
+                try {
+                    session.close(CloseStatus.NOT_ACCEPTABLE);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            String[] split = message.getPayload().split("#");
+            String shareId = "";
+            if (split.length > 1)
+                shareId = new String(Base64.getDecoder().decode(split[1].getBytes()));
+            if (!fileService.checkCurrentShare(shareId))
+                try {
+                    session.sendMessage(new TextMessage("List#" + fileService.getFileList()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
         }
     }
 

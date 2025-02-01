@@ -7,6 +7,7 @@ import javax.crypto.SecretKey;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,8 @@ public class UserRepository {
             SecretKey aesKey = keyGenerator.generateKey();
             // 生成随机 IV（初始化向量）
             byte[] iv = new byte[16]; // AES 块大小 128 位
+            SecureRandom secureRandom = new SecureRandom();
+            secureRandom.nextBytes(iv); // 填充随机数据到 IV 数组
             UserRepository.aesCrypto = new AesCrypto(aesKey, iv);
 
             // 生成 RSA 密钥对
