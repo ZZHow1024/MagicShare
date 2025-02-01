@@ -66,10 +66,12 @@ public class UserRepository {
 
     public static void addUser(String sessionId, WebSocketSession session) {
         users.put(sessionId, session);
+        ConnectionCountBinding.setCount(users.size() + "");
     }
 
     public static void removeUser(String sessionId) {
         users.remove(sessionId);
+        ConnectionCountBinding.setCount(users.size() + "");
     }
 
     public static boolean containsUser(String sessionId) {

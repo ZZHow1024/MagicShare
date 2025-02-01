@@ -1,5 +1,6 @@
 package com.zzhow.magicshare.ui.controller;
 
+import com.zzhow.magicshare.repository.ConnectionCountBinding;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.LanguageRepository;
@@ -76,7 +77,11 @@ public class MainController {
 
     @FXML
     private void initialize() {
+        // 显示内网 IPv4 地址
         label2.setText(InternetUtil.getLocalIpAddress());
+
+        // 连接数数据绑定
+        label10.textProperty().bind(ConnectionCountBinding.countProperty());
 
         // 创建列
         TableColumn<FileDetail, String> fileNameCol = new TableColumn<>("File name");
