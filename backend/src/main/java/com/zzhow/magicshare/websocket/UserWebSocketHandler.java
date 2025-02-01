@@ -42,7 +42,11 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
         if (message.getPayload().startsWith("ClientHello")) {
             try {
-                session.sendMessage(new TextMessage("ServerHello#" + new String(Base64.getEncoder().encode(convertPublicKeyToPEM(UserRepository.getKeyPair().getPublic()).getBytes()))));
+                if (UserRepository.getPassword() == null) {
+                    UserRepository.addUser(session.getId(), session);
+                    session.sendMessage(new TextMessage("Syn#202"));
+                } else
+                    session.sendMessage(new TextMessage("ServerHello#" + new String(Base64.getEncoder().encode(convertPublicKeyToPEM(UserRepository.getKeyPair().getPublic()).getBytes()))));
             } catch (IOException e) {
                 try {
                     session.close(SERVER_ERROR);

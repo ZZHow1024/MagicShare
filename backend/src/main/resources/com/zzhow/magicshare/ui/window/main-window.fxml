@@ -27,8 +27,8 @@
             <TextField fx:id="textField2" layoutX="232.0" layoutY="111.0" onKeyPressed="#onSearchFileKeyDown" prefHeight="24.0" prefWidth="235.0" />
             <Button fx:id="button2" layoutX="474.0" layoutY="110.0" mnemonicParsing="false" onAction="#onSelectFileClicked" text="选择文件夹" />
             <Label fx:id="label8" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="77.0" layoutY="146.0" prefHeight="17.0" prefWidth="145.0" text="连接密码：" />
-            <TextField fx:id="textField3" layoutX="232.0" layoutY="142.0" onKeyPressed="#onSearchFileKeyDown" prefHeight="24.0" prefWidth="235.0" />
-            <CheckBox fx:id="checkBox1" layoutX="475.0" layoutY="146.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="170.0" selected="true" text="启用密码" />
+            <TextField fx:id="textField3" layoutX="232.0" layoutY="141.0" onKeyPressed="#onStartOrStopServiceKeyDown" prefHeight="24.0" prefWidth="235.0" />
+            <CheckBox fx:id="checkBox1" layoutX="475.0" layoutY="146.0" mnemonicParsing="false" onAction="#onEnablePasswordClicked" prefHeight="18.0" prefWidth="170.0" selected="true" text="启用密码" />
             <TableView fx:id="tableView1" layoutY="216.0" prefHeight="220.0" prefWidth="700.0" />
             <Label fx:id="label9" alignment="CENTER" contentDisplay="CENTER" layoutX="425.0" layoutY="55.0" prefWidth="180.0" text="当前连接数" textAlignment="CENTER" />
             <Label fx:id="label10" alignment="CENTER" contentDisplay="CENTER" layoutX="481.0" layoutY="81.0" prefHeight="16.0" prefWidth="69.0" text="0" textAlignment="CENTER">

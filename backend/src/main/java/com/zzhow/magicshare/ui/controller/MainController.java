@@ -139,7 +139,9 @@ public class MainController {
     private void onStartOrStopServiceClicked() {
         if (serviceIsStarted) {
             textField1.setDisable(false);
-            textField3.setDisable(false);
+            if (checkBox1.isSelected())
+                textField3.setDisable(false);
+            checkBox1.setDisable(false);
             label1.setText(LanguageRepository.bundle.getString("label1"));
             label2.setText(InternetUtil.getLocalIpAddress());
             button1.setText(LanguageRepository.bundle.getString("button1"));
@@ -150,12 +152,12 @@ public class MainController {
             return;
         }
 
-
-        byte i = shareService.startService(textField1.getText(), textField3.getText());
+        byte i = shareService.startService(textField1.getText(), textField3.getText(), checkBox1.isSelected());
         switch (i) {
             case 0 -> {
                 textField1.setDisable(true);
                 textField3.setDisable(true);
+                checkBox1.setDisable(true);
                 label1.setText(LanguageRepository.bundle.getString("shareUrl")); // 分享URL：
                 label2.setText("http://" + InternetUtil.getLocalIpAddress() + ":" + textField1.getText());
                 MessageBox.success(LanguageRepository.bundle.getString("startupSuccess"), LanguageRepository.bundle.getString("startupSuccessContent"));
@@ -235,6 +237,16 @@ public class MainController {
     @FXML
     private void onAboutClicked() {
         AboutWindow.open();
+    }
+
+    @FXML
+    private void onEnablePasswordClicked() {
+        if (checkBox1.isSelected()) {
+            textField3.setDisable(false);
+        } else {
+            textField3.setText("");
+            textField3.setDisable(true);
+        }
     }
 
     @FXML

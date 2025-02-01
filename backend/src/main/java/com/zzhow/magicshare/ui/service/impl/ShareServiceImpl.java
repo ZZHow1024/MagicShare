@@ -27,20 +27,20 @@ public class ShareServiceImpl implements ShareService {
      * @return 0-启动成功；1-端口号错误；2-端口被占用；3-连接密码不能为空；4-连接密码错误
      */
     @Override
-    public byte startService(String portStr, String password) {
+    public byte startService(String portStr, String password, boolean isEnablePassword) {
         try {
             int port = Integer.parseInt(portStr);
             if (port < 1 || port > 65535)
                 return 1;
             if (InternetUtil.isPortInUse(port))
                 return 2;
-            if (password == null || password.isEmpty())
+            if (isEnablePassword && (password == null || password.isEmpty()))
                 return 3;
-            if (password.length() < 3 || password.length() > 10)
+            if (isEnablePassword && (password.length() < 3 || password.length() > 10))
                 return 4;
             else {
                 applicationContext = Application.startSpringBoot("--server.port=" + port);
-                UserRepository.setPassword(password);
+                UserRepository.setPassword(isEnablePassword ? password : null);
 
                 return 0;
             }
