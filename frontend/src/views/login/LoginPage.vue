@@ -50,6 +50,10 @@ const connect = () => {
           wSocketStore.setWSocket(wSocket)
           message.success('密码正确')
           router.replace('/home')
+        } else if (event.data.split('#')[1] === '202') {
+          // 无连接密码
+          wSocketStore.setWSocket(wSocket)
+          router.replace('/home')
         } else {
           // 密码错误
           message.error('密码错误')
