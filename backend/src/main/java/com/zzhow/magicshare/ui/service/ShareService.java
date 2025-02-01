@@ -11,7 +11,7 @@ public interface ShareService {
      * @param port 端口号
      * @return 0-启动成功；1-端口号错误；2-端口被占用
      */
-    byte startService(String port);
+    byte startService(String port, String password);
 
     /**
      * 停止 MagicShare 服务

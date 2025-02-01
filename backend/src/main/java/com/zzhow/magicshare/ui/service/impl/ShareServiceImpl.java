@@ -2,6 +2,7 @@ package com.zzhow.magicshare.ui.service.impl;
 
 import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.FileRepository;
+import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.util.Application;
 import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.util.FileUtil;
@@ -26,7 +27,7 @@ public class ShareServiceImpl implements ShareService {
      * @return 0-启动成功；1-端口号错误；2-端口被占用
      */
     @Override
-    public byte startService(String portStr) {
+    public byte startService(String portStr, String password) {
         try {
             int port = Integer.parseInt(portStr);
             if (port < 1 || port > 65535)
@@ -35,6 +36,7 @@ public class ShareServiceImpl implements ShareService {
                 return 2;
             else {
                 applicationContext = Application.startSpringBoot("--server.port=" + port);
+                UserRepository.setPassword(password);
 
                 return 0;
             }

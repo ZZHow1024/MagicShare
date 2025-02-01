@@ -139,6 +139,7 @@ public class MainController {
     private void onStartOrStopServiceClicked() {
         if (serviceIsStarted) {
             textField1.setDisable(false);
+            textField3.setDisable(false);
             label1.setText(LanguageRepository.bundle.getString("label1"));
             label2.setText(InternetUtil.getLocalIpAddress());
             button1.setText(LanguageRepository.bundle.getString("button1"));
@@ -150,10 +151,11 @@ public class MainController {
         }
 
 
-        byte i = shareService.startService(textField1.getText());
+        byte i = shareService.startService(textField1.getText(), textField3.getText());
         switch (i) {
             case 0 -> {
                 textField1.setDisable(true);
+                textField3.setDisable(true);
                 label1.setText(LanguageRepository.bundle.getString("shareUrl")); // 分享URL：
                 label2.setText("http://" + InternetUtil.getLocalIpAddress() + ":" + textField1.getText());
                 MessageBox.success(LanguageRepository.bundle.getString("startupSuccess"), LanguageRepository.bundle.getString("startupSuccessContent"));
