@@ -84,11 +84,8 @@ export const encryptWAES = (aesKey, iv, data) => {
 
   // 获取加密结果
   const encryptedData = cipher.output
-  const encryptedBase64 = forge.util.encode64(encryptedData.getBytes())
 
-  return {
-    encryptedDataBase64: encryptedBase64,
-  }
+  return forge.util.encode64(encryptedData.getBytes())
 }
 
 // AES 解密
