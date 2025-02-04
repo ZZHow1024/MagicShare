@@ -123,6 +123,17 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+        } else if (message.getPayload().startsWith("Download")) {
+            String downloadId = UserRepository.generateDownloadId(session.getId());
+            try {
+                session.sendMessage(new TextMessage("Download#" + session.getId() + "#" + downloadId));
+            } catch (IOException e) {
+                try {
+                    session.close(CloseStatus.SERVER_ERROR);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
         }
     }
 

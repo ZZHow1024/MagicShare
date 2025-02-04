@@ -2,6 +2,7 @@ package com.zzhow.magicshare.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zzhow.magicshare.pojo.entity.AesCrypto;
+import com.zzhow.magicshare.pojo.entity.User;
 import com.zzhow.magicshare.pojo.vo.FileListVO;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -21,7 +22,7 @@ public class UserRepository {
     private static AesCrypto aesCrypto = null;
     private static KeyPair keyPair = null;
     private static String password = "123";
-    private static final Map<String, WebSocketSession> users = new HashMap<>();
+    private static final Map<String, User> users = new HashMap<>();
 
     static {
         try {
@@ -65,7 +66,7 @@ public class UserRepository {
     }
 
     public static void addUser(String sessionId, WebSocketSession session) {
-        users.put(sessionId, session);
+        users.put(sessionId, new User(session));
         ConnectionCountBinding.setCount(users.size() + "");
     }
 
@@ -74,15 +75,35 @@ public class UserRepository {
         ConnectionCountBinding.setCount(users.size() + "");
     }
 
+    public static User getUser(String sessionId) {
+        return users.get(sessionId);
+    }
+
     public static boolean containsUser(String sessionId) {
         return users.get(sessionId) != null;
+    }
+
+    public static String generateDownloadId(String sessionId) {
+        String downloadId = UUID.randomUUID().toString();
+        users.get(sessionId).getDownloadIdList().add(downloadId);
+
+        return downloadId;
+    }
+
+    public static boolean verifyDownloadId(String sessionId, String downloadId) {
+        if (users.get(sessionId) != null && users.get(sessionId).getDownloadIdList().contains(downloadId)) {
+            users.get(sessionId).getDownloadIdList().remove(downloadId);
+            return true;
+        }
+
+        return false;
     }
 
     public static void sendListToAll() {
         Set<String> strings = users.keySet();
         for (String sessionId : strings) {
-            WebSocketSession session = users.get(sessionId);
-            if (session.isOpen()) {
+            User user = users.get(sessionId);
+            if (user != null && user.getSession().isOpen()) {
                 FileListVO fileListVO = new FileListVO(FileRepository.getUuid(), FileRepository.size(), FileRepository.getFiles());
 
                 try {
@@ -97,12 +118,12 @@ public class UserRepository {
                     byte[] encryptedData = cipher.doFinal(jsonString.getBytes());
 
                     // 发送加密数据
-                    session.sendMessage(new TextMessage("List#" + Base64.getEncoder().encodeToString(encryptedData)));
+                    user.getSession().sendMessage(new TextMessage("List#" + Base64.getEncoder().encodeToString(encryptedData)));
                 } catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException |
                          InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
                          InvalidKeyException e) {
                     try {
-                        session.close(CloseStatus.SERVER_ERROR);
+                        user.getSession().close(CloseStatus.SERVER_ERROR);
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
