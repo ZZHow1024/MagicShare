@@ -6,6 +6,16 @@ import { useWSocketStore } from '@/stores/modules/wSocket.js'
 import { useRouter } from 'vue-router'
 import { useAcceptStore } from '@/stores/index.js'
 import { vueI18n } from '@/lang/index.js'
+import { useI18n } from 'vue-i18n'
+
+// 当前语言
+const { locale } = useI18n()
+const currentLanguage = ref(locale.value)
+
+// 切换当前语言
+const switchLanguage = () => {
+  locale.value = currentLanguage.value
+}
 
 // 表单数据
 const formState = reactive({
@@ -139,7 +149,7 @@ const promptHandleCancel = () => {
           >
             <a-form-item
               :label="$t('login.connectionPassword')"
-              :label-col="1"
+              :label-col="{ span: 10 }"
               name="password"
               :rules="[
                 { required: true, message: $t('login.passwordIsEmpty') },
@@ -161,7 +171,25 @@ const promptHandleCancel = () => {
         </div>
       </a-layout-content>
 
-      <a-layout-footer style="text-align: center"> ZZHow </a-layout-footer>
+      <a-layout-footer style="text-align: center">
+        <div class="footer">
+          <span>ZZHow</span>
+          <div class="language-container">
+            <div>Language</div>
+            <div>
+              <a-select
+                v-model:value="currentLanguage"
+                style="width: 100px"
+                @change="switchLanguage"
+              >
+                <a-select-option value="zh-Hans">简体中文</a-select-option>
+                <a-select-option value="zh-Hant">繁體中文</a-select-option>
+                <a-select-option value="en-US">English</a-select-option>
+              </a-select>
+            </div>
+          </div>
+        </div>
+      </a-layout-footer>
     </a-layout>
 
     <a-modal
@@ -252,6 +280,14 @@ const promptHandleCancel = () => {
     justify-content: center;
     align-items: center;
     flex-direction: column;
+  }
+}
+
+.footer {
+  .language-container {
+    position: fixed;
+    right: 20px;
+    bottom: 10px;
   }
 }
 </style>
