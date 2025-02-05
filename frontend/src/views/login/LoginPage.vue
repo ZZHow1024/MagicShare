@@ -164,7 +164,7 @@ const promptHandleCancel = () => {
 
     <a-modal
       v-model:open="networkErrModelOpen"
-      title="连接断开"
+      :title="$t('message.disconnection')"
       style="width: auto"
       @ok="networkErrHandleOk"
       :maskClosable="false"
