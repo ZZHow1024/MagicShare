@@ -118,3 +118,11 @@ export const decryptBufferAES = async (aesKey, iv, encryptedData) => {
     return null
   }
 }
+
+// SHA256 加密
+export const decryptSha256 = (data) => {
+  const sha256 = forge.md.sha256.create()
+  sha256.update(data)
+
+  return forge.util.encode64(sha256.digest().bytes())
+}
