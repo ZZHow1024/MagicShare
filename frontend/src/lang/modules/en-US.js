@@ -1,11 +1,14 @@
 export default {
   prompt: {
-    content:
-      '<p>Please read carefully before using this software:&#10;&#10;</p>\n' +
-      '<p>Legal use: This software is limited to legal file sharing. It is strictly forbidden to share any files that infringe copyright, involve pornography, violence, fraud, illegal or other harmful content.&#10;</p>\n' +
-      '<p>Personal responsibility: You are fully responsible for the legality of the shared content. Please make sure that you have the legal authorization to share the file.&#10;</p>\n' +
-      '<p>Risk warning: This software cannot guarantee the security of the shared files. Please check the security of the files yourself.&#10;</p>\n' +
-      '<p>Disclaimer: The software author is not responsible for any direct or indirect losses caused by the use of this software.</p>',
+    content1: 'Please read carefully before using this software:\n\n',
+    content2:
+      'Legal use: This software is limited to legal file sharing. It is strictly forbidden to share any files that infringe copyright, involve pornography, violence, fraud, illegal or other harmful content.\n',
+    content3:
+      'Personal responsibility: You are fully responsible for the legality of the shared content. Please make sure that you have the legal authorization to share the file.\n',
+    content4:
+      'Risk warning: This software cannot guarantee the security of the shared files. Please check the security of the files yourself.\n',
+    content5:
+      'Disclaimer: The software author is not responsible for any direct or indirect losses caused by the use of this software.',
     exit: 'Exit',
     accept: 'Accept',
   },
@@ -21,7 +24,9 @@ export default {
   message: {
     disconnection: {
       title: 'Disconnection',
-      content: '<strong>Share canceled</strong> or <strong>Network abnormality</strong>',
+      content1: 'Share canceled',
+      content2: ' or ',
+      content3: 'Network abnormality',
       button: 'Reconnect',
     },
   },

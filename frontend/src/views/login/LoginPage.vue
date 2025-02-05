@@ -204,7 +204,9 @@ const promptHandleCancel = () => {
       :cancel-button-props="{ style: { display: 'none' } }"
       :okText="$t('message.disconnection.button')"
     >
-      <div v-html="$t('message.disconnection.content')" />
+      <strong>{{ $t('message.disconnection.content1') }}</strong
+      >{{ $t('message.disconnection.content2')
+      }}<strong>{{ $t('message.disconnection.content3') }}</strong>
     </a-modal>
 
     <a-modal
@@ -220,7 +222,11 @@ const promptHandleCancel = () => {
       :cancelText="$t('prompt.exit')"
       :okText="$t('prompt.accept')"
     >
-      <div v-html="$t('prompt.content')" />
+      <p>{{ $t('prompt.content1') }}</p>
+      <p>{{ $t('prompt.content2') }}</p>
+      <p>{{ $t('prompt.content3') }}</p>
+      <p>{{ $t('prompt.content4') }}</p>
+      <p>{{ $t('prompt.content5') }}</p>
     </a-modal>
   </div>
 </template>
