@@ -93,6 +93,7 @@ public class UserRepository {
     public static boolean verifyDownloadId(String sessionId, String downloadId) {
         if (users.get(sessionId) != null && users.get(sessionId).getDownloadIdList().contains(downloadId)) {
             users.get(sessionId).getDownloadIdList().remove(downloadId);
+            
             return true;
         }
 

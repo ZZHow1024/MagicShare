@@ -1,6 +1,5 @@
 package com.zzhow.magicshare.websocket;
 
-import com.zzhow.magicshare.pojo.entity.User;
 import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.service.FileService;
 import org.springframework.web.socket.CloseStatus;
@@ -148,7 +147,7 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
 
                 // 加密数据
                 byte[] encryptedData = cipher.doFinal(downloadId.getBytes());
-                session.sendMessage(new TextMessage("Download#" + Base64.getEncoder().encodeToString(encryptedData)));
+                session.sendMessage(new TextMessage("Download#" + message.getPayload().split("#")[1] + "#" + Base64.getEncoder().encodeToString(encryptedData)));
             } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
                      InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
                      IOException e) {
