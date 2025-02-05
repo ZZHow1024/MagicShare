@@ -5,6 +5,7 @@ import { message } from 'ant-design-vue'
 import { useWSocketStore } from '@/stores/modules/wSocket.js'
 import { useRouter } from 'vue-router'
 import { useAcceptStore } from '@/stores/index.js'
+import { vueI18n } from '@/lang/index.js'
 
 // 表单数据
 const formState = reactive({
@@ -50,7 +51,7 @@ const connect = () => {
         if (event.data.split('#')[1] === '200') {
           // 密码正确
           wSocketStore.setWSocket(wSocket)
-          message.success('密码正确')
+          message.success(vueI18n.global.t('login.passwordIsCorrect'))
           router.replace('/home')
         } else if (event.data.split('#')[1] === '202') {
           // 无连接密码
@@ -60,7 +61,7 @@ const connect = () => {
           router.replace('/home')
         } else {
           // 密码错误
-          message.error('密码错误')
+          message.error(vueI18n.global.t('login.passwordIsIncorrect'))
         }
       }
     }
@@ -126,7 +127,7 @@ const promptHandleCancel = () => {
       </a-layout-header>
       <a-layout-content>
         <div class="content-container" v-show="!promptOpen">
-          <div class="content-title">请输入连接密码</div>
+          <div class="content-title">{{ $t('login.title') }}</div>
           <a-form
             ref="formRef"
             class="login-form"
@@ -137,14 +138,15 @@ const promptHandleCancel = () => {
             autocomplete="off"
           >
             <a-form-item
-              label="连接密码："
+              :label="$t('login.connectionPassword')"
+              :label-col="1"
               name="password"
               :rules="[
-                { required: true, message: '请输入连接密码' },
+                { required: true, message: $t('login.passwordIsEmpty') },
                 {
                   min: 3,
                   max: 10,
-                  message: '长度应为 3-10 个字符',
+                  message: $t('login.passwordIsIllegal'),
                   trigger: 'blur',
                 },
               ]"
@@ -153,7 +155,7 @@ const promptHandleCancel = () => {
             </a-form-item>
 
             <a-form-item :wrapper-col="{ offset: 8, span: 16 }">
-              <a-button type="primary" @click="onSubmit">验证</a-button>
+              <a-button type="primary" @click="onSubmit">{{ $t('login.button') }}</a-button>
             </a-form-item>
           </a-form>
         </div>
@@ -164,7 +166,7 @@ const promptHandleCancel = () => {
 
     <a-modal
       v-model:open="networkErrModelOpen"
-      :title="$t('message.disconnection')"
+      :title="$t('message.disconnection.title')"
       style="width: auto"
       @ok="networkErrHandleOk"
       :maskClosable="false"
@@ -172,9 +174,9 @@ const promptHandleCancel = () => {
       :closable="false"
       centered
       :cancel-button-props="{ style: { display: 'none' } }"
-      okText="重新连接"
+      :okText="$t('message.disconnection.button')"
     >
-      <strong>已取消分享</strong>或<strong>网络出现异常</strong>
+      <div v-html="$t('message.disconnection.content')" />
     </a-modal>
 
     <a-modal
@@ -187,17 +189,10 @@ const promptHandleCancel = () => {
       :maskClosable="false"
       :keyboard="false"
       :closable="false"
-      cancelText="退出"
-      okText="同意"
+      :cancelText="$t('prompt.exit')"
+      :okText="$t('prompt.accept')"
     >
-      <p>使用本软件前，请仔细阅读：&#10;&#10;</p>
-      <p>
-        合法使用：
-        本软件仅限于合法文件分享，严禁分享任何侵犯版权、涉及色情、暴力、欺诈、违法或其他有害内容的文件。&#10;
-      </p>
-      <p>个人责任： 您对分享内容的合法性负全部责任，请确保您拥有分享文件的合法授权。&#10;</p>
-      <p>风险提示： 本软件无法保证所分享文件的安全性，请您自行检查文件的安全性。&#10;</p>
-      <p>免责声明： 软件作者不对因使用本软件造成的任何直接或间接损失承担责任。</p>
+      <div v-html="$t('prompt.content')" />
     </a-modal>
   </div>
 </template>
@@ -247,7 +242,7 @@ const promptHandleCancel = () => {
   width: 100%;
 
   .content-title {
-    font-size: 8vw;
+    font-size: 5vw;
     margin-bottom: 8vh;
   }
 
