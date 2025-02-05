@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { encryptRSA } from '@/utils/crypto.js'
+import { decryptRSA, decryptSha256, encryptRSA, generateKeyPair } from '@/utils/crypto.js'
 import { message } from 'ant-design-vue'
 import { useWSocketStore } from '@/stores/modules/wSocket.js'
 import { useRouter } from 'vue-router'
@@ -24,8 +24,8 @@ const onSubmit = async () => {
 // 建立 WS 连接
 const router = useRouter()
 const wSocketStore = useWSocketStore()
-const publicKey = ref('')
 let wSocket = null
+let sessionId = null
 const connect = () => {
   // const hostname = window.location.hostname
   // const port = window.location.port
@@ -38,12 +38,14 @@ const connect = () => {
     networkErrModelOpen.value = true
   }
 
-  wSocket.onopen = () => {
-    wSocket.send('ClientHello')
+  wSocket.onopen = async () => {
+    const { publicKey, privateKey } = await generateKeyPair()
+    wSocket.send('ClientHello#' + btoa(publicKey))
 
     wSocket.onmessage = async (event) => {
       if (event.data.startsWith('ServerHello#')) {
-        publicKey.value = atob(event.data.split('#')[1])
+        sessionId = await decryptRSA(privateKey, event.data.split('#')[1])
+        wSocketStore.setSessionId(sessionId)
       } else if (event.data.startsWith('Syn#')) {
         if (event.data.split('#')[1] === '200') {
           // 密码正确
@@ -52,6 +54,8 @@ const connect = () => {
           router.replace('/home')
         } else if (event.data.split('#')[1] === '202') {
           // 无连接密码
+          sessionId = await decryptRSA(privateKey, event.data.split('#')[2])
+          wSocketStore.setSessionId(sessionId)
           wSocketStore.setWSocket(wSocket)
           router.replace('/home')
         } else {
@@ -65,7 +69,7 @@ const connect = () => {
 
 // 发起密码校验
 const pwdCheck = async (pwd) => {
-  if (publicKey.value === null || publicKey.value === '') {
+  if (sessionId === null || sessionId === '') {
     networkErrModelOpen.value = true
     return
   }
@@ -75,7 +79,7 @@ const pwdCheck = async (pwd) => {
     return
   }
 
-  const data = await encryptRSA(publicKey.value, pwd)
+  const data = decryptSha256(sessionId + pwd)
   wSocket.send('Syn#' + data)
 }
 

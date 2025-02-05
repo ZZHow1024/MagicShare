@@ -58,13 +58,13 @@ const onClose = () => {
 }
 
 // WS 连接状态管理
-let sessionId = ''
-let downloadId = ''
 const router = useRouter()
 const wSocketStore = useWSocketStore()
 let wSocket = wSocketStore.wSocket
 let wAesKey = wSocketStore.wAesKey
 let wIv = wSocketStore.wIv
+let sessionId = wSocketStore.sessionId
+let downloadId = ''
 onMounted(async () => {
   if (wSocket) {
     wSocket.onerror = () => {
@@ -113,8 +113,7 @@ onMounted(async () => {
         count.value = obj.count
         data.value = obj.files
       } else if (event.data.startsWith('Download#')) {
-        sessionId = event.data.split('#')[1]
-        downloadId = event.data.split('#')[2]
+        downloadId = atob(event.data.split('#')[1])
         startEncryptedDownload()
       }
     }
@@ -169,9 +168,10 @@ const startEncryptedDownload = () => {
 
   downloadProgress.value.connection = 100
 
-  console.log(socket)
+  fileId = encryptWAES(wAesKey, wIv, fileId)
   socket.onopen = () => {
-    console.log(socket)
+    console.log(wSocketStore.sessionId)
+    console.log(sessionId)
     socket.send('a,' + encryptWAES(wAesKey, wIv, sessionId + '#' + downloadId) + ',' + fileId)
   }
 
