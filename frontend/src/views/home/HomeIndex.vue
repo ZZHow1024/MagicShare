@@ -113,7 +113,17 @@ onMounted(async () => {
         count.value = obj.count
         data.value = obj.files
       } else if (event.data.startsWith('Download#')) {
-        downloadId = atob(event.data.split('#')[1])
+        downloadId = decryptAES(
+          wAesKey,
+          wIv,
+          new Uint8Array(
+            atob(event.data.split('#')[1])
+              .split('')
+              .map(function (c) {
+                return c.charCodeAt(0)
+              }),
+          ),
+        )
         startEncryptedDownload()
       }
     }
@@ -170,8 +180,6 @@ const startEncryptedDownload = () => {
 
   fileId = encryptWAES(wAesKey, wIv, fileId)
   socket.onopen = () => {
-    console.log(wSocketStore.sessionId)
-    console.log(sessionId)
     socket.send('a,' + encryptWAES(wAesKey, wIv, sessionId + '#' + downloadId) + ',' + fileId)
   }
 
