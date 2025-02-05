@@ -43,21 +43,19 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
 
             // 解密数据
             String[] data = new String(cipher.doFinal(Base64.getDecoder().decode(split[1].getBytes()))).split("#");
-
-            System.out.println(Arrays.toString(data));
+            String fileId = new String(cipher.doFinal(Base64.getDecoder().decode(split[2])));
 
             // 验证 sessionId#downloadId
             if (!UserRepository.verifyDownloadId(data[0], data[1])) {
                 session.sendMessage(new TextMessage("Not found"));
                 session.close(CloseStatus.NOT_ACCEPTABLE);
-                System.out.println("false");
 
                 return;
             }
 
             // 计算分块数量
             List<FileDetail> files = FileRepository.getFiles();
-            int index = files.indexOf(new FileDetail(split[2]));
+            int index = files.indexOf(new FileDetail(fileId));
             if (index == -1) {
                 session.sendMessage(new TextMessage("Not found"));
                 session.close(CloseStatus.NOT_ACCEPTABLE);
@@ -72,9 +70,17 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
         } else if ((message.getPayload().charAt(0) == 'b')) { // 消息格式：b,fileId
             String[] split = message.getPayload().split(",");
 
+            // 初始化 AES 解密器
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            IvParameterSpec ivSpec = new IvParameterSpec(UserRepository.getAesCrypto().getIv());
+            cipher.init(Cipher.DECRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
+
+            // 解密数据
+            String fileId = new String(cipher.doFinal(Base64.getDecoder().decode(split[1])));
+
             // 构建文件路径
             List<FileDetail> files = FileRepository.getFiles();
-            int index = files.indexOf(new FileDetail(split[1]));
+            int index = files.indexOf(new FileDetail(fileId));
             if (index == -1) {
                 session.sendMessage(new TextMessage("Not found"));
                 session.close(CloseStatus.NOT_ACCEPTABLE);
@@ -84,8 +90,6 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
             String filePath = FileRepository.getBasePath() + files.get(index).getPath();
 
             // 初始化 AES 加密器
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            IvParameterSpec ivSpec = new IvParameterSpec(UserRepository.getAesCrypto().getIv());
             cipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
 
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath))) {
