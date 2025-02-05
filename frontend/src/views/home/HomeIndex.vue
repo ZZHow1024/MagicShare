@@ -4,11 +4,9 @@ import {
   decryptAES,
   decryptBufferAES,
   decryptRSA,
-  encryptAES,
   encryptWAES,
   generateKeyPair,
 } from '@/utils/crypto.js'
-import forge from 'node-forge'
 import { useWSocketStore } from '@/stores/index.js'
 import { useRouter } from 'vue-router'
 
@@ -36,17 +34,32 @@ const data = ref([])
 const count = ref(0)
 const shareId = ref('')
 
+let quickDownloadList = []
 const onDownloadFile = (record) => {
+  quickDownloadList.push(record.fileId)
+  wSocket.send('Download#0')
+}
+
+const startQuickDownload = () => {
   const protocol = window.location.protocol
   const hostname = window.location.hostname
   const port = window.location.port
-  window.location.href =
-    protocol +
-    '//' +
-    hostname +
-    ':' +
-    port +
-    `/api/download/${record.fileId}?shareId=${encodeURIComponent(shareId.value)}`
+  const data = {
+    token: encryptWAES(wAesKey, wIv, sessionId + '#' + downloadId),
+    shareId: encryptWAES(wAesKey, wIv, shareId.value),
+    fileId: encryptWAES(wAesKey, wIv, quickDownloadList.pop()),
+  }
+
+  // window.location.href =
+  //   protocol +
+  //   '//' +
+  //   hostname +
+  //   ':' +
+  //   port +
+  //   `/api/download/${fileId}?token=${encodeURIComponent(token)}&shareId=${encodeURIComponent(shareId)}`
+
+  // 开发使用
+  window.location.href = `http://localhost:1024/api/download/${data.fileId}?token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
 }
 
 const open = ref(false)
@@ -117,14 +130,15 @@ onMounted(async () => {
           wAesKey,
           wIv,
           new Uint8Array(
-            atob(event.data.split('#')[1])
+            atob(event.data.split('#')[2])
               .split('')
               .map(function (c) {
                 return c.charCodeAt(0)
               }),
           ),
         )
-        startEncryptedDownload()
+        if (event.data.split('#')[1] === '0') startQuickDownload()
+        else startEncryptedDownload()
       }
     }
   }
@@ -170,7 +184,7 @@ const encryptedDownload = (record) => {
   fileId = record.fileId
   fileName.value = record.name
 
-  wSocket.send('Download#')
+  wSocket.send('Download#1')
 }
 
 const startEncryptedDownload = () => {
