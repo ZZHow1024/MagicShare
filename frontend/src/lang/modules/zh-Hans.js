@@ -29,7 +29,6 @@ export default {
   },
   home: {
     title: '分享列表',
-    close: '关闭',
     totalFiles: '总文件数：',
     button: '查看加密下载进度',
     fileInformation: '文件信息',
@@ -40,8 +39,8 @@ export default {
     encryptedDownloads: '加密下载',
     drawer: {
       title: '加密下载进度',
+      close: '关闭',
       currentlyDownloadingFile: '当前下载的文件：',
-      none: '暂无',
       step1: '建立连接',
       step2: '加密传输',
       step3: '解密文件',

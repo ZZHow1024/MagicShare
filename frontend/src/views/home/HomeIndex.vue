@@ -9,23 +9,22 @@ import {
 } from '@/utils/crypto.js'
 import { useWSocketStore } from '@/stores/index.js'
 import { useRouter } from 'vue-router'
-import { vueI18n } from '@/lang/index.js'
 
 const columns = [
   {
-    title: vueI18n.global.t('home.fileInformation'),
+    title: '文件信息',
     dataIndex: 'name',
     key: 'name',
     width: 'calc(35vw)',
   },
   {
-    title: vueI18n.global.t('home.path'),
+    title: '路径',
     dataIndex: 'path',
     key: 'path',
     width: 'calc(25vw)',
   },
   {
-    title: vueI18n.global.t('home.operate'),
+    title: '操作',
     key: 'action',
     width: 'calc(25vw)',
     align: 'center',
@@ -150,7 +149,7 @@ let socket = null
 
 let fileId = ''
 const chunks = ref([])
-const fileName = ref(vueI18n.global.t('home.drawer.none'))
+const fileName = ref('-')
 const isEncryptedDownload = ref(false)
 const downloadProgress = ref({
   connection: 0,
@@ -289,6 +288,18 @@ const mergeFiles = () => {
         :locale="{ emptyText: $t('home.shareListIsEmpty') }"
         :scroll="{ y: 'calc(60vh)' }"
       >
+        <template #headerCell="{ column }">
+          <template v-if="column.key === 'name'">
+            <span> {{ $t('home.fileInformation') }} </span>
+          </template>
+          <template v-if="column.key === 'path'">
+            <span> {{ $t('home.path') }} </span>
+          </template>
+          <template v-if="column.key === 'action'">
+            <span> {{ $t('home.operate') }} </span>
+          </template>
+        </template>
+
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'name'">
             {{ record.name }}<br />

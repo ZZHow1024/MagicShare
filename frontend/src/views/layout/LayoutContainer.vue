@@ -1,6 +1,16 @@
 <script setup>
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
+// 当前语言
+const { locale } = useI18n()
+const currentLanguage = ref(locale.value)
+
+// 切换当前语言
+const switchLanguage = () => {
+  locale.value = currentLanguage.value
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -48,7 +58,25 @@ const onChangeMenu = (page) => {
         <router-view></router-view>
       </a-layout-content>
 
-      <a-layout-footer style="text-align: center"> ZZHow </a-layout-footer>
+      <a-layout-footer style="text-align: center">
+        <div class="footer">
+          <span>ZZHow</span>
+          <div class="language-container">
+            <div>Language</div>
+            <div>
+              <a-select
+                v-model:value="currentLanguage"
+                style="width: 100px"
+                @change="switchLanguage"
+              >
+                <a-select-option value="zh-Hans">简体中文</a-select-option>
+                <a-select-option value="zh-Hant">繁體中文</a-select-option>
+                <a-select-option value="en-US">English</a-select-option>
+              </a-select>
+            </div>
+          </div>
+        </div>
+      </a-layout-footer>
     </a-layout>
   </div>
 </template>
@@ -96,5 +124,13 @@ const onChangeMenu = (page) => {
 
 [data-theme='dark'] .site-layout-content {
   background: #141414;
+}
+
+.footer {
+  .language-container {
+    position: fixed;
+    right: 20px;
+    bottom: 10px;
+  }
 }
 </style>

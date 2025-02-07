@@ -29,7 +29,6 @@ export default {
   },
   home: {
     title: '分享清單',
-    close: '關閉',
     totalFiles: '總檔案數：',
     button: '查看加密下載進度',
     fileInformation: '檔案訊息',
@@ -40,8 +39,8 @@ export default {
     encryptedDownloads: '加密下載',
     drawer: {
       title: '加密下載進度',
+      close: '關閉',
       currentlyDownloadingFile: '目前下載的檔案：',
-      none: '暫無',
       step1: '建立連線',
       step2: '加密傳輸',
       step3: '解密檔案',

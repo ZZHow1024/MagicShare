@@ -44,7 +44,6 @@ export default {
       title: 'Encrypted download progress',
       close: 'close',
       currentlyDownloadingFile: 'Currently downloading file: ',
-      none: 'None',
       step1: 'Establishing connection',
       step2: 'Encrypted transmission',
       step3: 'Decrypting Files',
