@@ -33,6 +33,7 @@ public class DownloadController {
                 return ResponseEntity.badRequest().build();
             }
 
+            fileId = fileId.replace("-", "/").replace("_", "+");
 
             // AES 解密数据
             String[] split = new String(cryptoUtil.decryptAes(Base64.getDecoder().decode(token))).split("#");
