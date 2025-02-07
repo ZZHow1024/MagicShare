@@ -149,7 +149,7 @@ const promptHandleCancel = () => {
           >
             <a-form-item
               :label="$t('login.connectionPassword')"
-              :label-col="{ span: 10 }"
+              :label-col="{ span: 11 }"
               name="password"
               :rules="[
                 { required: true, message: $t('login.passwordIsEmpty') },
