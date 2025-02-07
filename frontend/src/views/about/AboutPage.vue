@@ -10,17 +10,16 @@
         width="522"
         alt="MagicShareLogo"
       />
-      &nbsp;MagicShare<br />
-      神奇分享
+      &nbsp;
+      <div>
+        <div>MagicShare</div>
+        <div v-if="$t('name') !== 'MagicShare'">{{ $t('name') }}</div>
+      </div>
     </div>
     <div class="feat-container">
-      <div class="feat-title">新特性：</div>
+      <div class="feat-title">{{ $t('about.features') }}</div>
       <div class="feat-content">
-        1. 自定义端口启动服务。&#10;<br />
-        2. 按文件夹/文件路径查找文件并生成列表。&#10;<br />
-        3. Web网页下载文件。&#10;&#9;<br />
-        - 支持通过HTTP协议快速下载文件&#10;&#9;<br />
-        - 支持通过WebSocket协议并使用RSA+AES混合加密下载文件
+        {{ $t('about.content') }}
       </div>
     </div>
     <div class="content">Version：1.0.0<br />ZZHow.com</div>
@@ -55,6 +54,7 @@
   .feat-content {
     font-size: 2vh;
     margin: 0 2vh;
+    white-space: pre-wrap;
   }
 }
 

@@ -1,4 +1,5 @@
 export default {
+  name: '神奇分享',
   prompt: {
     content1: '使用本軟體前，請仔細閱讀：\n\n',
     content2:
@@ -52,5 +53,12 @@ export default {
   },
   about: {
     title: '關於',
+    features: '新特性：',
+    content:
+      '1. 自訂連接埠啟動服務。 \n' +
+      '2. 按資料夾/檔案路徑尋找檔案並產生清單。 \n' +
+      '3. Web網頁下載檔案。 \n' +
+      '- 支援透過HTTP協定快速下載檔案\n' +
+      '- 支援透過WebSocket協定並使用RSA+AES混合加密下載檔案',
   },
 }

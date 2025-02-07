@@ -1,4 +1,5 @@
 export default {
+  name: '神奇分享',
   prompt: {
     content1: '使用本软件前，请仔细阅读：\n\n',
     content2:
@@ -52,5 +53,12 @@ export default {
   },
   about: {
     title: '关于',
+    features: '新特性：',
+    content:
+      '1. 自定义端口启动服务。\n' +
+      '2. 按文件夹/文件路径查找文件并生成列表。\n' +
+      '3. Web网页下载文件。\n' +
+      '- 支持通过HTTP协议快速下载文件\n' +
+      '- 支持通过WebSocket协议并使用RSA+AES混合加密下载文件',
   },
 }
