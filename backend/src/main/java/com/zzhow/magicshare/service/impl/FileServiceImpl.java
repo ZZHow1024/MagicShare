@@ -4,12 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zzhow.magicshare.pojo.vo.FileListVO;
 import com.zzhow.magicshare.repository.FileRepository;
-import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.service.FileService;
+import com.zzhow.magicshare.util.CryptoUtil;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
 import java.security.*;
 import java.util.Base64;
 
@@ -19,6 +18,8 @@ import java.util.Base64;
  */
 @Service
 public class FileServiceImpl implements FileService {
+    private final CryptoUtil cryptoUtil = CryptoUtil.getInstance();
+
     /**
      * 获得分享的文件列表
      *
@@ -29,19 +30,14 @@ public class FileServiceImpl implements FileService {
         FileListVO fileListVO = new FileListVO(FileRepository.getUuid(), FileRepository.size(), FileRepository.getFiles());
 
         try {
-            // 初始化 AES 加密器
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            IvParameterSpec ivSpec = new IvParameterSpec(UserRepository.getAesCrypto().getIv());
-            cipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
-
-            // 加密数据
+            // AES 加密数据
             ObjectMapper objectMapper = new ObjectMapper();
             String jsonString = objectMapper.writeValueAsString(fileListVO); // 将对象序列化为 JSON 字符串
-            byte[] encryptedData = cipher.doFinal(jsonString.getBytes());
+            byte[] encryptedData = cryptoUtil.encryptAes(jsonString);
 
             // 返回加密数据
             return Base64.getEncoder().encodeToString(encryptedData);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException |
+        } catch (IllegalBlockSizeException |
                  BadPaddingException | InvalidKeyException | JsonProcessingException |
                  InvalidAlgorithmParameterException e) {
             throw new RuntimeException(e);

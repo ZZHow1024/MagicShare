@@ -2,31 +2,27 @@ package com.zzhow.magicshare.websocket;
 
 import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.service.FileService;
+import com.zzhow.magicshare.util.CryptoUtil;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
 import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
-
-import static org.springframework.web.socket.CloseStatus.SERVER_ERROR;
 
 /**
  * @author ZZHow
  * @date 2025/1/30
  */
 public class UserWebSocketHandler extends TextWebSocketHandler {
-    private FileService fileService;
+    private final FileService fileService;
+    private final CryptoUtil cryptoUtil = CryptoUtil.getInstance();
 
     public UserWebSocketHandler(FileService fileService) {
         this.fileService = fileService;
@@ -43,29 +39,19 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
             try {
                 // Base64 解码
                 String publicKey = new String(Base64.getDecoder().decode(message.getPayload().split("#")[1]));
-                // 去除 PEM 格式的头尾
-                String publicKeyContent = publicKey.replaceAll("-----\\w+ PUBLIC KEY-----", "").replaceAll("\\s+", "");
-                byte[] keyBytes = Base64.getDecoder().decode(publicKeyContent);
 
-                // 加载公钥
-                X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                PublicKey clientPublicKey = keyFactory.generatePublic(spec);
-
-                // 使用 RSA 加密 SessionId
-                Cipher rsaCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
-                rsaCipher.init(Cipher.ENCRYPT_MODE, clientPublicKey);
-                byte[] encryptedAesKey = rsaCipher.doFinal(session.getId().getBytes());
+                // RSA 加密
+                byte[] encryptedAesKey = cryptoUtil.encryptRsa(publicKey, session.getId());
 
                 if (UserRepository.getPassword() == null) {
                     UserRepository.addUser(session.getId(), session);
                     session.sendMessage(new TextMessage("Syn#202#" + Base64.getEncoder().encodeToString(encryptedAesKey)));
                 } else
                     session.sendMessage(new TextMessage("ServerHello#" + Base64.getEncoder().encodeToString(encryptedAesKey)));
-            } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | NoSuchPaddingException |
+            } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException |
                      IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
                 try {
-                    session.close(SERVER_ERROR);
+                    session.close(CloseStatus.SERVER_ERROR);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -75,7 +61,7 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
 
             try {
                 String data = session.getId() + UserRepository.getPassword();
-                byte[] hashBytes = MessageDigest.getInstance("SHA-256").digest(data.getBytes());
+                byte[] hashBytes = cryptoUtil.sha256(data);
 
                 if (Arrays.equals(hashBytes, decode)) {
                     UserRepository.addUser(session.getId(), session);
@@ -83,9 +69,9 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                 } else {
                     session.sendMessage(new TextMessage("Syn#401"));
                 }
-            } catch (NoSuchAlgorithmException | IOException e) {
+            } catch (IOException e) {
                 try {
-                    session.close(SERVER_ERROR);
+                    session.close(CloseStatus.SERVER_ERROR);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -94,23 +80,13 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
             try {
                 // Base64 解码
                 String publicKey = new String(Base64.getDecoder().decode(message.getPayload().split("#")[1]));
-                // 去除 PEM 格式的头尾
-                String publicKeyContent = publicKey.replaceAll("-----\\w+ PUBLIC KEY-----", "").replaceAll("\\s+", "");
-                byte[] keyBytes = Base64.getDecoder().decode(publicKeyContent);
-
-                // 加载公钥
-                X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                PublicKey clientPublicKey = keyFactory.generatePublic(spec);
 
                 // 使用 RSA 加密 AES 密钥
-                Cipher rsaCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
-                rsaCipher.init(Cipher.ENCRYPT_MODE, clientPublicKey);
-                byte[] encryptedAesKey = rsaCipher.doFinal(UserRepository.getAesCrypto().getKey().getEncoded());
+                byte[] encryptedAesKey = cryptoUtil.encryptRsa(publicKey, UserRepository.getAesCrypto().getKey().getEncoded());
 
                 // 返回加密的 AES 密钥和 IV
                 session.sendMessage(new TextMessage("Exc#" + Base64.getEncoder().encodeToString(encryptedAesKey) + "#" + Base64.getEncoder().encodeToString(UserRepository.getAesCrypto().getIv())));
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchPaddingException |
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException |
                      IllegalBlockSizeException | BadPaddingException | IOException | InvalidKeyException e) {
                 try {
                     session.close(CloseStatus.SERVER_ERROR);
@@ -140,15 +116,10 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
         } else if (message.getPayload().startsWith("Download")) {
             String downloadId = UserRepository.generateDownloadId(session.getId());
             try {
-                // 初始化 AES 加密器
-                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-                IvParameterSpec ivSpec = new IvParameterSpec(UserRepository.getAesCrypto().getIv());
-                cipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
-
-                // 加密数据
-                byte[] encryptedData = cipher.doFinal(downloadId.getBytes());
+                // AES 加密数据
+                byte[] encryptedData = cryptoUtil.encryptAes(downloadId);
                 session.sendMessage(new TextMessage("Download#" + message.getPayload().split("#")[1] + "#" + Base64.getEncoder().encodeToString(encryptedData)));
-            } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException |
+            } catch (InvalidKeyException |
                      InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
                      IOException e) {
                 try {
@@ -158,17 +129,5 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                 }
             }
         }
-    }
-
-    /**
-     * 将公钥转换为 PEM 格式
-     */
-    public String convertPublicKeyToPEM(PublicKey publicKey) {
-        byte[] publicKeyBytes = publicKey.getEncoded();
-        String base64PublicKey = Base64.getEncoder().encodeToString(publicKeyBytes);
-
-        return "-----BEGIN PUBLIC KEY-----\n" +
-                base64PublicKey.replaceAll("(.{64})", "$1\n") + // 每 64 字符换行
-                "\n-----END PUBLIC KEY-----";
     }
 }

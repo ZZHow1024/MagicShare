@@ -4,6 +4,7 @@ import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.AesKeyRepository;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.repository.UserRepository;
+import com.zzhow.magicshare.util.CryptoUtil;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -24,6 +25,7 @@ import java.util.List;
  */
 public class FileWebSocketHandler extends TextWebSocketHandler {
     private static final int CHUNK_SIZE = 8192;
+    private final CryptoUtil cryptoUtil = CryptoUtil.getInstance();
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
@@ -36,14 +38,9 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
         if (message.getPayload().charAt(0) == 'a') {
             String[] split = message.getPayload().split(",");
 
-            // 初始化 AES 解密器
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            IvParameterSpec ivSpec = new IvParameterSpec(UserRepository.getAesCrypto().getIv());
-            cipher.init(Cipher.DECRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
-
-            // 解密数据
-            String[] data = new String(cipher.doFinal(Base64.getDecoder().decode(split[1].getBytes()))).split("#");
-            String fileId = new String(cipher.doFinal(Base64.getDecoder().decode(split[2])));
+            // AES 解密数据
+            String[] data = new String(cryptoUtil.decryptAes(Base64.getDecoder().decode(split[1]))).split("#");
+            String fileId = new String(cryptoUtil.decryptAes(Base64.getDecoder().decode(split[2])));
 
             // 验证 sessionId#downloadId
             if (!UserRepository.verifyDownloadId(data[0], data[1])) {
@@ -63,20 +60,15 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
             }
             int block = (int) Math.ceil(files.get(index).getSize() / (CHUNK_SIZE / 1024.0));
 
-            cipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
-            byte[] encryptedData = cipher.doFinal((block + "").getBytes());
+            // AES 加密数据
+            byte[] encryptedData = cryptoUtil.encryptAes((block + ""));
 
             session.sendMessage(new TextMessage("block#" + Base64.getEncoder().encodeToString(encryptedData)));
         } else if ((message.getPayload().charAt(0) == 'b')) { // 消息格式：b,fileId
             String[] split = message.getPayload().split(",");
 
-            // 初始化 AES 解密器
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            IvParameterSpec ivSpec = new IvParameterSpec(UserRepository.getAesCrypto().getIv());
-            cipher.init(Cipher.DECRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
-
-            // 解密数据
-            String fileId = new String(cipher.doFinal(Base64.getDecoder().decode(split[1])));
+            // AES 解密数据
+            String fileId = new String(cryptoUtil.decryptAes(Base64.getDecoder().decode(split[1])));
 
             // 构建文件路径
             List<FileDetail> files = FileRepository.getFiles();
@@ -90,6 +82,8 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
             String filePath = FileRepository.getBasePath() + files.get(index).getPath();
 
             // 初始化 AES 加密器
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            IvParameterSpec ivSpec = new IvParameterSpec(UserRepository.getAesCrypto().getIv());
             cipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
 
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath))) {
