@@ -12,6 +12,15 @@ export default {
     exit: 'Exit',
     accept: 'Accept',
   },
+  message: {
+    disconnection: {
+      title: 'Disconnection',
+      content1: 'Share canceled',
+      content2: ' or ',
+      content3: 'Network abnormality',
+      button: 'Reconnect',
+    },
+  },
   login: {
     title: 'Please enter the connection password',
     connectionPassword: 'Connection password:',
@@ -21,13 +30,31 @@ export default {
     passwordIsCorrect: 'Password is correct',
     passwordIsIncorrect: 'Password is incorrect',
   },
-  message: {
-    disconnection: {
-      title: 'Disconnection',
-      content1: 'Share canceled',
-      content2: ' or ',
-      content3: 'Network abnormality',
-      button: 'Reconnect',
+  home: {
+    title: 'Share list',
+    totalFiles: 'Total number of files: ',
+    button: 'Decryption download progress',
+    fileInformation: 'File information',
+    path: 'Path',
+    operate: 'Operate',
+    shareListIsEmpty: 'Share list is empty',
+    quickDownload: 'Quick download',
+    encryptedDownloads: 'Encrypted downloads',
+    drawer: {
+      title: 'Encrypted download progress',
+      close: 'close',
+      currentlyDownloadingFile: 'Currently downloading file: ',
+      none: 'None',
+      step1: 'Establishing connection',
+      step2: 'Encrypted transmission',
+      step3: 'Decrypting Files',
+      footer: {
+        content1: 'RSA + AES hybrid encryption',
+        content2: 'Ensure data security',
+      },
     },
+  },
+  about: {
+    title: 'About',
   },
 }

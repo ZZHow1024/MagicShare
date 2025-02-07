@@ -9,6 +9,15 @@ export default {
     exit: '退出',
     accept: '接受',
   },
+  message: {
+    disconnection: {
+      title: '連線中斷',
+      content1: '已取消分享',
+      content2: ' 或 ',
+      content3: '網路出現異常',
+      button: '重新連接',
+    },
+  },
   login: {
     title: '請輸入連線密碼',
     connectionPassword: '連線密碼：',
@@ -18,13 +27,31 @@ export default {
     passwordIsCorrect: '密碼正確',
     passwordIsIncorrect: '密碼錯誤',
   },
-  message: {
-    disconnection: {
-      title: '連線中斷',
-      content1: '已取消分享',
-      content2: ' 或 ',
-      content3: '網路出現異常',
-      button: '重新連接',
+  home: {
+    title: '分享清單',
+    close: '關閉',
+    totalFiles: '總檔案數：',
+    button: '查看加密下載進度',
+    fileInformation: '檔案訊息',
+    path: '路徑',
+    operate: '操作',
+    shareListIsEmpty: '分享清單為空',
+    quickDownload: '快速下載',
+    encryptedDownloads: '加密下載',
+    drawer: {
+      title: '加密下載進度',
+      currentlyDownloadingFile: '目前下載的檔案：',
+      none: '暫無',
+      step1: '建立連線',
+      step2: '加密傳輸',
+      step3: '解密檔案',
+      footer: {
+        content1: 'RSA + AES 混合加密',
+        content2: '保障資料安全',
+      },
     },
+  },
+  about: {
+    title: '關於',
   },
 }

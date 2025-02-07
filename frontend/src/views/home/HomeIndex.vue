@@ -9,22 +9,23 @@ import {
 } from '@/utils/crypto.js'
 import { useWSocketStore } from '@/stores/index.js'
 import { useRouter } from 'vue-router'
+import { vueI18n } from '@/lang/index.js'
 
 const columns = [
   {
-    title: '文件信息',
+    title: vueI18n.global.t('home.fileInformation'),
     dataIndex: 'name',
     key: 'name',
     width: 'calc(35vw)',
   },
   {
-    title: '路径',
+    title: vueI18n.global.t('home.path'),
     dataIndex: 'path',
     key: 'path',
     width: 'calc(25vw)',
   },
   {
-    title: '操作',
+    title: vueI18n.global.t('home.operate'),
     key: 'action',
     width: 'calc(25vw)',
     align: 'center',
@@ -149,7 +150,7 @@ let socket = null
 
 let fileId = ''
 const chunks = ref([])
-const fileName = ref('暂无')
+const fileName = ref(vueI18n.global.t('home.drawer.none'))
 const isEncryptedDownload = ref(false)
 const downloadProgress = ref({
   connection: 0,
@@ -275,25 +276,19 @@ const mergeFiles = () => {
   <div class="home-container">
     <br />
     <div style="width: 100vw">
-      <span style="margin-left: 3vw; font-size: 20px">总文件数：{{ count }}</span>
-      <a-button style="position: relative; margin-left: 36vw" type="primary" @click="showDrawer"
-        >查看加密下载进度</a-button
-      >
+      <span style="margin-left: 3vw; font-size: 20px">{{ $t('home.totalFiles') + count }}</span>
+      <a-button style="position: relative; margin-left: 36vw" type="primary" @click="showDrawer">{{
+        $t('home.button')
+      }}</a-button>
     </div>
     <div :style="{ background: '#fff', padding: '24px', minHeight: '280px' }">
       <!-- 表格 -->
       <a-table
         :columns="columns"
         :data-source="data"
-        :locale="{ emptyText: '分享列表为空' }"
+        :locale="{ emptyText: $t('home.shareListIsEmpty') }"
         :scroll="{ y: 'calc(60vh)' }"
       >
-        <template #headerCell="{ column }">
-          <template v-if="column.key === 'name'">
-            <span> 文件信息 </span>
-          </template>
-        </template>
-
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'name'">
             {{ record.name }}<br />
@@ -302,11 +297,15 @@ const mergeFiles = () => {
           </template>
 
           <template v-else-if="column.key === 'action'">
-            <span>
-              <a class="ant-dropdown-link" @click="onDownloadFile(record)"> 快速下载 </a>
-              <br />
-              <a class="ant-dropdown-link" @click="encryptedDownload(record)"> 加密下载 </a>
-            </span>
+            <div>
+              <a class="ant-dropdown-link" @click="onDownloadFile(record)">
+                {{ $t('home.quickDownload') }}
+              </a>
+              <div style="height: 20px">-----</div>
+              <a class="ant-dropdown-link" @click="encryptedDownload(record)">
+                {{ $t('home.encryptedDownloads') }}
+              </a>
+            </div>
           </template>
         </template>
       </a-table>
@@ -327,21 +326,23 @@ const mergeFiles = () => {
     <a-drawer
       class="drawer"
       :width="500"
-      title="加密下载进度"
+      :title="$t('home.drawer.title')"
       placement="bottom"
       :open="open"
       @close="onClose"
     >
       <template #extra>
-        <a-button style="margin-right: 8px" @click="onClose">关闭</a-button>
+        <a-button style="margin-right: 8px" @click="onClose">{{
+          $t('home.drawer.close')
+        }}</a-button>
       </template>
 
-      <div>当前下载的文件：{{ fileName }}</div>
+      <div>{{ $t('home.drawer.currentlyDownloadingFile') + fileName }}</div>
       <br />
       <div class="download-process-container">
         <div>
           <a-progress type="circle" :percent="downloadProgress.connection" />
-          <div class="download-process-container">建立连接</div>
+          <div class="download-process-container">{{ $t('home.drawer.step1') }}</div>
         </div>
         &nbsp;
         <div>
@@ -354,7 +355,7 @@ const mergeFiles = () => {
               )
             "
           />
-          <div class="download-process-container">加密传输</div>
+          <div class="download-process-container">{{ $t('home.drawer.step2') }}</div>
         </div>
         &nbsp;
         <div>
@@ -367,12 +368,12 @@ const mergeFiles = () => {
               )
             "
           />
-          <div class="download-process-container">解密文件</div>
+          <div class="download-process-container">{{ $t('home.drawer.step3') }}</div>
         </div>
       </div>
       <br />
-      <div class="content-container">RSA + AES 混合加密</div>
-      <div class="content-container">保障数据安全</div>
+      <div class="content-container">{{ $t('home.drawer.footer.content1') }}</div>
+      <div class="content-container">{{ $t('home.drawer.footer.content2') }}</div>
     </a-drawer>
   </div>
 </template>

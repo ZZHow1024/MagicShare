@@ -36,8 +36,12 @@ const onChangeMenu = (page) => {
           mode="horizontal"
           :style="{ lineHeight: '64px', marginLeft: '-5px' }"
         >
-          <a-menu-item key="/home" @click="onChangeMenu('/home')">文件列表</a-menu-item>
-          <a-menu-item key="/about" @click="onChangeMenu('/about')">关于</a-menu-item>
+          <a-menu-item key="/home" @click="onChangeMenu('/home')">{{
+            $t('home.title')
+          }}</a-menu-item>
+          <a-menu-item key="/about" @click="onChangeMenu('/about')">{{
+            $t('about.title')
+          }}</a-menu-item>
         </a-menu>
       </a-layout-header>
       <a-layout-content>
