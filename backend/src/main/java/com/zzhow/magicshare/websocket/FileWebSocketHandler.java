@@ -1,6 +1,7 @@
 package com.zzhow.magicshare.websocket;
 
 import com.zzhow.magicshare.pojo.entity.FileDetail;
+import com.zzhow.magicshare.repository.DownloadUserRepository;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.util.CryptoUtil;
@@ -25,6 +26,12 @@ import java.util.List;
 public class FileWebSocketHandler extends TextWebSocketHandler {
     private static final int CHUNK_SIZE = 8192;
     private final CryptoUtil cryptoUtil = CryptoUtil.getInstance();
+    private final DownloadUserRepository downloadUserRepository = DownloadUserRepository.getInstance();
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        downloadUserRepository.removeUser(session.getId());
+    }
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -38,7 +45,7 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
 
             // 验证 sessionId#downloadId
             if (!UserRepository.verifyDownloadId(data[0], data[1])) {
-                session.sendMessage(new TextMessage("Not found"));
+                session.sendMessage(new TextMessage("Not Acceptable"));
                 session.close(CloseStatus.NOT_ACCEPTABLE);
 
                 return;
@@ -48,7 +55,7 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
             List<FileDetail> files = FileRepository.getFiles();
             int index = files.indexOf(new FileDetail(fileId));
             if (index == -1) {
-                session.sendMessage(new TextMessage("Not found"));
+                session.sendMessage(new TextMessage("Not Found"));
                 session.close(CloseStatus.NOT_ACCEPTABLE);
                 return;
             }
@@ -57,8 +64,17 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
             // AES 加密数据
             byte[] encryptedData = cryptoUtil.encryptAes((block + ""));
 
+            downloadUserRepository.addUser(session.getId());
             session.sendMessage(new TextMessage("block#" + Base64.getEncoder().encodeToString(encryptedData)));
         } else if ((message.getPayload().charAt(0) == 'b')) { // 消息格式：b,fileId
+            // 身份验证
+            if (!downloadUserRepository.containsUser(session.getId())) {
+                session.sendMessage(new TextMessage("Not Acceptable"));
+                session.close(CloseStatus.NOT_ACCEPTABLE);
+
+                return;
+            }
+
             String[] split = message.getPayload().split(",");
 
             // AES 解密数据
@@ -68,7 +84,7 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
             List<FileDetail> files = FileRepository.getFiles();
             int index = files.indexOf(new FileDetail(fileId));
             if (index == -1) {
-                session.sendMessage(new TextMessage("Not found"));
+                session.sendMessage(new TextMessage("Not Found"));
                 session.close(CloseStatus.NOT_ACCEPTABLE);
                 return;
             }
@@ -96,6 +112,7 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
                 }
 
                 // 发送结束
+                downloadUserRepository.removeUser(session.getId());
                 session.sendMessage(new TextMessage("fin"));
             } catch (IOException e) {
                 session.sendMessage(new TextMessage("Error: " + e.getMessage()));
