@@ -40,14 +40,14 @@ export default {
     operate: 'Operate',
     shareListIsEmpty: 'Share list is empty',
     quickDownload: 'Quick download',
-    encryptedDownloads: 'Encrypted downloads',
+    encryptedDownloads: 'Encrypted download',
     drawer: {
       title: 'Encrypted download progress',
       close: 'close',
       currentlyDownloadingFile: 'Currently downloading file: ',
       step1: 'Establishing connection',
       step2: 'Encrypted transmission',
-      step3: 'Decrypting Files',
+      step3: 'Decrypting File',
       footer: {
         content1: 'RSA + AES hybrid encryption',
         content2: 'Ensure data security',
