@@ -13,6 +13,7 @@ import javax.crypto.spec.IvParameterSpec;
 import java.io.IOException;
 import java.security.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author ZZHow
@@ -92,14 +93,23 @@ public class UserRepository {
 
     public static String generateDownloadId(String sessionId) {
         String downloadId = UUID.randomUUID().toString();
-        users.get(sessionId).getDownloadIdList().add(downloadId);
+        users.get(sessionId).getDownloadIdList().put(downloadId, true);
 
         return downloadId;
     }
 
     public static boolean verifyDownloadId(String sessionId, String downloadId) {
-        if (users.get(sessionId) != null && users.get(sessionId).getDownloadIdList().contains(downloadId)) {
-            users.get(sessionId).getDownloadIdList().remove(downloadId);
+        if (users.get(sessionId) != null && users.get(sessionId).getDownloadIdList().containsKey(downloadId)) {
+            if (users.get(sessionId).getDownloadIdList().get(downloadId)) {
+                users.get(sessionId).getDownloadIdList().put(downloadId, false);
+
+                // 延迟 10s 删除 downloadId
+                new java.util.concurrent.ScheduledThreadPoolExecutor(1)
+                        .schedule(() -> {
+                            if (!users.containsKey(sessionId)) return;
+                            users.get(sessionId).getDownloadIdList().remove(downloadId);
+                        }, 10, TimeUnit.SECONDS);
+            }
 
             return true;
         }

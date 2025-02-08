@@ -34,14 +34,15 @@ public class DownloadController {
             }
 
             fileId = fileId.replace("-", "/").replace("_", "+");
+            token = token.replace(" ", "+");
+            shareId = shareId.replace(" ", "+");
 
             // AES 解密数据
             String[] split = new String(cryptoUtil.decryptAes(Base64.getDecoder().decode(token))).split("#");
 
             // 验证 sessionId#downloadId
-            if (!UserRepository.verifyDownloadId(split[0], split[1])) {
+            if (!UserRepository.verifyDownloadId(split[0], split[1]))
                 return ResponseEntity.notFound().build();
-            }
 
             // 解密数据
             shareId = new String(cryptoUtil.decryptAes(Base64.getDecoder().decode(shareId)));

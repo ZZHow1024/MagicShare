@@ -2,8 +2,8 @@ package com.zzhow.magicshare.pojo.entity;
 
 import org.springframework.web.socket.WebSocketSession;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author ZZHow
@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class User {
     private WebSocketSession session;
-    private final List<String> downloadId = new ArrayList<>();
+    private final Map<String, Boolean> downloadId = new HashMap<>();
 
     public User() {
     }
@@ -24,7 +24,7 @@ public class User {
         return session;
     }
 
-    public List<String> getDownloadIdList() {
+    public Map<String, Boolean> getDownloadIdList() {
         return downloadId;
     }
 }
