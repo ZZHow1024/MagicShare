@@ -148,6 +148,7 @@ const promptHandleCancel = () => {
             autocomplete="off"
           >
             <a-form-item
+              @keydown.enter="onSubmit"
               :label="$t('login.connectionPassword')"
               :label-col="{ span: 11 }"
               name="password"
