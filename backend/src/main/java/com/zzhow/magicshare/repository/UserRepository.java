@@ -21,10 +21,17 @@ import java.util.*;
 public class UserRepository {
     private static AesCrypto aesCrypto = null;
     private static KeyPair keyPair = null;
-    private static String password = "123";
+    private static String password = null;
     private static final Map<String, User> users = new HashMap<>();
 
     static {
+        initialize();
+    }
+
+    public static void initialize() {
+        // 清空用户列表
+        users.clear();
+
         try {
             // 生成随机 AES 密钥
             KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
@@ -39,7 +46,7 @@ public class UserRepository {
             // 生成 RSA 密钥对
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
             keyPairGenerator.initialize(2048);
-            keyPair = keyPairGenerator.generateKeyPair();
+            UserRepository.keyPair = keyPairGenerator.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
@@ -93,7 +100,7 @@ public class UserRepository {
     public static boolean verifyDownloadId(String sessionId, String downloadId) {
         if (users.get(sessionId) != null && users.get(sessionId).getDownloadIdList().contains(downloadId)) {
             users.get(sessionId).getDownloadIdList().remove(downloadId);
-            
+
             return true;
         }
 

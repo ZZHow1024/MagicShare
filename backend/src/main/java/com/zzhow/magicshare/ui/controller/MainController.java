@@ -4,6 +4,7 @@ import com.zzhow.magicshare.repository.ConnectionCountBinding;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.LanguageRepository;
+import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.ui.service.impl.ShareServiceImpl;
 import com.zzhow.magicshare.ui.window.AboutWindow;
@@ -138,6 +139,7 @@ public class MainController {
     @FXML
     private void onStartOrStopServiceClicked() {
         if (serviceIsStarted) {
+            UserRepository.initialize();
             textField1.setDisable(false);
             if (checkBox1.isSelected())
                 textField3.setDisable(false);

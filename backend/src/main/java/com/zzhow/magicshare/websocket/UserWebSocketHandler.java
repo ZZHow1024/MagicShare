@@ -41,13 +41,13 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                 String publicKey = new String(Base64.getDecoder().decode(message.getPayload().split("#")[1]));
 
                 // RSA 加密
-                byte[] encryptedAesKey = cryptoUtil.encryptRsa(publicKey, session.getId());
+                byte[] encryptedSessionId = cryptoUtil.encryptRsa(publicKey, session.getId());
 
                 if (UserRepository.getPassword() == null) {
                     UserRepository.addUser(session.getId(), session);
-                    session.sendMessage(new TextMessage("Syn#202#" + Base64.getEncoder().encodeToString(encryptedAesKey)));
+                    session.sendMessage(new TextMessage("Syn#202#" + Base64.getEncoder().encodeToString(encryptedSessionId)));
                 } else
-                    session.sendMessage(new TextMessage("ServerHello#" + Base64.getEncoder().encodeToString(encryptedAesKey)));
+                    session.sendMessage(new TextMessage("ServerHello#" + Base64.getEncoder().encodeToString(encryptedSessionId)));
             } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException |
                      IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
                 try {
@@ -78,6 +78,16 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
             }
         } else if (message.getPayload().startsWith("Exc")) {
             try {
+                if (!UserRepository.containsUser(session.getId())) {
+                    try {
+                        session.close(CloseStatus.NOT_ACCEPTABLE);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    return;
+                }
+
                 // Base64 解码
                 String publicKey = new String(Base64.getDecoder().decode(message.getPayload().split("#")[1]));
 
@@ -101,6 +111,8 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+
+                return;
             }
 
             String[] split = message.getPayload().split("#");
@@ -114,6 +126,16 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                     throw new RuntimeException(e);
                 }
         } else if (message.getPayload().startsWith("Download")) {
+            if (!UserRepository.containsUser(session.getId())) {
+                try {
+                    session.close(CloseStatus.NOT_ACCEPTABLE);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                return;
+            }
+
             String downloadId = UserRepository.generateDownloadId(session.getId());
             try {
                 // AES 加密数据
