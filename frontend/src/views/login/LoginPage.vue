@@ -38,10 +38,10 @@ const wSocketStore = useWSocketStore()
 let wSocket = null
 let sessionId = null
 const connect = () => {
-  // const hostname = window.location.hostname
-  // const port = window.location.port
-  // const webSocketUrl = 'ws://' + hostname + ':' + port + '/ws/connect'
-  const webSocketUrl = 'ws://localhost:1024/ws/connect' //开发使用
+  const hostname = window.location.hostname
+  const port = window.location.port
+  const webSocketUrl = 'ws://' + hostname + ':' + port + '/ws/connect'
+  // const webSocketUrl = 'ws://localhost:1024/ws/connect' //开发使用
 
   wSocket = new WebSocket(webSocketUrl) // 开发使用 WebSocket URL
 

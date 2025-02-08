@@ -50,16 +50,16 @@ const startQuickDownload = () => {
     fileId: encryptWAES(wAesKey, wIv, quickDownloadList.pop()),
   }
 
-  // window.location.href =
-  //   protocol +
-  //   '//' +
-  //   hostname +
-  //   ':' +
-  //   port +
-  //   `/api/download/${fileId}?token=${encodeURIComponent(token)}&shareId=${encodeURIComponent(shareId)}`
+  window.location.href =
+    protocol +
+    '//' +
+    hostname +
+    ':' +
+    port +
+    `/api/download/${data.fileId.replace('/', '-').replace('+', '_')}?token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
 
   // 开发使用
-  window.location.href = `http://localhost:1024/api/download/${data.fileId.replace('/', '-').replace('+', '_')}?token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
+  // window.location.href = `http://localhost:1024/api/download/${data.fileId.replace('/', '-').replace('+', '_')}?token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
 }
 
 const open = ref(false)
@@ -188,7 +188,13 @@ const encryptedDownload = (record) => {
 }
 
 const startEncryptedDownload = () => {
-  socket = new WebSocket('ws://localhost:1024/ws/download') // 测试使用
+  const hostname = window.location.hostname
+  const port = window.location.port
+
+  socket = new WebSocket('ws://' + hostname + ':' + port + '/ws/download')
+
+  // 开发使用
+  // socket = new WebSocket('ws://localhost:1024/ws/download')
 
   downloadProgress.value.connection = 100
 
