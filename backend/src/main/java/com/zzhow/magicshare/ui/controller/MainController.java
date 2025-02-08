@@ -107,22 +107,21 @@ public class MainController {
 
         languageSelector.getItems().addAll("简体中文", "繁體中文", "English");
         String language = Locale.getDefault().toLanguageTag();
+
         if (language.contains("zh")) {
-            if (language.contains("Hans"))
-                language = "zh_Hans";
-            else if (language.contains("Hant"))
-                language = "zh_Hant";
-            else if (language.contains("CN"))
-                language = "zh_Hans";
+            if (language.contains("CN") || language.contains("cn"))
+                language = "zh_HANS";
+            else if (language.contains("HANS") || language.contains("Hans"))
+                language = "zh_HANS";
             else
-                language = "zh_Hant";
+                language = "zh_HANT";
         } else {
             language = "en_US";
         }
 
         language = switch (language) {
-            case "zh_Hans" -> "简体中文";
-            case "zh_Hant" -> "繁體中文";
+            case "zh_HANS" -> "简体中文";
+            case "zh_HANT" -> "繁體中文";
             case "en_US" -> "English";
             default -> "简体中文";
         };
@@ -255,8 +254,8 @@ public class MainController {
     private void switchLanguage() {
         String selectorValue = languageSelector.getValue();
         selectorValue = switch (selectorValue) {
-            case "简体中文" -> "zh_Hans";
-            case "繁體中文" -> "zh_Hant";
+            case "简体中文" -> "zh_HANS";
+            case "繁體中文" -> "zh_HANT";
             case "English" -> "en_US";
             default -> "zh_Hans";
         };

@@ -8,8 +8,8 @@ import java.util.ResourceBundle;
  * @date 2025/1/30
  */
 public class LanguageRepository {
-    public static ResourceBundle bundle = ResourceBundle.getBundle("MessagesBundle", Locale.of("zh", "Hans"));
-    private static String language = "zh_Hans";
+    public static ResourceBundle bundle = ResourceBundle.getBundle("MessagesBundle", Locale.of("zh", "HANS"));
+    private static String language = "zh_HANS";
 
     public static String getLanguage() {
         return language;

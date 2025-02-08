@@ -26,14 +26,12 @@ public class PromptController {
     private void initialize() {
         String language = Locale.getDefault().toLanguageTag();
         if (language.contains("zh")) {
-            if (language.contains("Hans"))
-                language = "zh_Hans";
-            else if (language.contains("Hant"))
-                language = "zh_Hant";
-            else if (language.contains("CN"))
-                language = "zh_Hans";
+            if (language.contains("CN") || language.contains("cn"))
+                language = "zh_HANS";
+            else if (language.contains("HANS") || language.contains("Hans"))
+                language = "zh_HANS";
             else
-                language = "zh_Hant";
+                language = "zh_HANT";
         } else {
             language = "en_US";
         }

@@ -20,7 +20,7 @@ public class PromptWindow extends javafx.application.Application {
     public void start(Stage stage) throws IOException {
         PromptWindow.stage = stage;
         FXMLLoader fxmlLoader = new FXMLLoader(MainWindow.class.getResource("prompt-window.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 780, 450);
+        Scene scene = new Scene(fxmlLoader.load(), 780, 520);
         stage.setTitle("MagicShare");
         stage.setScene(scene);
         Image icon = new Image(Objects.requireNonNull(MagicShareApplication.class.getResourceAsStream("/image/icon.png")));
