@@ -58,10 +58,10 @@ export default {
     title: 'About',
     features: 'Features:',
     content:
-      '1. Start service on custom port. \n' +
-      '2. Find files by folder/file path and generate a list. \n' +
-      '3. Download files from Web page. \n' +
-      '- Support fast file download via HTTP protocol\n' +
-      '- Support downloading files via WebSocket protocol and using RSA+AES hybrid encryption',
+      '1. Display the current number of connections.\n' +
+      '2. Customize the connection password.\n' +
+      '3. Support multiple languages.\n' +
+      '\t- Chinese (Simplified/Traditional)\n' +
+      '\t- English',
   },
 }
