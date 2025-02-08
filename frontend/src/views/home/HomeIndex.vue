@@ -108,7 +108,7 @@ onMounted(async () => {
       } else if (event.data.startsWith('List#')) {
         if (wAesKey === null || wIv === null) return
 
-        const decryptedData = decryptBufferAES(
+        const decryptedData = await decryptAES(
           wAesKey,
           wIv,
           new Uint8Array(
@@ -120,7 +120,7 @@ onMounted(async () => {
           ),
         )
 
-        let obj = JSON.parse(await decryptedData)
+        let obj = JSON.parse(decryptedData)
 
         shareId.value = obj.shareId
         count.value = obj.count
