@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { decryptRSA, decryptSha256, encryptRSA, generateKeyPair } from '@/utils/crypto.js'
+import { decryptRSA, decryptSha256, generateKeyPair } from '@/utils/crypto.js'
 import { message } from 'ant-design-vue'
 import { useWSocketStore } from '@/stores/modules/wSocket.js'
 import { useRouter } from 'vue-router'
