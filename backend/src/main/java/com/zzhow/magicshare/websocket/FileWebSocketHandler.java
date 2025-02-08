@@ -1,7 +1,6 @@
 package com.zzhow.magicshare.websocket;
 
 import com.zzhow.magicshare.pojo.entity.FileDetail;
-import com.zzhow.magicshare.repository.AesKeyRepository;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.util.CryptoUtil;
@@ -26,11 +25,6 @@ import java.util.List;
 public class FileWebSocketHandler extends TextWebSocketHandler {
     private static final int CHUNK_SIZE = 8192;
     private final CryptoUtil cryptoUtil = CryptoUtil.getInstance();
-
-    @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        AesKeyRepository.delete(session.getId());
-    }
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
