@@ -18,6 +18,12 @@ export default {
       content3: '網路出現異常',
       button: '重新連接',
     },
+    downloadBusy: {
+      title: 'MagicShare 提示',
+      cancelText: '取消',
+      okText: '查看目前加密下載進度',
+      content: '加密下載任務被佔用，不支援同時加密下載多個文件。',
+    },
   },
   login: {
     title: '請輸入連線密碼',

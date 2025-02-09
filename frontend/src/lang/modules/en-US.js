@@ -21,6 +21,13 @@ export default {
       content3: 'Network abnormality',
       button: 'Reconnect',
     },
+    downloadBusy: {
+      title: 'MagicShare Alert',
+      cancelText: 'Cancel',
+      okText: 'View the current encrypted download progress',
+      content:
+        'The encrypted download task is occupied, and it does not support simultaneous encrypted download of multiple files.',
+    },
   },
   login: {
     title: 'Please enter the connection password',

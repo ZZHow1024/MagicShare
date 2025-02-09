@@ -330,13 +330,13 @@ const mergeFiles = () => {
       <a-modal
         centered
         v-model:open="modelOpen"
-        title="MagicShare 提示"
-        cancel-text="取消"
+        :title="$t('message.downloadBusy.title')"
+        :cancel-text="$t('message.downloadBusy.cancelText')"
         @cancel="handleCancel"
-        ok-text="查看当前加密下载进度"
+        :ok-text="$t('message.downloadBusy.okText')"
         @ok="handleOk"
       >
-        加密下载任务被占用，不支持同时加密下载多个文件。
+        {{ $t('message.downloadBusy.content') }}
       </a-modal>
     </div>
 
