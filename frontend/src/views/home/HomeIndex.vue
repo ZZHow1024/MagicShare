@@ -1,9 +1,14 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { checkCurrentShareService, getFileListService } from '@/api/file.js'
-import { decryptAES, decryptBufferAES, decryptRSA, generateKeyPair } from '@/utils/crypto.js'
-import forge from 'node-forge'
-import { useAcceptStore } from '@/stores/index.js'
+import { onMounted, ref } from 'vue'
+import {
+  decryptAES,
+  decryptBufferAES,
+  decryptRSA,
+  encryptWAES,
+  generateKeyPair,
+} from '@/utils/crypto.js'
+import { useWSocketStore } from '@/stores/index.js'
+import { useRouter } from 'vue-router'
 
 const columns = [
   {
@@ -25,90 +30,37 @@ const columns = [
     align: 'center',
   },
 ]
-const shareId = ref('')
+const data = ref([])
 const count = ref(0)
-const data = ref()
-const timer = ref()
-const acceptStore = useAcceptStore()
+const shareId = ref('')
 
-onMounted(() => {
-  if (acceptStore.status === true) getFileList()
-  timer.value = setInterval(() => {
-    checkCurrentShare()
-  }, 1000)
-})
-
-const isConnectionLost = ref(false)
-let checkCurrentShare = async () => {
-  if (acceptStore.status === true) {
-    checkCurrentShare = async () => {
-      let isCurrentConnection = true
-      const res = await checkCurrentShareService(shareId.value).catch((e) => {
-        isCurrentConnection = false
-        isConnectionLost.value = true
-        shareId.value = ''
-        count.value = 0
-        data.value = ''
-      })
-
-      if (isCurrentConnection && res.data.data === false) {
-        await getFileList()
-        isConnectionLost.value = false
-      }
-    }
-
-    clearInterval(timer.value)
-    timer.value = setInterval(() => {
-      checkCurrentShare()
-    }, 1000)
-  }
-}
-
-const getFileList = async () => {
-  // 调用生成公私钥对
-  let publicKey
-  let privateKeyPem
-  await generateKeyPair().then((keys) => {
-    publicKey = keys.publicKey
-    privateKeyPem = keys.privateKey
-  })
-
-  // 携带公钥发请求
-  const res = await getFileListService(btoa(publicKey))
-
-  const aesKey = await decryptRSA(privateKeyPem, res.data.data.key)
-  const ivBase64 = res.data.data.iv
-  const encryptedDataBase64 = res.data.data.data
-
-  const decryptedData = decryptAES(
-    aesKey,
-    forge.util.decode64(ivBase64),
-    forge.util.decode64(encryptedDataBase64),
-  )
-
-  let obj = JSON.parse(decryptedData)
-
-  shareId.value = obj.shareId
-  count.value = obj.count
-  data.value = obj.files
-}
-
+let quickDownloadList = []
 const onDownloadFile = (record) => {
+  quickDownloadList.push(record.fileId)
+  wSocket.send('Download#0')
+}
+
+const startQuickDownload = () => {
   const protocol = window.location.protocol
   const hostname = window.location.hostname
   const port = window.location.port
+  const data = {
+    token: encryptWAES(wAesKey, wIv, sessionId + '#' + downloadId),
+    shareId: encryptWAES(wAesKey, wIv, shareId.value),
+    fileId: encryptWAES(wAesKey, wIv, quickDownloadList.pop()),
+  }
+
   window.location.href =
     protocol +
     '//' +
     hostname +
     ':' +
     port +
-    `/api/download/${record.fileId}?shareId=${encodeURIComponent(shareId.value)}`
-}
+    `/api/download/${data.fileId.replace('/', '-').replace('+', '_')}?token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
 
-onBeforeUnmount(() => {
-  clearInterval(timer.value)
-})
+  // 开发使用
+  // window.location.href = `http://localhost:1024/api/download/${data.fileId.replace('/', '-').replace('+', '_')}?token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
+}
 
 const open = ref(false)
 const showDrawer = () => {
@@ -118,13 +70,86 @@ const onClose = () => {
   open.value = false
 }
 
-// WebSocket 加密传输相关
+// WS 连接状态管理
+const router = useRouter()
+const wSocketStore = useWSocketStore()
+let wSocket = wSocketStore.wSocket
+let wAesKey = wSocketStore.wAesKey
+let wIv = wSocketStore.wIv
+let sessionId = wSocketStore.sessionId
+let downloadId = ''
+onMounted(async () => {
+  if (wSocket) {
+    wSocket.onerror = () => {
+      wSocketStore.clearWSocket()
+      router.replace('/login')
+    }
+    wSocket.onclose = () => {
+      wSocketStore.clearWSocket()
+      router.replace('/login')
+    }
+
+    // 交换密钥
+    let publicKey, privateKey
+    if (wAesKey === null || wIv === null) {
+      const keyPair = await generateKeyPair()
+      publicKey = keyPair.publicKey
+      privateKey = keyPair.privateKey
+      wSocket.send('Exc#' + btoa(publicKey))
+    } else wSocket.send('List#')
+
+    wSocket.onmessage = async (event) => {
+      if (event.data.startsWith('Exc#')) {
+        wAesKey = await decryptRSA(privateKey, event.data.split('#')[1])
+        wSocketStore.setWAesKey(wAesKey)
+        wIv = atob(event.data.split('#')[2])
+        wSocketStore.setWIv(wIv)
+        wSocket.send('List#')
+      } else if (event.data.startsWith('List#')) {
+        if (wAesKey === null || wIv === null) return
+
+        const decryptedData = await decryptAES(
+          wAesKey,
+          wIv,
+          new Uint8Array(
+            atob(event.data.split('#')[1])
+              .split('')
+              .map(function (c) {
+                return c.charCodeAt(0)
+              }),
+          ),
+        )
+
+        let obj = JSON.parse(decryptedData)
+
+        shareId.value = obj.shareId
+        count.value = obj.count
+        data.value = obj.files
+      } else if (event.data.startsWith('Download#')) {
+        downloadId = decryptAES(
+          wAesKey,
+          wIv,
+          new Uint8Array(
+            atob(event.data.split('#')[2])
+              .split('')
+              .map(function (c) {
+                return c.charCodeAt(0)
+              }),
+          ),
+        )
+        if (event.data.split('#')[1] === '0') startQuickDownload()
+        else startEncryptedDownload()
+      }
+    }
+  }
+})
+
+// WS 加密传输相关
 let socket = null
 
-const aesKey = ref('')
-const iv = ref('')
+let fileId = ''
 const chunks = ref([])
-const fileName = ref('暂无')
+const fileName = ref('-')
 const isEncryptedDownload = ref(false)
 const downloadProgress = ref({
   connection: 0,
@@ -156,63 +181,67 @@ const encryptedDownload = (record) => {
     decryptionBlock: 0,
   }
   showDrawer()
-  const fileId = record.fileId
+  fileId = record.fileId
   fileName.value = record.name
 
+  wSocket.send('Download#1')
+}
+
+const startEncryptedDownload = () => {
   const hostname = window.location.hostname
   const port = window.location.port
-  const webSocketUrl = 'ws://' + hostname + ':' + port + '/ws/download'
-  // const webSocketUrl = 'ws://localhost:1024/ws/download' //开发使用
 
-  socket = new WebSocket(webSocketUrl) // 开发使用 WebSocket URL
+  socket = new WebSocket('ws://' + hostname + ':' + port + '/ws/download')
 
-  socket.onopen = async () => {
-    downloadProgress.value.connection = 100
+  // 开发使用
+  // socket = new WebSocket('ws://localhost:1024/ws/download')
 
-    // 调用生成公私钥对
-    let publicKey
-    let privateKeyPem
-    await generateKeyPair().then((keys) => {
-      publicKey = keys.publicKey
-      privateKeyPem = keys.privateKey
-    })
+  downloadProgress.value.connection = 100
 
-    socket.send('a,' + btoa(publicKey) + ',' + fileId)
+  fileId = encryptWAES(wAesKey, wIv, fileId)
+  socket.onopen = () => {
+    socket.send('a,' + encryptWAES(wAesKey, wIv, sessionId + '#' + downloadId) + ',' + fileId)
+  }
 
-    socket.onmessage = async (event) => {
-      if (event.data.startsWith('key#')) {
-        const data = event.data.split(',')
-        const encryptedAesKey = data[0].split('#')[1]
-        iv.value = data[1].split('#')[1]
-        aesKey.value = await decryptRSA(privateKeyPem, encryptedAesKey)
-        downloadProgress.value.totalBlock = parseInt(data[2].split('#')[1])
+  socket.onmessage = async (event) => {
+    if (event.data.startsWith('block#')) {
+      const block = decryptAES(
+        wAesKey,
+        wIv,
+        new Uint8Array(
+          atob(event.data.split('#')[1])
+            .split('')
+            .map(function (c) {
+              return c.charCodeAt(0)
+            }),
+        ),
+      )
+      downloadProgress.value.totalBlock = parseInt(block)
 
-        socket.send('b,' + fileId)
-      } else if (event.data.startsWith('fin')) {
-        socket.close()
-      } else {
-        downloadProgress.value.currentBlock++
-        const decryptedChunk = await decryptBufferAES(
-          aesKey.value,
-          forge.util.decode64(iv.value),
-          new Uint8Array(
-            atob(event.data)
-              .split('')
-              .map(function (c) {
-                return c.charCodeAt(0)
-              }),
-          ),
-        )
+      socket.send('b,' + fileId)
+    } else if (event.data.startsWith('fin')) {
+      socket.close()
+    } else {
+      downloadProgress.value.currentBlock++
+      const decryptedChunk = await decryptBufferAES(
+        wAesKey,
+        wIv,
+        new Uint8Array(
+          atob(event.data)
+            .split('')
+            .map(function (c) {
+              return c.charCodeAt(0)
+            }),
+        ),
+      )
 
-        const decryptedChunkUint8 = new Uint8Array(decryptedChunk.length)
-        for (let i = 0; i < decryptedChunkUint8.length; i++) {
-          decryptedChunkUint8[i] = decryptedChunk.charCodeAt(i)
-        }
-        chunks.value.push(decryptedChunkUint8)
-        downloadProgress.value.decryptionBlock++
-        if (downloadProgress.value.decryptionBlock >= downloadProgress.value.totalBlock)
-          mergeFiles()
+      const decryptedChunkUint8 = new Uint8Array(decryptedChunk.length)
+      for (let i = 0; i < decryptedChunkUint8.length; i++) {
+        decryptedChunkUint8[i] = decryptedChunk.charCodeAt(i)
       }
+      chunks.value.push(decryptedChunkUint8)
+      downloadProgress.value.decryptionBlock++
+      if (downloadProgress.value.decryptionBlock >= downloadProgress.value.totalBlock) mergeFiles()
     }
   }
 
@@ -222,8 +251,6 @@ const encryptedDownload = (record) => {
   }
 
   socket.onclose = () => {
-    aesKey.value = ''
-    iv.value = ''
     chunks.value = []
     isEncryptedDownload.value = false
   }
@@ -254,22 +281,28 @@ const mergeFiles = () => {
   <div class="home-container">
     <br />
     <div style="width: 100vw">
-      <span style="margin-left: 3vw; font-size: 20px">总文件数：{{ count }}</span>
-      <a-button style="position: relative; margin-left: 36vw" type="primary" @click="showDrawer"
-        >查看加密下载进度</a-button
-      >
+      <span style="margin-left: 3vw; font-size: 20px">{{ $t('home.totalFiles') + count }}</span>
+      <a-button style="position: relative; margin-left: 36vw" type="primary" @click="showDrawer">{{
+        $t('home.button')
+      }}</a-button>
     </div>
     <div :style="{ background: '#fff', padding: '24px', minHeight: '280px' }">
       <!-- 表格 -->
       <a-table
         :columns="columns"
         :data-source="data"
-        :locale="{ emptyText: '分享列表为空' }"
+        :locale="{ emptyText: $t('home.shareListIsEmpty') }"
         :scroll="{ y: 'calc(60vh)' }"
       >
         <template #headerCell="{ column }">
           <template v-if="column.key === 'name'">
-            <span> 文件信息 </span>
+            <span> {{ $t('home.fileInformation') }} </span>
+          </template>
+          <template v-if="column.key === 'path'">
+            <span> {{ $t('home.path') }} </span>
+          </template>
+          <template v-if="column.key === 'action'">
+            <span> {{ $t('home.operate') }} </span>
           </template>
         </template>
 
@@ -281,52 +314,52 @@ const mergeFiles = () => {
           </template>
 
           <template v-else-if="column.key === 'action'">
-            <span>
-              <a class="ant-dropdown-link" @click="onDownloadFile(record)"> 快速下载 </a>
-              <br />
-              <a class="ant-dropdown-link" @click="encryptedDownload(record)"> 加密下载 </a>
-            </span>
+            <div>
+              <a class="ant-dropdown-link" @click="onDownloadFile(record)">
+                {{ $t('home.quickDownload') }}
+              </a>
+              <div style="height: 20px">-----</div>
+              <a class="ant-dropdown-link" @click="encryptedDownload(record)">
+                {{ $t('home.encryptedDownloads') }}
+              </a>
+            </div>
           </template>
         </template>
       </a-table>
-      <div
-        v-if="isConnectionLost"
-        style="display: flex; align-items: center; justify-content: center; margin-top: 10vh"
-      >
-        <span style="font-size: 5vw">连接断开</span>
-      </div>
 
       <a-modal
         centered
         v-model:open="modelOpen"
-        title="MagicShare 提示"
-        cancel-text="取消"
+        :title="$t('message.downloadBusy.title')"
+        :cancel-text="$t('message.downloadBusy.cancelText')"
         @cancel="handleCancel"
-        ok-text="查看当前加密下载进度"
+        :ok-text="$t('message.downloadBusy.okText')"
         @ok="handleOk"
       >
-        加密下载任务被占用，不支持同时加密下载多个文件。
+        {{ $t('message.downloadBusy.content') }}
       </a-modal>
     </div>
 
     <a-drawer
       class="drawer"
       :width="500"
-      title="加密下载进度"
+      :title="$t('home.drawer.title')"
       placement="bottom"
       :open="open"
       @close="onClose"
     >
       <template #extra>
-        <a-button style="margin-right: 8px" @click="onClose">关闭</a-button>
+        <a-button style="margin-right: 8px" @click="onClose">{{
+          $t('home.drawer.close')
+        }}</a-button>
       </template>
 
-      <div>当前下载的文件：{{ fileName }}</div>
+      <div>{{ $t('home.drawer.currentlyDownloadingFile') + fileName }}</div>
       <br />
       <div class="download-process-container">
         <div>
           <a-progress type="circle" :percent="downloadProgress.connection" />
-          <div class="download-process-container">建立连接</div>
+          <div class="download-process-container">{{ $t('home.drawer.step1') }}</div>
         </div>
         &nbsp;
         <div>
@@ -339,7 +372,7 @@ const mergeFiles = () => {
               )
             "
           />
-          <div class="download-process-container">加密传输</div>
+          <div class="download-process-container">{{ $t('home.drawer.step2') }}</div>
         </div>
         &nbsp;
         <div>
@@ -352,12 +385,12 @@ const mergeFiles = () => {
               )
             "
           />
-          <div class="download-process-container">解密文件</div>
+          <div class="download-process-container">{{ $t('home.drawer.step3') }}</div>
         </div>
       </div>
       <br />
-      <div class="content-container">RSA + AES 混合加密</div>
-      <div class="content-container">保障数据安全</div>
+      <div class="content-container">{{ $t('home.drawer.footer.content1') }}</div>
+      <div class="content-container">{{ $t('home.drawer.footer.content2') }}</div>
     </a-drawer>
   </div>
 </template>

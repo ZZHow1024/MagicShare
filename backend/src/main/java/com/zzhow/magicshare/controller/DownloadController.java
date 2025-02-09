@@ -2,6 +2,8 @@ package com.zzhow.magicshare.controller;
 
 import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.FileRepository;
+import com.zzhow.magicshare.repository.UserRepository;
+import com.zzhow.magicshare.util.CryptoUtil;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +14,7 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -21,17 +24,34 @@ import java.util.List;
 @RestController()
 @RequestMapping("/api/download")
 public class DownloadController {
+    private final CryptoUtil cryptoUtil = CryptoUtil.getInstance();
+
     @GetMapping("/{fileId}")
-    public ResponseEntity<Resource> downloadFile(String shareId, @PathVariable String fileId) {
-        if (shareId == null || fileId == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        if (!shareId.equals(FileRepository.getUuid())) {
-            return ResponseEntity.notFound().build();
-        }
-
+    public ResponseEntity<Resource> downloadFile(String token, String shareId, @PathVariable String fileId) {
         try {
+            if (token == null || shareId == null || fileId == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            fileId = fileId.replace("-", "/").replace("_", "+");
+            token = token.replace(" ", "+");
+            shareId = shareId.replace(" ", "+");
+
+            // AES 解密数据
+            String[] split = new String(cryptoUtil.decryptAes(Base64.getDecoder().decode(token))).split("#");
+
+            // 验证 sessionId#downloadId
+            if (!UserRepository.verifyDownloadId(split[0], split[1]))
+                return ResponseEntity.notFound().build();
+
+            // 解密数据
+            shareId = new String(cryptoUtil.decryptAes(Base64.getDecoder().decode(shareId)));
+            fileId = new String(cryptoUtil.decryptAes(Base64.getDecoder().decode(fileId)));
+
+            if (!shareId.equals(FileRepository.getUuid())) {
+                return ResponseEntity.notFound().build();
+            }
+
             // 构建文件路径
             List<FileDetail> files = FileRepository.getFiles();
             int index = files.indexOf(new FileDetail(fileId));

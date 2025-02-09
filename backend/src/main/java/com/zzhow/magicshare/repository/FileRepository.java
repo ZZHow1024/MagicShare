@@ -29,6 +29,7 @@ public class FileRepository {
         uuid = UUID.randomUUID().toString();
         basePath = "";
         files.clear();
+        UserRepository.sendListToAll();
     }
 
     public static void addFile(FileDetail fileDetail) {
@@ -46,6 +47,7 @@ public class FileRepository {
     public static void setFiles(String bashPath, List<FileDetail> files) {
         FileRepository.basePath = bashPath;
         FileRepository.files = files;
+        UserRepository.sendListToAll();
     }
 
     public static void setBasePath(String basePath) {

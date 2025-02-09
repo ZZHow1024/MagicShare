@@ -1,7 +1,10 @@
 package com.zzhow.magicshare.ui.controller;
 
+import com.zzhow.magicshare.repository.ConnectionCountBinding;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.pojo.entity.FileDetail;
+import com.zzhow.magicshare.repository.LanguageRepository;
+import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.ui.service.impl.ShareServiceImpl;
 import com.zzhow.magicshare.ui.window.AboutWindow;
@@ -9,6 +12,7 @@ import com.zzhow.magicshare.ui.window.MainWindow;
 import com.zzhow.magicshare.util.InternetUtil;
 import com.zzhow.magicshare.util.MessageBox;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.DragEvent;
@@ -16,10 +20,11 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TransferMode;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * @author ZZHow
@@ -39,15 +44,33 @@ public class MainController {
     @FXML
     private Label label6;
     @FXML
+    private Label label7;
+    @FXML
+    private Label label8;
+    @FXML
+    private Label label9;
+    @FXML
+    private Label label10;
+    @FXML
     private TextField textField1;
     @FXML
     private TextField textField2;
+    @FXML
+    private TextField textField3;
     @FXML
     private Button button1;
     @FXML
     private Button button2;
     @FXML
+    private Button button3;
+    @FXML
+    private Button button4;
+    @FXML
+    private CheckBox checkBox1;
+    @FXML
     private TableView<FileDetail> tableView1;
+    @FXML
+    private ChoiceBox<String> languageSelector;
 
     private final ShareService shareService = new ShareServiceImpl();
 
@@ -55,19 +78,23 @@ public class MainController {
 
     @FXML
     private void initialize() {
+        // 显示内网 IPv4 地址
         label2.setText(InternetUtil.getLocalIpAddress());
 
+        // 连接数数据绑定
+        label10.textProperty().bind(ConnectionCountBinding.countProperty());
+
         // 创建列
-        TableColumn<FileDetail, String> fileNameCol = new TableColumn<>("文件名");
+        TableColumn<FileDetail, String> fileNameCol = new TableColumn<>("File name");
         fileNameCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getName()));
-        TableColumn<FileDetail, String> fileTypeCol = new TableColumn<>("类型");
+        TableColumn<FileDetail, String> fileTypeCol = new TableColumn<>("Type");
         fileTypeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getType()));
-        TableColumn<FileDetail, String> fileSizeCol = new TableColumn<>("大小(KB)");
+        TableColumn<FileDetail, String> fileSizeCol = new TableColumn<>("Size(KB)");
         fileSizeCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getSize() + ""));
-        TableColumn<FileDetail, String> filePathCol = new TableColumn<>("相对路径");
+        TableColumn<FileDetail, String> filePathCol = new TableColumn<>("Relative path");
         filePathCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getPath()));
         tableView1.getColumns().addAll(fileNameCol, fileTypeCol, fileSizeCol, filePathCol);
-        tableView1.setPlaceholder(new Label("分享列表为空"));
+        tableView1.setPlaceholder(new Label("Share list is empty"));
 
         // 设置列的宽度比例
         tableView1.widthProperty().addListener((obs, oldWidth, newWidth) -> {
@@ -77,6 +104,29 @@ public class MainController {
             fileSizeCol.setPrefWidth(totalWidth * 0.13);
             filePathCol.setPrefWidth(totalWidth * 0.50);
         });
+
+        languageSelector.getItems().addAll("简体中文", "繁體中文", "English");
+        String language = Locale.getDefault().toLanguageTag();
+
+        if (language.contains("zh")) {
+            if (language.contains("CN") || language.contains("cn"))
+                language = "zh_HANS";
+            else if (language.contains("HANS") || language.contains("Hans"))
+                language = "zh_HANS";
+            else
+                language = "zh_HANT";
+        } else {
+            language = "en_US";
+        }
+
+        language = switch (language) {
+            case "zh_HANS" -> "简体中文";
+            case "zh_HANT" -> "繁體中文";
+            case "en_US" -> "English";
+            default -> "简体中文";
+        };
+        languageSelector.setValue(language);
+        switchLanguage();
     }
 
     @FXML
@@ -88,33 +138,44 @@ public class MainController {
     @FXML
     private void onStartOrStopServiceClicked() {
         if (serviceIsStarted) {
+            UserRepository.initialize();
             textField1.setDisable(false);
-            label1.setText("内网IPv4地址：");
+            if (checkBox1.isSelected())
+                textField3.setDisable(false);
+            checkBox1.setDisable(false);
+            label1.setText(LanguageRepository.bundle.getString("label1"));
             label2.setText(InternetUtil.getLocalIpAddress());
-            button1.setText("启动服务");
+            button1.setText(LanguageRepository.bundle.getString("button1"));
             shareService.stopService();
-            MessageBox.success("停止成功", "MagicShare 服务停止成功");
+            MessageBox.success(LanguageRepository.bundle.getString("stopSuccess"), LanguageRepository.bundle.getString("stopSuccessContent"));
             serviceIsStarted = false;
 
             return;
         }
 
-
-        byte i = shareService.startService(textField1.getText());
+        byte i = shareService.startService(textField1.getText(), textField3.getText(), checkBox1.isSelected());
         switch (i) {
             case 0 -> {
                 textField1.setDisable(true);
-                label1.setText("分享URL：");
+                textField3.setDisable(true);
+                checkBox1.setDisable(true);
+                label1.setText(LanguageRepository.bundle.getString("shareUrl")); // 分享URL：
                 label2.setText("http://" + InternetUtil.getLocalIpAddress() + ":" + textField1.getText());
-                MessageBox.success("启动成功", "MagicShare 服务启动成功");
-                button1.setText("停止服务");
+                MessageBox.success(LanguageRepository.bundle.getString("startupSuccess"), LanguageRepository.bundle.getString("startupSuccessContent"));
+                button1.setText(LanguageRepository.bundle.getString("stopService")); // 停止服务
                 serviceIsStarted = true;
             }
             case 1 -> {
-                MessageBox.error("端口号错误", "端口号应为 1～65535 的整数");
+                MessageBox.error(LanguageRepository.bundle.getString("wrongPortNumber"), LanguageRepository.bundle.getString("wrongPortNumberContent")); // 端口号错误
             }
             case 2 -> {
-                MessageBox.error("端口被占用", "请尝试更换端口号");
+                MessageBox.error(LanguageRepository.bundle.getString("portIsOccupied"), LanguageRepository.bundle.getString("portIsOccupiedContent")); // 端口被占用
+            }
+            case 3 -> {
+                MessageBox.error(LanguageRepository.bundle.getString("wrongConnectionPassword"), LanguageRepository.bundle.getString("wrongConnectionPasswordContent1")); // 连接密码不能为空
+            }
+            case 4 -> {
+                MessageBox.error(LanguageRepository.bundle.getString("wrongConnectionPassword"), LanguageRepository.bundle.getString("wrongConnectionPasswordContent2")); // 连接密码错误
             }
         }
     }
@@ -122,7 +183,7 @@ public class MainController {
     @FXML
     private void onSelectFileClicked() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        directoryChooser.setTitle("选择文件夹");
+        directoryChooser.setTitle(LanguageRepository.bundle.getString("selectFolder")); // 选择文件夹
         try {
             textField2.setText(directoryChooser.showDialog(MainWindow.getStage()).getAbsolutePath());
             onSearchFileClicked();
@@ -177,5 +238,55 @@ public class MainController {
     @FXML
     private void onAboutClicked() {
         AboutWindow.open();
+    }
+
+    @FXML
+    private void onEnablePasswordClicked() {
+        if (checkBox1.isSelected()) {
+            textField3.setDisable(false);
+        } else {
+            textField3.setText("");
+            textField3.setDisable(true);
+        }
+    }
+
+    @FXML
+    private void switchLanguage() {
+        String selectorValue = languageSelector.getValue();
+        selectorValue = switch (selectorValue) {
+            case "简体中文" -> "zh_HANS";
+            case "繁體中文" -> "zh_HANT";
+            case "English" -> "en_US";
+            default -> "zh_Hans";
+        };
+
+        LanguageRepository.setLanguage(selectorValue);
+
+        ResourceBundle bundle = LanguageRepository.bundle;
+
+        ObservableList<TableColumn<FileDetail, ?>> columns = tableView1.getColumns();
+        columns.get(0).setText(bundle.getString("fileName"));
+        columns.get(1).setText(bundle.getString("type"));
+        columns.get(2).setText(bundle.getString("size"));
+        columns.get(3).setText(bundle.getString("relativePath"));
+        tableView1.setPlaceholder(new Label(bundle.getString("shareListIsEmpty")));
+
+        if (serviceIsStarted) {
+            label1.setText(bundle.getString("shareUrl"));
+            button1.setText(bundle.getString("stopService"));
+        } else {
+            label1.setText(bundle.getString("label1"));
+            button1.setText(bundle.getString("button1"));
+        }
+        label3.setText(bundle.getString("label3"));
+        label4.setText(bundle.getString("label4"));
+        label5.setText(bundle.getString("label5"));
+        label7.setText(bundle.getString("label7"));
+        label8.setText(bundle.getString("label8"));
+        label9.setText(bundle.getString("label9"));
+        checkBox1.setText(bundle.getString("checkBox1"));
+        button2.setText(bundle.getString("button2"));
+        button3.setText(bundle.getString("button3"));
+        button4.setText(bundle.getString("button4"));
     }
 }

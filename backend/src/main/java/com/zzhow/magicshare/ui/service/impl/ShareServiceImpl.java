@@ -1,12 +1,17 @@
 package com.zzhow.magicshare.ui.service.impl;
 
+import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.FileRepository;
+import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.util.Application;
 import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.util.FileUtil;
 import com.zzhow.magicshare.util.InternetUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author ZZHow
@@ -19,18 +24,23 @@ public class ShareServiceImpl implements ShareService {
      * 启动 MagicShare 服务
      *
      * @param portStr 端口号
-     * @return 0-启动成功；1-端口号错误；2-端口被占用
+     * @return 0-启动成功；1-端口号错误；2-端口被占用；3-连接密码不能为空；4-连接密码错误
      */
     @Override
-    public byte startService(String portStr) {
+    public byte startService(String portStr, String password, boolean isEnablePassword) {
         try {
             int port = Integer.parseInt(portStr);
             if (port < 1 || port > 65535)
                 return 1;
             if (InternetUtil.isPortInUse(port))
                 return 2;
+            if (isEnablePassword && (password == null || password.isEmpty()))
+                return 3;
+            if (isEnablePassword && (password.length() < 3 || password.length() > 10))
+                return 4;
             else {
                 applicationContext = Application.startSpringBoot("--server.port=" + port);
+                UserRepository.setPassword(isEnablePassword ? password : null);
 
                 return 0;
             }
@@ -54,8 +64,8 @@ public class ShareServiceImpl implements ShareService {
      */
     @Override
     public void searchFile(String path) {
-        FileRepository.clearFiles();
-        FileRepository.setBasePath(path);
-        FileUtil.find(path, FileRepository.getFiles());
+        List<FileDetail> res = new ArrayList<>();
+        FileUtil.find(path, res);
+        FileRepository.setFiles(path, res);
     }
 }

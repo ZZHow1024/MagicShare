@@ -22,10 +22,9 @@ export const generateKeyPair = async () => {
 }
 
 // RSA 加密
-export const encryptRSA = (publicKeyPem, aesKey) => {
+export const encryptRSA = (publicKeyPem, data) => {
   const publicKey = forge.pki.publicKeyFromPem(publicKeyPem)
-
-  const encrypted = publicKey.encrypt(aesKey, 'RSA-OAEP', {
+  const encrypted = publicKey.encrypt(data, 'RSA-OAEP', {
     md: forge.md.sha256.create(),
     mgf1: {
       md: forge.md.sha1.create(),
@@ -75,6 +74,20 @@ export const encryptAES = (data) => {
   }
 }
 
+// AES 加密
+export const encryptWAES = (aesKey, iv, data) => {
+  // 加密数据
+  const cipher = forge.cipher.createCipher('AES-CBC', aesKey)
+  cipher.start({ iv: iv })
+  cipher.update(forge.util.createBuffer(data))
+  cipher.finish()
+
+  // 获取加密结果
+  const encryptedData = cipher.output
+
+  return forge.util.encode64(encryptedData.getBytes())
+}
+
 // AES 解密
 export const decryptAES = (aesKey, iv, encrypted) => {
   const decipher = forge.cipher.createDecipher('AES-CBC', aesKey)
@@ -104,4 +117,12 @@ export const decryptBufferAES = async (aesKey, iv, encryptedData) => {
     console.error('Decryption failed')
     return null
   }
+}
+
+// SHA256 加密
+export const decryptSha256 = (data) => {
+  const sha256 = forge.md.sha256.create()
+  sha256.update(data)
+
+  return forge.util.encode64(sha256.digest().bytes())
 }
