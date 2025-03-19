@@ -26,8 +26,8 @@ import java.util.List;
 public class DownloadController {
     private final CryptoUtil cryptoUtil = CryptoUtil.getInstance();
 
-    @GetMapping("/{fileId}")
-    public ResponseEntity<Resource> downloadFile(String token, String shareId, @PathVariable String fileId) {
+    @GetMapping
+    public ResponseEntity<Resource> downloadFile(String fileId, String token, String shareId) {
         try {
             if (token == null || shareId == null || fileId == null) {
                 return ResponseEntity.badRequest().build();
