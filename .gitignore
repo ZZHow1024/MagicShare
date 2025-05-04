@@ -2,3 +2,5 @@
 /.idea
 /backend/out
 /backend/src/main/resources/META-INF
+/backend/src/main/resources/static/assets
+backend/src/main/resources/static/index.html
