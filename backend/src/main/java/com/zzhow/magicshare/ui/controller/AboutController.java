@@ -31,7 +31,7 @@ public class AboutController {
         ResourceBundle bundle = LanguageRepository.bundle;
 
         if (LanguageRepository.getLanguage().contains("zh"))
-            label2.setText(bundle.getString("magicShare") + " 2.0.0");
+            label2.setText(bundle.getString("magicShare") + " 2.0.1");
         else
             label2.setVisible(false);
         label3.setText(bundle.getString("features"));
