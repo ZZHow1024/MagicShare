@@ -43,7 +43,7 @@ const connect = () => {
   const webSocketUrl = 'ws://' + hostname + ':' + port + '/ws/connect'
   // const webSocketUrl = 'ws://localhost:1024/ws/connect' //开发使用
 
-  wSocket = new WebSocket(webSocketUrl) // 开发使用 WebSocket URL
+  wSocket = new WebSocket(webSocketUrl) // WebSocket URL
 
   wSocket.onerror = () => {
     networkErrModelOpen.value = true
