@@ -56,10 +56,10 @@ const startQuickDownload = () => {
     hostname +
     ':' +
     port +
-    `/api/download/${data.fileId.replace('/', '-').replace('+', '_')}?token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
+    `/api/download?fileId=${encodeURIComponent(data.fileId)}&token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
 
   // 开发使用
-  // window.location.href = `http://localhost:1024/api/download/${data.fileId.replace('/', '-').replace('+', '_')}?token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
+  // window.location.href = `http://localhost:1024/api/download?fileId=${encodeURIComponent(data.fileId)}&token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
 }
 
 const open = ref(false)

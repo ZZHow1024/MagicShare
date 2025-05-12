@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -26,16 +27,16 @@ import java.util.List;
 public class DownloadController {
     private final CryptoUtil cryptoUtil = CryptoUtil.getInstance();
 
-    @GetMapping("/{fileId}")
-    public ResponseEntity<Resource> downloadFile(String token, String shareId, @PathVariable String fileId) {
+    @GetMapping
+    public ResponseEntity<Resource> downloadFile(String fileId, String token, String shareId) {
         try {
             if (token == null || shareId == null || fileId == null) {
                 return ResponseEntity.badRequest().build();
             }
 
-            fileId = fileId.replace("-", "/").replace("_", "+");
-            token = token.replace(" ", "+");
-            shareId = shareId.replace(" ", "+");
+            fileId = URLDecoder.decode(fileId.replaceAll("%(?![0-9a-fA-F]{2})", "%25").replaceAll("\\+", "%2B"), StandardCharsets.UTF_8);
+            token = URLDecoder.decode(token.replaceAll("%(?![0-9a-fA-F]{2})", "%25").replaceAll("\\+", "%2B"), StandardCharsets.UTF_8);
+            shareId = URLDecoder.decode(shareId.replaceAll("%(?![0-9a-fA-F]{2})", "%25").replaceAll("\\+", "%2B"), StandardCharsets.UTF_8);
 
             // AES 解密数据
             String[] split = new String(cryptoUtil.decryptAes(Base64.getDecoder().decode(token))).split("#");

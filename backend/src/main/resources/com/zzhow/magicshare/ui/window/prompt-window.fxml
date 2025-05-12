@@ -22,7 +22,7 @@
             <Font size="20.0" />
          </font>
       </Label>
-      <Label layoutX="352.0" layoutY="415.0" text="Version: 2.0.0" />
+      <Label layoutX="352.0" layoutY="415.0" text="Version: 2.0.1" />
       <Button fx:id="exit" layoutX="301.0" layoutY="447.0" mnemonicParsing="false" onAction="#onExitClicked" text="退出">
          <font>
             <Font size="20.0" />

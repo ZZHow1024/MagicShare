@@ -6,12 +6,12 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.zzhow.magicshare.ui.controller.AboutController">
    <children>
-      <Label fx:id="label1" layoutX="197.0" layoutY="43.0" text="MagicShare 2.0.0">
+      <Label fx:id="label1" layoutX="197.0" layoutY="43.0" text="MagicShare 2.0.1">
          <font>
             <Font size="28.0" />
          </font>
       </Label>
-      <Label fx:id="label2" layoutX="212.0" layoutY="77.0" text="神奇分享 2.0.0">
+      <Label fx:id="label2" layoutX="212.0" layoutY="77.0" text="神奇分享 2.0.1">
          <font>
             <Font size="28.0" />
          </font>

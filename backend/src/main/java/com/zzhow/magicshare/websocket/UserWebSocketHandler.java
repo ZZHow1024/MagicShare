@@ -1,5 +1,8 @@
 package com.zzhow.magicshare.websocket;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zzhow.magicshare.pojo.vo.FileListVO;
+import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.service.FileService;
 import com.zzhow.magicshare.util.CryptoUtil;
@@ -119,12 +122,27 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
             String shareId = "";
             if (split.length > 1)
                 shareId = new String(Base64.getDecoder().decode(split[1].getBytes()));
-            if (!fileService.checkCurrentShare(shareId))
+            if (!fileService.checkCurrentShare(shareId)) {
+                FileListVO fileListVO = new FileListVO(FileRepository.getUuid(), FileRepository.size(), FileRepository.getFiles());
+
                 try {
-                    session.sendMessage(new TextMessage("List#" + fileService.getFileList()));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    // AES 加密数据
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String jsonString = objectMapper.writeValueAsString(fileListVO); // 将对象序列化为 JSON 字符串
+                    byte[] encryptedData = cryptoUtil.encryptAes(jsonString.getBytes());
+
+                    // 发送加密数据
+                    session.sendMessage(new TextMessage("List#" + Base64.getEncoder().encodeToString(encryptedData)));
+                } catch (IOException |
+                         InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
+                         InvalidKeyException e) {
+                    try {
+                        session.close(CloseStatus.SERVER_ERROR);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
+            }
         } else if (message.getPayload().startsWith("Download")) {
             if (!UserRepository.containsUser(session.getId())) {
                 try {
