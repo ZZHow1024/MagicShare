@@ -18,7 +18,6 @@ import java.util.Base64;
  */
 public class CryptoUtil {
     private static final CryptoUtil instance;
-    private final IvParameterSpec ivSpec = new IvParameterSpec(UserRepository.getAesCrypto().getIv());
     private final Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
     private final Cipher rsaCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
 
@@ -58,7 +57,7 @@ public class CryptoUtil {
     // AES 加密
     public byte[] encryptAes(byte[] plainText) throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         // 初始化 AES 加密器
-        aesCipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
+        aesCipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), new IvParameterSpec(UserRepository.getAesCrypto().getIv()));
 
         return aesCipher.doFinal(plainText);
     }
@@ -70,7 +69,7 @@ public class CryptoUtil {
     // AES 解密
     public byte[] decryptAes(byte[] cipherText) throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         // 初始化 AES 解密器
-        aesCipher.init(Cipher.DECRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
+        aesCipher.init(Cipher.DECRYPT_MODE, UserRepository.getAesCrypto().getKey(), new IvParameterSpec(UserRepository.getAesCrypto().getIv()));
 
         return aesCipher.doFinal(cipherText);
     }
