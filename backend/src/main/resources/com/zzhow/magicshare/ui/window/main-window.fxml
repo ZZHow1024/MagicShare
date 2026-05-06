@@ -19,7 +19,7 @@
                </font>
             </Label>
             <Label fx:id="label1" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="32.0" layoutY="56.0" prefHeight="16.0" prefWidth="190.0" text="内网IPv4地址：" textAlignment="RIGHT" />
-            <Label fx:id="label2" layoutX="232.0" layoutY="55.0" prefHeight="16.0" prefWidth="235.0" text="---.---.---.---" />
+            <ChoiceBox fx:id="ipAddressSelector" layoutX="232.0" layoutY="51.0" prefHeight="24.0" prefWidth="235.0" />
             <Label fx:id="label3" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="31.0" layoutY="86.0" prefHeight="16.0" prefWidth="190.0" text="端口号：" />
             <TextField fx:id="textField1" layoutX="232.0" layoutY="81.0" onKeyPressed="#onStartOrStopServiceKeyDown" prefHeight="24.0" prefWidth="112.0" promptText="1～65535" text="80" />
             <Button fx:id="button1" layoutX="351.0" layoutY="81.0" mnemonicParsing="false" onAction="#onStartOrStopServiceClicked" text="启动服务" />

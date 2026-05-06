@@ -2,12 +2,15 @@ package com.zzhow.magicshare.util;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
  * @author ZZHow
- * @date 2025/1/13
+ * create 2025/1/13
+ * update 2026/5/6
  */
 public class InternetUtil {
     /**
@@ -16,6 +19,21 @@ public class InternetUtil {
      * @return 内网 IPv4 地址
      */
     public static String getLocalIpAddress() {
+        List<String> localIpAddresses = getLocalIpAddresses();
+        if (!localIpAddresses.isEmpty())
+            return localIpAddresses.get(0);
+
+        return null;
+    }
+
+    /**
+     * 获取所有内网 IPv4 地址
+     *
+     * @return 所有内网 IPv4 地址
+     */
+    public static List<String> getLocalIpAddresses() {
+        List<String> localIpAddresses = new ArrayList<>();
+
         try {
             /*内网 IP 正则表达式
                 A: 10.0.0.0 - 10.255.255.255
@@ -41,7 +59,9 @@ public class InternetUtil {
                 while (inetAddresses.hasMoreElements()) {
                     InetAddress inetAddress = inetAddresses.nextElement();
                     if (inetAddress instanceof Inet4Address && pattern.matcher(inetAddress.getHostAddress()).matches()) {
-                        return inetAddress.getHostAddress();
+                        String localIpAddress = inetAddress.getHostAddress();
+                        if (!localIpAddresses.contains(localIpAddress))
+                            localIpAddresses.add(localIpAddress);
                     }
                 }
             }
@@ -49,7 +69,7 @@ public class InternetUtil {
             e.printStackTrace();
         }
 
-        return null;
+        return localIpAddresses;
     }
 
     public static boolean isPortInUse(int port) {

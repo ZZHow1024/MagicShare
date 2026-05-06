@@ -28,13 +28,12 @@ import java.util.ResourceBundle;
 
 /**
  * @author ZZHow
- * @date 2025/1/13
+ * create 2025/1/13
+ * update 2026/5/6
  */
 public class MainController {
     @FXML
     private Label label1;
-    @FXML
-    private Label label2;
     @FXML
     private Label label3;
     @FXML
@@ -70,6 +69,8 @@ public class MainController {
     @FXML
     private TableView<FileDetail> tableView1;
     @FXML
+    private ChoiceBox<String> ipAddressSelector;
+    @FXML
     private ChoiceBox<String> languageSelector;
 
     private final ShareService shareService = new ShareServiceImpl();
@@ -79,7 +80,7 @@ public class MainController {
     @FXML
     private void initialize() {
         // 显示内网 IPv4 地址
-        label2.setText(InternetUtil.getLocalIpAddress());
+        refreshIpAddressSelector();
 
         // 连接数数据绑定
         label10.textProperty().bind(ConnectionCountBinding.countProperty());
@@ -144,7 +145,7 @@ public class MainController {
                 textField3.setDisable(false);
             checkBox1.setDisable(false);
             label1.setText(LanguageRepository.bundle.getString("label1"));
-            label2.setText(InternetUtil.getLocalIpAddress());
+            refreshIpAddressSelector();
             button1.setText(LanguageRepository.bundle.getString("button1"));
             shareService.stopService();
             MessageBox.success(LanguageRepository.bundle.getString("stopSuccess"), LanguageRepository.bundle.getString("stopSuccessContent"));
@@ -156,11 +157,12 @@ public class MainController {
         byte i = shareService.startService(textField1.getText(), textField3.getText(), checkBox1.isSelected());
         switch (i) {
             case 0 -> {
+                String localIpAddress = getSelectedIpAddress();
                 textField1.setDisable(true);
                 textField3.setDisable(true);
                 checkBox1.setDisable(true);
                 label1.setText(LanguageRepository.bundle.getString("shareUrl")); // 分享URL：
-                label2.setText("http://" + InternetUtil.getLocalIpAddress() + ":" + textField1.getText());
+                showShareUrls(localIpAddress);
                 MessageBox.success(LanguageRepository.bundle.getString("startupSuccess"), LanguageRepository.bundle.getString("startupSuccessContent"));
                 button1.setText(LanguageRepository.bundle.getString("stopService")); // 停止服务
                 serviceIsStarted = true;
@@ -178,6 +180,52 @@ public class MainController {
                 MessageBox.error(LanguageRepository.bundle.getString("wrongConnectionPassword"), LanguageRepository.bundle.getString("wrongConnectionPasswordContent2")); // 连接密码错误
             }
         }
+    }
+
+    private void refreshIpAddressSelector() {
+        String selectedIpAddress = getSelectedIpAddress();
+        ipAddressSelector.getItems().clear();
+        ipAddressSelector.getItems().addAll(InternetUtil.getLocalIpAddresses());
+
+        if (ipAddressSelector.getItems().contains(selectedIpAddress))
+            ipAddressSelector.setValue(selectedIpAddress);
+        else if (!ipAddressSelector.getItems().isEmpty())
+            ipAddressSelector.setValue(ipAddressSelector.getItems().get(0));
+        else
+            ipAddressSelector.setValue(null);
+    }
+
+    private void showShareUrls(String selectedIpAddress) {
+        ipAddressSelector.getItems().clear();
+
+        for (String localIpAddress : InternetUtil.getLocalIpAddresses())
+            ipAddressSelector.getItems().add("http://" + localIpAddress + ":" + textField1.getText());
+
+        if (selectedIpAddress != null) {
+            String selectedShareUrl = "http://" + selectedIpAddress + ":" + textField1.getText();
+            if (!ipAddressSelector.getItems().contains(selectedShareUrl))
+                ipAddressSelector.getItems().add(selectedShareUrl);
+            ipAddressSelector.setValue(selectedShareUrl);
+        } else if (!ipAddressSelector.getItems().isEmpty()) {
+            ipAddressSelector.setValue(ipAddressSelector.getItems().get(0));
+        } else {
+            ipAddressSelector.setValue(null);
+        }
+    }
+
+    private String getSelectedIpAddress() {
+        String selectedValue = ipAddressSelector.getValue();
+        if (selectedValue == null)
+            return null;
+
+        if (selectedValue.startsWith("http://")) {
+            int startIndex = "http://".length();
+            int endIndex = selectedValue.lastIndexOf(":");
+            if (endIndex > startIndex)
+                return selectedValue.substring(startIndex, endIndex);
+        }
+
+        return selectedValue;
     }
 
     @FXML
