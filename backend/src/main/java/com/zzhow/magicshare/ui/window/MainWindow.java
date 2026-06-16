@@ -19,8 +19,9 @@ public class MainWindow extends javafx.application.Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        MainWindow.stage = stage;
         FXMLLoader fxmlLoader = new FXMLLoader(MainWindow.class.getResource("main-window.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 700, 500);
+        Scene scene = new Scene(fxmlLoader.load(), 700, 540);
         stage.setTitle("MagicShare");
         stage.setScene(scene);
         Image icon = new Image(Objects.requireNonNull(MagicShareApplication.class.getResourceAsStream("/image/icon.png")));
@@ -34,13 +35,14 @@ public class MainWindow extends javafx.application.Application {
 
     public static void open() {
         Stage stage = new Stage();
+        MainWindow.stage = stage;
         stage.setTitle("MagicShare");
         Image icon = new Image(Objects.requireNonNull(MagicShareApplication.class.getResourceAsStream("/image/icon.png")));
         stage.getIcons().add(icon);
         stage.setResizable(false);
         try {
             Pane load = FXMLLoader.load(Objects.requireNonNull(MainWindow.class.getResource("main-window.fxml")));
-            Scene scene = new Scene(load);
+            Scene scene = new Scene(load, 700, 540);
             stage.setScene(scene);
             stage.setOnHiding(windowEvent -> {
                 System.exit(0);

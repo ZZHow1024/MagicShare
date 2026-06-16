@@ -51,6 +51,8 @@ public class MainController {
     @FXML
     private Label label10;
     @FXML
+    private Label label11;
+    @FXML
     private TextField textField1;
     @FXML
     private TextField textField2;
@@ -65,6 +67,10 @@ public class MainController {
     @FXML
     private Button button4;
     @FXML
+    private Button standardShareModeButton;
+    @FXML
+    private Button simpleShareModeButton;
+    @FXML
     private CheckBox checkBox1;
     @FXML
     private TableView<FileDetail> tableView1;
@@ -76,6 +82,8 @@ public class MainController {
     private final ShareService shareService = new ShareServiceImpl();
 
     private boolean serviceIsStarted = false;
+
+    private boolean simpleShareMode = false;
 
     @FXML
     private void initialize() {
@@ -128,6 +136,7 @@ public class MainController {
         };
         languageSelector.setValue(language);
         switchLanguage();
+        updateShareModeControls();
     }
 
     @FXML
@@ -141,26 +150,32 @@ public class MainController {
         if (serviceIsStarted) {
             UserRepository.initialize();
             textField1.setDisable(false);
-            if (checkBox1.isSelected())
+            if (!isSimpleShareMode() && checkBox1.isSelected())
                 textField3.setDisable(false);
             checkBox1.setDisable(false);
+            standardShareModeButton.setDisable(false);
+            simpleShareModeButton.setDisable(false);
             label1.setText(LanguageRepository.bundle.getString("label1"));
             refreshIpAddressSelector();
             button1.setText(LanguageRepository.bundle.getString("button1"));
             shareService.stopService();
-            MessageBox.success(LanguageRepository.bundle.getString("stopSuccess"), LanguageRepository.bundle.getString("stopSuccessContent"));
             serviceIsStarted = false;
+            updateShareModeControls();
+            MessageBox.success(LanguageRepository.bundle.getString("stopSuccess"), LanguageRepository.bundle.getString("stopSuccessContent"));
 
             return;
         }
 
-        byte i = shareService.startService(textField1.getText(), textField3.getText(), checkBox1.isSelected());
+        boolean enablePassword = !isSimpleShareMode() && checkBox1.isSelected();
+        byte i = shareService.startService(textField1.getText(), textField3.getText(), enablePassword);
         switch (i) {
             case 0 -> {
                 String localIpAddress = getSelectedIpAddress();
                 textField1.setDisable(true);
                 textField3.setDisable(true);
                 checkBox1.setDisable(true);
+                standardShareModeButton.setDisable(true);
+                simpleShareModeButton.setDisable(true);
                 label1.setText(LanguageRepository.bundle.getString("shareUrl")); // 分享URL：
                 showShareUrls(localIpAddress);
                 MessageBox.success(LanguageRepository.bundle.getString("startupSuccess"), LanguageRepository.bundle.getString("startupSuccessContent"));
@@ -226,6 +241,44 @@ public class MainController {
         }
 
         return selectedValue;
+    }
+
+    private boolean isSimpleShareMode() {
+        return simpleShareMode;
+    }
+
+    private void updateShareModeControls() {
+        ResourceBundle bundle = LanguageRepository.bundle;
+        boolean simpleMode = isSimpleShareMode();
+        boolean showStandardModeControls = !simpleMode;
+
+        label8.setVisible(showStandardModeControls);
+        textField3.setVisible(showStandardModeControls);
+        checkBox1.setVisible(showStandardModeControls);
+        label9.setVisible(showStandardModeControls);
+        label10.setVisible(showStandardModeControls);
+
+        standardShareModeButton.setText(bundle.getString("standardShareMode"));
+        simpleShareModeButton.setText(bundle.getString("simpleShareMode"));
+        standardShareModeButton.setDisable(serviceIsStarted);
+        simpleShareModeButton.setDisable(serviceIsStarted);
+        standardShareModeButton.setStyle(simpleMode ? getShareModeButtonStyle(false) : getShareModeButtonStyle(true));
+        simpleShareModeButton.setStyle(simpleMode ? getShareModeButtonStyle(true) : getShareModeButtonStyle(false));
+
+        if (simpleMode) {
+            textField3.setDisable(true);
+            checkBox1.setDisable(true);
+        } else {
+            checkBox1.setDisable(serviceIsStarted);
+            textField3.setDisable(serviceIsStarted || !checkBox1.isSelected());
+        }
+    }
+
+    private String getShareModeButtonStyle(boolean selected) {
+        if (selected)
+            return "-fx-background-color: #000000; -fx-text-fill: white;";
+
+        return "-fx-background-color: #f4f4f4; -fx-text-fill: #202124;";
     }
 
     @FXML
@@ -299,6 +352,18 @@ public class MainController {
     }
 
     @FXML
+    private void onStandardShareModeClicked() {
+        simpleShareMode = false;
+        updateShareModeControls();
+    }
+
+    @FXML
+    private void onSimpleShareModeClicked() {
+        simpleShareMode = true;
+        updateShareModeControls();
+    }
+
+    @FXML
     private void switchLanguage() {
         String selectorValue = languageSelector.getValue();
         selectorValue = switch (selectorValue) {
@@ -332,9 +397,11 @@ public class MainController {
         label7.setText(bundle.getString("label7"));
         label8.setText(bundle.getString("label8"));
         label9.setText(bundle.getString("label9"));
+        label11.setText(bundle.getString("shareMode"));
         checkBox1.setText(bundle.getString("checkBox1"));
         button2.setText(bundle.getString("button2"));
         button3.setText(bundle.getString("button3"));
         button4.setText(bundle.getString("button4"));
+        updateShareModeControls();
     }
 }
