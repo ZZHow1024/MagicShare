@@ -6,11 +6,12 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * @author ZZHow
- * @date 2025/01/14
+ * create 2025/01/14
+ * update 2026/08/12
  */
 @SpringBootApplication(proxyBeanMethods = false, scanBasePackages = "com.zzhow.magicshare")
 public class Application {
-    public static ConfigurableApplicationContext startSpringBoot(String args) {
+    public static ConfigurableApplicationContext startSpringBoot(String... args) {
         return SpringApplication.run(Application.class, args);
     }
 }

@@ -32,6 +32,7 @@
             <Label fx:id="label11" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="32.0" layoutY="176.0" prefHeight="17.0" prefWidth="190.0" text="Share mode:" />
             <Button fx:id="standardShareModeButton" layoutX="232.0" layoutY="171.0" mnemonicParsing="false" onAction="#onStandardShareModeClicked" prefHeight="24.0" prefWidth="117.0" text="Standard share" />
             <Button fx:id="simpleShareModeButton" layoutX="350.0" layoutY="171.0" mnemonicParsing="false" onAction="#onSimpleShareModeClicked" prefHeight="24.0" prefWidth="117.0" text="Simple share" />
+            <CheckBox fx:id="showDirectoryStructureCheckBox" layoutX="475.0" layoutY="176.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="170.0" selected="true" text="Show folders" visible="false" />
             <TableView fx:id="tableView1" layoutY="246.0" prefHeight="210.0" prefWidth="700.0" />
             <Label fx:id="label9" alignment="CENTER" contentDisplay="CENTER" layoutX="398.0" layoutY="56.0" prefHeight="16.0" prefWidth="235.0" text="Current number of connections" textAlignment="CENTER" />
             <Label fx:id="label10" alignment="CENTER" contentDisplay="CENTER" layoutX="481.0" layoutY="81.0" prefHeight="16.0" prefWidth="69.0" text="0" textAlignment="CENTER">

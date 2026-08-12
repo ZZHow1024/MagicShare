@@ -4,6 +4,7 @@ import com.zzhow.magicshare.service.FileService;
 import com.zzhow.magicshare.websocket.FileWebSocketHandler;
 import com.zzhow.magicshare.websocket.UserWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -11,10 +12,12 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
 /**
  * @author ZZHow
- * @date 2025/01/16
+ * create 2025/01/16
+ * update 2026/08/12
  */
 @Configuration
 @EnableWebSocket
+@ConditionalOnProperty(name = "magicshare.simple-mode", havingValue = "false", matchIfMissing = true)
 public class WebSocketConfig implements WebSocketConfigurer {
     @Autowired
     private FileService fileService;

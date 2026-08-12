@@ -2,6 +2,7 @@ package com.zzhow.magicshare.ui.service.impl;
 
 import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.FileRepository;
+import com.zzhow.magicshare.repository.SimpleShareRepository;
 import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.util.Application;
 import com.zzhow.magicshare.ui.service.ShareService;
@@ -15,7 +16,8 @@ import java.util.List;
 
 /**
  * @author ZZHow
- * @date 2025/01/14
+ * @create 2025/01/14
+ * @update 2026/08/12
  */
 public class ShareServiceImpl implements ShareService {
     private ConfigurableApplicationContext applicationContext;
@@ -27,7 +29,7 @@ public class ShareServiceImpl implements ShareService {
      * @return 0-启动成功；1-端口号错误；2-端口被占用；3-连接密码不能为空；4-连接密码错误
      */
     @Override
-    public byte startService(String portStr, String password, boolean isEnablePassword) {
+    public byte startService(String portStr, String password, boolean isEnablePassword, boolean simpleShareMode, boolean showDirectoryStructure) {
         try {
             int port = Integer.parseInt(portStr);
             if (port < 1 || port > 65535)
@@ -39,7 +41,11 @@ public class ShareServiceImpl implements ShareService {
             if (isEnablePassword && (password.length() < 3 || password.length() > 10))
                 return 4;
             else {
-                applicationContext = Application.startSpringBoot("--server.port=" + port);
+                SimpleShareRepository.setShowDirectoryStructure(showDirectoryStructure);
+                applicationContext = Application.startSpringBoot(
+                        "--server.port=" + port,
+                        "--magicshare.simple-mode=" + simpleShareMode
+                );
                 UserRepository.setPassword(isEnablePassword ? password : null);
 
                 return 0;

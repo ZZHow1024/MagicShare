@@ -29,7 +29,7 @@ import java.util.ResourceBundle;
 /**
  * @author ZZHow
  * create 2025/1/13
- * update 2026/5/6
+ * update 2026/8/12
  */
 public class MainController {
     @FXML
@@ -72,6 +72,8 @@ public class MainController {
     private Button simpleShareModeButton;
     @FXML
     private CheckBox checkBox1;
+    @FXML
+    private CheckBox showDirectoryStructureCheckBox;
     @FXML
     private TableView<FileDetail> tableView1;
     @FXML
@@ -167,7 +169,13 @@ public class MainController {
         }
 
         boolean enablePassword = !isSimpleShareMode() && checkBox1.isSelected();
-        byte i = shareService.startService(textField1.getText(), textField3.getText(), enablePassword);
+        byte i = shareService.startService(
+                textField1.getText(),
+                textField3.getText(),
+                enablePassword,
+                isSimpleShareMode(),
+                showDirectoryStructureCheckBox.isSelected()
+        );
         switch (i) {
             case 0 -> {
                 String localIpAddress = getSelectedIpAddress();
@@ -257,11 +265,14 @@ public class MainController {
         checkBox1.setVisible(showStandardModeControls);
         label9.setVisible(showStandardModeControls);
         label10.setVisible(showStandardModeControls);
+        showDirectoryStructureCheckBox.setVisible(simpleMode);
 
         standardShareModeButton.setText(bundle.getString("standardShareMode"));
         simpleShareModeButton.setText(bundle.getString("simpleShareMode"));
+        showDirectoryStructureCheckBox.setText(bundle.getString("showDirectoryStructure"));
         standardShareModeButton.setDisable(serviceIsStarted);
         simpleShareModeButton.setDisable(serviceIsStarted);
+        showDirectoryStructureCheckBox.setDisable(serviceIsStarted);
         standardShareModeButton.setStyle(simpleMode ? getShareModeButtonStyle(false) : getShareModeButtonStyle(true));
         simpleShareModeButton.setStyle(simpleMode ? getShareModeButtonStyle(true) : getShareModeButtonStyle(false));
 

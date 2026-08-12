@@ -4,6 +4,7 @@ import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.util.CryptoUtil;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -20,10 +21,12 @@ import java.util.List;
 
 /**
  * @author ZZHow
- * @date 2025/01/14
+ * create 2025/01/14
+ * update 2026/08/12
  */
 @RestController()
 @RequestMapping("/api/download")
+@ConditionalOnProperty(name = "magicshare.simple-mode", havingValue = "false", matchIfMissing = true)
 public class DownloadController {
     private final CryptoUtil cryptoUtil = CryptoUtil.getInstance();
 
