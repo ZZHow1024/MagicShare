@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,13 +33,15 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 简单分享模式控制类
  *
  * @author ZZHow
  * create 2026/08/12
- * update 2026/08/12
+ * update 2026/11/11
  */
 @RestController
 @ConditionalOnProperty(name = "magicshare.simple-mode", havingValue = "true")
@@ -47,6 +49,9 @@ public class SimpleShareController {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter
             .ofPattern("yyyy-MM-dd HH:mm:ss")
             .withZone(ZoneId.systemDefault());
+    private static final MediaType TEXT_HTML_UTF8 = new MediaType(MediaType.TEXT_HTML, StandardCharsets.UTF_8);
+    private static final int CHECKSUM_CACHE_LIMIT = 4096;
+    private static final Map<String, ChecksumCacheEntry> CHECKSUM_CACHE = new ConcurrentHashMap<>();
 
     @RequestMapping(value = "/", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> index(HttpServletRequest request,
@@ -94,9 +99,19 @@ public class SimpleShareController {
 
         try {
             long fileLength = file.length();
+            long lastModified = file.lastModified();
+            String eTag = createETag(lastModified, fileLength);
+
+            if (isNotModified(request, eTag, lastModified))
+                return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(eTag).lastModified(lastModified).build();
+
             Range range = parseRange(request.getHeader(HttpHeaders.RANGE), fileLength);
+            if (range.partial() && !isRangeFresh(request, eTag, lastModified))
+                range = Range.full();
+
             boolean headRequest = "HEAD".equalsIgnoreCase(request.getMethod());
             HttpHeaders headers = createDownloadHeaders(file, range, fileLength);
+            headers.setETag(eTag);
 
             if (range.partial()) {
                 headers.set(HttpHeaders.CONTENT_RANGE, "bytes " + range.start() + "-" + range.end() + "/" + fileLength);
@@ -200,7 +215,7 @@ public class SimpleShareController {
 
     private String fileRow(HttpServletRequest request, File file, String relativePath, boolean checksum) {
         String fileUrl = fileUrl(request, relativePath);
-        String wgetCommand = "wget \"" + fileUrl + "\"";
+        String wgetCommand = "wget --content-disposition \"" + fileUrl + "\"";
         return """
                 <tr>
                     <td><a href="%s">%s</a></td>
@@ -225,7 +240,7 @@ public class SimpleShareController {
 
     private ResponseEntity<String> html(HttpStatus status, String title, String body) {
         return ResponseEntity.status(status)
-                .contentType(MediaType.TEXT_HTML)
+                .contentType(TEXT_HTML_UTF8)
                 .body(body == null ? page(title, "") : body);
     }
 
@@ -282,6 +297,31 @@ public class SimpleShareController {
         return headers;
     }
 
+    private String createETag(long lastModified, long fileLength) {
+        return "\"" + Long.toHexString(lastModified) + "-" + Long.toHexString(fileLength) + "\"";
+    }
+
+    private boolean isNotModified(HttpServletRequest request, String eTag, long lastModified) {
+        String ifNoneMatch = request.getHeader(HttpHeaders.IF_NONE_MATCH);
+        if (ifNoneMatch != null)
+            return ifNoneMatch.equals(eTag) || ifNoneMatch.equals("*");
+
+        long ifModifiedSince = request.getDateHeader(HttpHeaders.IF_MODIFIED_SINCE);
+        return ifModifiedSince != -1 && lastModified / 1000 <= ifModifiedSince / 1000;
+    }
+
+    private boolean isRangeFresh(HttpServletRequest request, String eTag, long lastModified) {
+        String ifRange = request.getHeader(HttpHeaders.IF_RANGE);
+        if (ifRange == null)
+            return true;
+
+        if (ifRange.startsWith("\"") || ifRange.startsWith("W/"))
+            return ifRange.equals(eTag);
+
+        long ifRangeDate = request.getDateHeader(HttpHeaders.IF_RANGE);
+        return ifRangeDate != -1 && lastModified / 1000 <= ifRangeDate / 1000;
+    }
+
     private MediaType detectContentType(File file) throws IOException {
         String contentType = Files.probeContentType(file.toPath());
         if (contentType == null)
@@ -312,7 +352,12 @@ public class SimpleShareController {
             if (!resolvedPath.startsWith(rootPath))
                 return null;
 
-            return resolvedPath.toFile();
+            // Resolve symlinks/junctions so links pointing outside the share root are rejected.
+            Path realPath = resolvedPath.toRealPath();
+            if (!realPath.startsWith(rootPath))
+                return null;
+
+            return realPath.toFile();
         } catch (IOException e) {
             return null;
         }
@@ -325,7 +370,8 @@ public class SimpleShareController {
             return "";
 
         String path = uri.substring(prefixIndex + prefix.length());
-        return URLDecoder.decode(path, StandardCharsets.UTF_8);
+        // UriUtils.decode only decodes %XX escapes, keeping literal '+' in file names intact.
+        return UriUtils.decode(path, StandardCharsets.UTF_8);
     }
 
     private String toRelativeDownloadPath(File root, FileDetail fileDetail) {
@@ -412,6 +458,13 @@ public class SimpleShareController {
     }
 
     private String sha256(File file) {
+        long size = file.length();
+        long lastModified = file.lastModified();
+        String key = file.getAbsolutePath();
+        ChecksumCacheEntry cached = CHECKSUM_CACHE.get(key);
+        if (cached != null && cached.size() == size && cached.lastModified() == lastModified)
+            return cached.checksum();
+
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             try (DigestInputStream inputStream = new DigestInputStream(new FileInputStream(file), digest)) {
@@ -420,10 +473,17 @@ public class SimpleShareController {
                     // DigestInputStream updates the digest while reading.
                 }
             }
-            return HexFormat.of().formatHex(digest.digest());
+            String checksum = HexFormat.of().formatHex(digest.digest());
+            if (CHECKSUM_CACHE.size() >= CHECKSUM_CACHE_LIMIT)
+                CHECKSUM_CACHE.clear();
+            CHECKSUM_CACHE.put(key, new ChecksumCacheEntry(size, lastModified, checksum));
+            return checksum;
         } catch (Exception e) {
             return "";
         }
+    }
+
+    private record ChecksumCacheEntry(long size, long lastModified, String checksum) {
     }
 
     private String escapeHtml(String value) {
@@ -444,8 +504,9 @@ public class SimpleShareController {
             throw new IllegalArgumentException("Unsupported range unit");
 
         String rangeValue = rangeHeader.substring("bytes=".length());
+        // Multipart ranges are unsupported; ignore the Range header per RFC 7233.
         if (rangeValue.contains(","))
-            rangeValue = rangeValue.substring(0, rangeValue.indexOf(','));
+            return Range.full();
 
         String[] parts = rangeValue.split("-", 2);
         long start;

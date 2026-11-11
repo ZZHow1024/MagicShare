@@ -8,7 +8,8 @@ import java.util.List;
 
 /**
  * @author ZZHow
- * @date 2025/01/14
+ * create 2025/01/14
+ * update 2026/11/11
  */
 public class FileUtil {
     public static final SnowflakeIdGenerator generator = new SnowflakeIdGenerator(1);
@@ -35,20 +36,31 @@ public class FileUtil {
             return;
         }
 
-        File[] files = currentPath.listFiles();
+        findFiles(currentPath.getAbsolutePath(), currentPath, res);
+    }
+
+    /**
+     * 递归查找目录下的所有文件，相对路径始终基于最初的根路径计算
+     *
+     * @param rootPath  根路径
+     * @param directory 当前遍历的目录
+     * @param res       所有文件的路径
+     */
+    private static void findFiles(String rootPath, File directory, List<FileDetail> res) {
+        File[] files = directory.listFiles();
 
         if (files == null) return;
 
         for (File file : files) {
             if (file.isDirectory()) {
-                find(file.getAbsolutePath(), res);
+                findFiles(rootPath, file, res);
             } else {
                 String fileName = file.getName();
                 String fileType = "unknown";
                 if (fileName.lastIndexOf(".") != -1)
                     fileType = fileName.substring(fileName.lastIndexOf(".") + 1);
 
-                FileDetail fileDetail = new FileDetail(generator.generateId() + "", fileName, fileType, Math.round(file.length() / 1024.0 * 10.0) / 10.0, file.getAbsolutePath().replace(path, ""));
+                FileDetail fileDetail = new FileDetail(generator.generateId() + "", fileName, fileType, Math.round(file.length() / 1024.0 * 10.0) / 10.0, file.getAbsolutePath().substring(rootPath.length()));
                 res.add(fileDetail);
             }
         }
