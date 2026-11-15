@@ -100,6 +100,20 @@ https://github.com/ZZHow1024/MagicShare/releases
     - Click "Encrypted download" to use MagicShare encrypted downloader to download files via WebSocket protocol and use RSA+AES hybrid encryption. It does not support simultaneous encrypted download of multiple files.
 - Click the "Decryption download progress" button, and the encrypted download progress drawer will pop up at the bottom of the page.
 
+### Simple Share Mode
+
+- Simple Share Mode does not depend on the Vue frontend. It is designed for very old browsers, command-line tools such as wget/curl, and a lightweight file listing page similar to an Nginx shared directory.
+- How to enable
+    - Before starting the service, click the "Simple share" button on the desktop client to switch the mode (switching is disabled while the service is running).
+    - Optionally check "Show folders": when checked, the share root is browsable as a directory tree; when unchecked, the added shared files are listed flat.
+    - The connection password is not available in Simple Share Mode.
+- After the service starts, recipients visiting the "Share URL" will see a plain HTML file list (file name, size, modified time, download link).
+- Download files
+    - Browser: click a file link to download directly.
+    - Command line: `wget --content-disposition "FILE_URL"` or `curl -OJ "FILE_URL"`.
+    - HTTP Range resumable downloads are supported: `wget -c "FILE_URL"` or `curl -C - -O "FILE_URL"`.
+- Append `?checksum=true` to the URL to display the SHA-256 checksum of each file in the list.
+
 ---
 
 ## **Dependencies**
