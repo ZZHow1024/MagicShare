@@ -44,6 +44,14 @@ export default {
     shareListIsEmpty: '分享清單為空',
     quickDownload: '快速下載',
     encryptedDownloads: '加密下載',
+    upload: {
+      title: '上傳檔案',
+      hint: '單擊或拖曳檔案至此處上傳（支援大檔案分片與斷點續傳）',
+      waiting: '等待中',
+      uploading: '上傳中',
+      completed: '上傳完成',
+      failed: '上傳失敗',
+    },
     drawer: {
       title: '加密下載進度',
       close: '關閉',

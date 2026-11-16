@@ -48,6 +48,14 @@ export default {
     shareListIsEmpty: 'Share list is empty',
     quickDownload: 'Quick download',
     encryptedDownloads: 'Encrypted download',
+    upload: {
+      title: 'Upload files',
+      hint: 'Click or drag files here to upload (chunked transfer with resume support)',
+      waiting: 'Waiting',
+      uploading: 'Uploading',
+      completed: 'Completed',
+      failed: 'Upload failed',
+    },
     drawer: {
       title: 'Encrypted download progress',
       close: 'close',

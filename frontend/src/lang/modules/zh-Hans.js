@@ -44,6 +44,14 @@ export default {
     shareListIsEmpty: '分享列表为空',
     quickDownload: '快速下载',
     encryptedDownloads: '加密下载',
+    upload: {
+      title: '上传文件',
+      hint: '单击或拖拽文件到此处上传（支持大文件分片与断点续传）',
+      waiting: '等待中',
+      uploading: '上传中',
+      completed: '上传完成',
+      failed: '上传失败',
+    },
     drawer: {
       title: '加密下载进度',
       close: '关闭',
