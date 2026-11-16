@@ -3,6 +3,7 @@ package com.zzhow.magicshare.websocket;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zzhow.magicshare.pojo.vo.FileListVO;
 import com.zzhow.magicshare.repository.FileRepository;
+import com.zzhow.magicshare.repository.UploadRepository;
 import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.service.FileService;
 import com.zzhow.magicshare.util.CryptoUtil;
@@ -159,6 +160,31 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                 // AES 加密数据
                 byte[] encryptedData = cryptoUtil.encryptAes(downloadId);
                 session.sendMessage(new TextMessage("Download#" + message.getPayload().split("#")[1] + "#" + Base64.getEncoder().encodeToString(encryptedData)));
+            } catch (InvalidKeyException |
+                     InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
+                     IOException e) {
+                try {
+                    session.close(CloseStatus.SERVER_ERROR);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        } else if (message.getPayload().startsWith("Upload")) {
+            if (!UserRepository.containsUser(session.getId())) {
+                try {
+                    session.close(CloseStatus.NOT_ACCEPTABLE);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                return;
+            }
+
+            String uploadId = UploadRepository.generateUploadId(session.getId());
+            try {
+                // AES 加密数据
+                byte[] encryptedData = cryptoUtil.encryptAes(uploadId);
+                session.sendMessage(new TextMessage("Upload#" + message.getPayload().split("#")[1] + "#" + Base64.getEncoder().encodeToString(encryptedData)));
             } catch (InvalidKeyException |
                      InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
                      IOException e) {
