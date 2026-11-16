@@ -16,10 +16,14 @@ public class ConnectionCountBinding {
     }
 
     public static void setCount(String value) {
-        // 在 JavaFX 应用线程上执行
-        Platform.runLater(() -> {
-            countProperty.set(value);
-        });
+        // 在 JavaFX 应用线程上执行；JavaFX 未初始化的环境（如无界面测试）跳过更新
+        try {
+            Platform.runLater(() -> {
+                countProperty.set(value);
+            });
+        } catch (IllegalStateException ignored) {
+            // JavaFX 环境未初始化
+        }
     }
 
     public static StringProperty countProperty() {
