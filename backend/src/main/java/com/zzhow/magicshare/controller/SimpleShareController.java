@@ -2,7 +2,9 @@ package com.zzhow.magicshare.controller;
 
 import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.FileRepository;
+import com.zzhow.magicshare.repository.ReceiveRepository;
 import com.zzhow.magicshare.repository.SimpleShareRepository;
+import com.zzhow.magicshare.util.UploadFileUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriUtils;
 
 import java.io.File;
@@ -32,6 +35,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author ZZHow
  * create 2026/08/12
- * update 2026/11/11
+ * update 2026/11/16
  */
 @RestController
 @ConditionalOnProperty(name = "magicshare.simple-mode", havingValue = "true")
@@ -132,6 +136,36 @@ public class SimpleShareController {
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public ResponseEntity<String> upload(@RequestParam(value = "file", required = false) List<MultipartFile> files) {
+        if (!ReceiveRepository.isAllowUpload())
+            return html(HttpStatus.FORBIDDEN, "Upload disabled", page("Upload disabled", "<p>File receiving is disabled.</p>"));
+
+        if (files == null || files.isEmpty())
+            return html(HttpStatus.BAD_REQUEST, "Upload", page("Upload", "<p>No file provided.</p>"));
+
+        StringBuilder rows = new StringBuilder();
+        for (MultipartFile multipartFile : files) {
+            String fileName = UploadFileUtil.sanitizeFileName(multipartFile.getOriginalFilename());
+            if (fileName == null || multipartFile.isEmpty())
+                continue;
+
+            try {
+                File target = UploadFileUtil.resolveTargetFile(fileName);
+                multipartFile.transferTo(target.getAbsoluteFile());
+                ReceiveRepository.notifyUploadComplete(target.getAbsolutePath());
+                rows.append("<li>").append(escapeHtml(target.getName())).append(" (").append(formatSize(multipartFile.getSize())).append(")</li>");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (rows.isEmpty())
+            return html(HttpStatus.BAD_REQUEST, "Upload", page("Upload", "<p>No valid file provided.</p>"));
+
+        return html(HttpStatus.OK, "Upload", page("Upload completed", "<p>Uploaded files:</p><ul>" + rows + "</ul>"));
     }
 
     private File getShareRoot() {
@@ -267,6 +301,12 @@ public class SimpleShareController {
                 <body>
                     <h1>%s</h1>
                     %s
+                    <hr>
+                    <h2>Upload files</h2>
+                    <form method="post" action="/upload" enctype="multipart/form-data">
+                        <input type="file" name="file" multiple>
+                        <button type="submit">Upload</button>
+                    </form>
                     <script>
                         (function () {
                             var buttons = document.getElementsByTagName('button');

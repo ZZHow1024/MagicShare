@@ -5,6 +5,7 @@ import com.zzhow.magicshare.repository.ReceiveRepository;
 import com.zzhow.magicshare.repository.UploadRepository;
 import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.util.CryptoUtil;
+import com.zzhow.magicshare.util.UploadFileUtil;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,8 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -24,9 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.Base64;
 import java.util.stream.Stream;
 
@@ -50,11 +47,6 @@ public class UploadController {
     public static final long MAX_FILE_SIZE = 10L * 1024 * 1024 * 1024;
     // 单文件分片数上限
     public static final int MAX_TOTAL_CHUNKS = 200000;
-    // Windows 保留设备名
-    private static final Set<String> RESERVED_NAMES = Set.of(
-            "CON", "PRN", "AUX", "NUL",
-            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9");
 
     @PostMapping("/init")
     public ResponseEntity<Map<String, Object>> init(@RequestBody UploadInitRequest initRequest, String token) {
@@ -72,7 +64,7 @@ public class UploadController {
         if (!UploadRepository.containsUploadId(sessionId, uploadId))
             return error(HttpStatus.UNAUTHORIZED, "Invalid upload id");
 
-        String fileName = sanitizeFileName(initRequest.fileName());
+        String fileName = UploadFileUtil.sanitizeFileName(initRequest.fileName());
         if (fileName == null)
             return error(HttpStatus.BAD_REQUEST, "Invalid file name");
         if (initRequest.fileSize() <= 0 || initRequest.fileSize() > MAX_FILE_SIZE)
@@ -187,7 +179,7 @@ public class UploadController {
                     return error(HttpStatus.BAD_REQUEST, "Missing chunk " + i);
             }
 
-            target = resolveTargetFile(task.getFileName());
+            target = UploadFileUtil.resolveTargetFile(task.getFileName());
             try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(target))) {
                 for (int i = 0; i < task.getTotalChunks(); i++)
                     Files.copy(task.getChunkDir().resolve(i + ".part"), outputStream);
@@ -244,62 +236,6 @@ public class UploadController {
             return parts;
         } catch (Exception e) {
             return null;
-        }
-    }
-
-    /**
-     * 净化上传文件名：仅保留基础文件名，过滤非法与保留字符
-     */
-    private String sanitizeFileName(String raw) {
-        if (raw == null || raw.isBlank())
-            return null;
-
-        String name = raw.replace("\\", "/");
-        int slash = name.lastIndexOf('/');
-        if (slash != -1)
-            name = name.substring(slash + 1);
-        name = name.replaceAll("[\\p{Cntrl}]", "_");
-        name = name.replaceAll("[\\\\/:*?\"<>|]", "_").strip();
-        if (name.length() > 120)
-            name = name.substring(name.length() - 120);
-        if (name.equals(".") || name.equals(".."))
-            return null;
-        while (name.endsWith(".") || name.endsWith(" "))
-            name = name.substring(0, name.length() - 1);
-        if (name.isBlank())
-            return null;
-
-        String upper = name.toUpperCase(Locale.ROOT);
-        int dot = upper.indexOf('.');
-        String base = dot == -1 ? upper : upper.substring(0, dot);
-        if (RESERVED_NAMES.contains(base))
-            name = "_" + name;
-
-        return name;
-    }
-
-    /**
-     * 解析接收目录下的目标文件，重名时追加序号
-     */
-    private File resolveTargetFile(String fileName) {
-        File dir = new File(ReceiveRepository.getReceiveDir());
-        if (!dir.exists() && !dir.mkdirs())
-            throw new IllegalStateException("Unable to create receive directory");
-
-        File target = new File(dir, fileName);
-        if (!target.exists())
-            return target;
-
-        int dot = fileName.lastIndexOf('.');
-        String base = dot > 0 ? fileName.substring(0, dot) : fileName;
-        String ext = dot > 0 ? fileName.substring(dot) : "";
-
-        int count = 1;
-        while (true) {
-            File candidate = new File(dir, base + " (" + count + ")" + ext);
-            if (!candidate.exists())
-                return candidate;
-            count++;
         }
     }
 
