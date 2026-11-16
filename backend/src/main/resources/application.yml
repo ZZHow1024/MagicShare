@@ -5,3 +5,7 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/
+      cache:
+        cachecontrol:
+          # 静态资源使用内容寻址文件名，index.html 必须协商缓存，避免升级后加载旧版本
+          no-cache: true
