@@ -22,7 +22,7 @@
         {{ $t('about.content') }}
       </div>
     </div>
-    <div class="content">Version：3.0.0-alpha.1<br />ZZHow.com</div>
+    <div class="content">Version：3.0.0-alpha.2<br />ZZHow.com</div>
   </div>
 </template>
 
