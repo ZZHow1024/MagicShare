@@ -4,6 +4,7 @@ import com.zzhow.magicshare.repository.ConnectionCountBinding;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.LanguageRepository;
+import com.zzhow.magicshare.repository.ReceiveRepository;
 import com.zzhow.magicshare.repository.UserRepository;
 import com.zzhow.magicshare.ui.service.ShareService;
 import com.zzhow.magicshare.ui.service.impl.ShareServiceImpl;
@@ -11,6 +12,7 @@ import com.zzhow.magicshare.ui.window.AboutWindow;
 import com.zzhow.magicshare.ui.window.MainWindow;
 import com.zzhow.magicshare.util.InternetUtil;
 import com.zzhow.magicshare.util.MessageBox;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -29,7 +31,7 @@ import java.util.ResourceBundle;
 /**
  * @author ZZHow
  * create 2025/1/13
- * update 2026/8/12
+ * update 2026/11/17
  */
 public class MainController {
     @FXML
@@ -53,11 +55,17 @@ public class MainController {
     @FXML
     private Label label11;
     @FXML
+    private Label label12;
+    @FXML
+    private Label label13;
+    @FXML
     private TextField textField1;
     @FXML
     private TextField textField2;
     @FXML
     private TextField textField3;
+    @FXML
+    private TextField receiveDirTextField;
     @FXML
     private Button button1;
     @FXML
@@ -67,6 +75,8 @@ public class MainController {
     @FXML
     private Button button4;
     @FXML
+    private Button button5;
+    @FXML
     private Button standardShareModeButton;
     @FXML
     private Button simpleShareModeButton;
@@ -74,6 +84,8 @@ public class MainController {
     private CheckBox checkBox1;
     @FXML
     private CheckBox showDirectoryStructureCheckBox;
+    @FXML
+    private CheckBox allowUploadCheckBox;
     @FXML
     private TableView<FileDetail> tableView1;
     @FXML
@@ -87,6 +99,9 @@ public class MainController {
 
     private boolean simpleShareMode = false;
 
+    // 最近接收的文件路径（用于语言切换时重建通知文本）
+    private String latestReceivedPath = null;
+
     @FXML
     private void initialize() {
         // 显示内网 IPv4 地址
@@ -94,6 +109,16 @@ public class MainController {
 
         // 连接数数据绑定
         label10.textProperty().bind(ConnectionCountBinding.countProperty());
+
+        // 显示接收目录
+        receiveDirTextField.setText(ReceiveRepository.getReceiveDir());
+
+        // 上传完成通知
+        ReceiveRepository.setUploadCompleteListener(filePath -> Platform.runLater(() -> {
+            latestReceivedPath = filePath;
+            ResourceBundle bundle = LanguageRepository.bundle;
+            label13.setText(bundle.getString("latestReceivedFile") + new File(filePath).getName());
+        }));
 
         // 创建列
         TableColumn<FileDetail, String> fileNameCol = new TableColumn<>("File name");
@@ -157,6 +182,8 @@ public class MainController {
             checkBox1.setDisable(false);
             standardShareModeButton.setDisable(false);
             simpleShareModeButton.setDisable(false);
+            allowUploadCheckBox.setDisable(false);
+            button5.setDisable(false);
             label1.setText(LanguageRepository.bundle.getString("label1"));
             refreshIpAddressSelector();
             button1.setText(LanguageRepository.bundle.getString("button1"));
@@ -174,7 +201,8 @@ public class MainController {
                 textField3.getText(),
                 enablePassword,
                 isSimpleShareMode(),
-                showDirectoryStructureCheckBox.isSelected()
+                showDirectoryStructureCheckBox.isSelected(),
+                allowUploadCheckBox.isSelected()
         );
         switch (i) {
             case 0 -> {
@@ -184,6 +212,8 @@ public class MainController {
                 checkBox1.setDisable(true);
                 standardShareModeButton.setDisable(true);
                 simpleShareModeButton.setDisable(true);
+                allowUploadCheckBox.setDisable(true);
+                button5.setDisable(true);
                 label1.setText(LanguageRepository.bundle.getString("shareUrl")); // 分享URL：
                 showShareUrls(localIpAddress);
                 MessageBox.success(LanguageRepository.bundle.getString("startupSuccess"), LanguageRepository.bundle.getString("startupSuccessContent"));
@@ -305,6 +335,19 @@ public class MainController {
     }
 
     @FXML
+    private void onSelectReceiveDirClicked() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle(LanguageRepository.bundle.getString("selectFolder")); // 选择文件夹
+        try {
+            File directory = directoryChooser.showDialog(MainWindow.getStage());
+            ReceiveRepository.setReceiveDir(directory.getAbsolutePath());
+            receiveDirTextField.setText(directory.getAbsolutePath());
+        } catch (NullPointerException e) {
+            // 未选择文件夹
+        }
+    }
+
+    @FXML
     private void onClearFileClicked() {
         textField2.setText("");
         onSearchFileClicked();
@@ -410,6 +453,11 @@ public class MainController {
         label9.setText(bundle.getString("label9"));
         label11.setText(bundle.getString("shareMode"));
         checkBox1.setText(bundle.getString("checkBox1"));
+        label12.setText(bundle.getString("receiveDirectory"));
+        allowUploadCheckBox.setText(bundle.getString("allowUpload"));
+        button5.setText(bundle.getString("selectFolder"));
+        if (latestReceivedPath != null)
+            label13.setText(bundle.getString("latestReceivedFile") + new File(latestReceivedPath).getName());
         button2.setText(bundle.getString("button2"));
         button3.setText(bundle.getString("button3"));
         button4.setText(bundle.getString("button4"));

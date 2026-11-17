@@ -34,6 +34,11 @@
             <Button fx:id="simpleShareModeButton" layoutX="350.0" layoutY="171.0" mnemonicParsing="false" onAction="#onSimpleShareModeClicked" prefHeight="24.0" prefWidth="117.0" text="Simple share" />
             <CheckBox fx:id="showDirectoryStructureCheckBox" layoutX="475.0" layoutY="176.0" mnemonicParsing="false" prefHeight="18.0" prefWidth="170.0" selected="true" text="Show folders" visible="false" />
             <TableView fx:id="tableView1" layoutY="246.0" prefHeight="210.0" prefWidth="700.0" />
+            <Label fx:id="label12" alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="32.0" layoutY="470.0" prefHeight="16.0" prefWidth="190.0" text="Receive directory:" />
+            <TextField fx:id="receiveDirTextField" editable="false" layoutX="232.0" layoutY="465.0" prefHeight="24.0" prefWidth="240.0" />
+            <Button fx:id="button5" layoutX="480.0" layoutY="465.0" mnemonicParsing="false" onAction="#onSelectReceiveDirClicked" text="Browse" />
+            <CheckBox fx:id="allowUploadCheckBox" layoutX="565.0" layoutY="466.0" mnemonicParsing="false" text="Allow receiving files" />
+            <Label fx:id="label13" layoutX="90.0" layoutY="505.0" prefWidth="225.0" text="" textOverrun="CENTER_ELLIPSIS" />
             <Label fx:id="label9" alignment="CENTER" contentDisplay="CENTER" layoutX="398.0" layoutY="56.0" prefHeight="16.0" prefWidth="235.0" text="Current number of connections" textAlignment="CENTER" />
             <Label fx:id="label10" alignment="CENTER" contentDisplay="CENTER" layoutX="481.0" layoutY="81.0" prefHeight="16.0" prefWidth="69.0" text="0" textAlignment="CENTER">
                <font>
