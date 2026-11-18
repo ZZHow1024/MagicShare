@@ -98,6 +98,8 @@ https://github.com/ZZHow1024/MagicShare/releases
 - Download files
     - Click "Quick download" to use the browser downloader to quickly download files via HTTP protocol.
     - Click "Encrypted download" to use MagicShare encrypted downloader to download files via WebSocket protocol and use RSA+AES hybrid encryption. It does not support simultaneous encrypted download of multiple files.
+    - Select multiple files and click the "Download as ZIP" button to download the selected files as a single ZIP archive.
+    - Click "Preview" to view images, text, audio/video and PDF files directly in a new browser tab, with seek support for audio and video.
 - Click the "Decryption download progress" button, and the encrypted download progress drawer will pop up at the bottom of the page.
 
 ### Web upload
@@ -120,6 +122,8 @@ https://github.com/ZZHow1024/MagicShare/releases
     - Optionally check "Show folders": when checked, the share root is browsable as a directory tree; when unchecked, the added shared files are listed flat.
     - The connection password is not available in Simple Share Mode.
 - After the service starts, recipients visiting the "Share URL" will see a plain HTML file list (file name, size, modified time, download link).
+- The "ZIP" link on a directory page downloads the whole directory (including subdirectories) as a ZIP file, e.g. `wget "SHARE_URL/zip/DIRECTORY_NAME"`.
+- Append `?inline=true` to a file URL to preview it in the browser (images, text, audio/video, PDF), e.g. `curl -O "SHARE_URL/FILE?inline=true"`.
 - Download files
     - Browser: click a file link to download directly.
     - Command line: `wget --content-disposition "FILE_URL"` or `curl -OJ "FILE_URL"`.
