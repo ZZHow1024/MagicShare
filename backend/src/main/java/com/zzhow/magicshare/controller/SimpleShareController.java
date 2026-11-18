@@ -4,6 +4,7 @@ import com.zzhow.magicshare.pojo.entity.FileDetail;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.repository.ReceiveRepository;
 import com.zzhow.magicshare.repository.SimpleShareRepository;
+import com.zzhow.magicshare.util.HttpRangeUtil;
 import com.zzhow.magicshare.util.UploadFileUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -17,16 +18,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.util.UriUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.time.Instant;
@@ -92,7 +95,8 @@ public class SimpleShareController {
     }
 
     @RequestMapping(value = "/files/**", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public ResponseEntity<InputStreamResource> file(HttpServletRequest request) {
+    public ResponseEntity<InputStreamResource> file(HttpServletRequest request,
+                                                    @RequestParam(value = "inline", defaultValue = "false") boolean inline) {
         File root = getShareRoot();
         if (root == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -109,12 +113,12 @@ public class SimpleShareController {
             if (isNotModified(request, eTag, lastModified))
                 return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(eTag).lastModified(lastModified).build();
 
-            Range range = parseRange(request.getHeader(HttpHeaders.RANGE), fileLength);
+            HttpRangeUtil.Range range = HttpRangeUtil.parse(request.getHeader(HttpHeaders.RANGE), fileLength);
             if (range.partial() && !isRangeFresh(request, eTag, lastModified))
-                range = Range.full();
+                range = HttpRangeUtil.Range.full();
 
             boolean headRequest = "HEAD".equalsIgnoreCase(request.getMethod());
-            HttpHeaders headers = createDownloadHeaders(file, range, fileLength);
+            HttpHeaders headers = createDownloadHeaders(file, range, fileLength, inline);
             headers.setETag(eTag);
 
             if (range.partial()) {
@@ -122,7 +126,7 @@ public class SimpleShareController {
                 if (headRequest)
                     return new ResponseEntity<>(headers, HttpStatus.PARTIAL_CONTENT);
 
-                return new ResponseEntity<>(new InputStreamResource(limitedInputStream(file, range)), headers, HttpStatus.PARTIAL_CONTENT);
+                return new ResponseEntity<>(new InputStreamResource(HttpRangeUtil.limitedInputStream(file, range)), headers, HttpStatus.PARTIAL_CONTENT);
             }
 
             if (headRequest)
@@ -135,6 +139,52 @@ public class SimpleShareController {
                     .build();
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * 将分享目录打包为 ZIP 流式下载
+     */
+    @RequestMapping(value = "/zip/**", method = RequestMethod.GET, produces = "application/zip")
+    public ResponseEntity<StreamingResponseBody> zip(HttpServletRequest request) {
+        File root = getShareRoot();
+        if (root == null || root.isFile())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        String relativePath = extractPath(request, "/zip/");
+        File directory = resolveUnderRoot(root, relativePath);
+        if (directory == null || !directory.isDirectory())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        String entryPrefix = normalizeRelativePath(relativePath);
+        String zipName = entryPrefix.isBlank() ? root.getName() : entryPrefix.substring(entryPrefix.lastIndexOf('/') + 1);
+
+        StreamingResponseBody body = outputStream -> {
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream, StandardCharsets.UTF_8)) {
+                zipDirectory(directory, entryPrefix, zipOutputStream);
+            }
+        };
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition(zipName + ".zip", false))
+                .body(body);
+    }
+
+    private void zipDirectory(File directory, String prefix, ZipOutputStream zipOutputStream) throws IOException {
+        File[] children = directory.listFiles();
+        if (children == null)
+            return;
+
+        for (File child : children) {
+            String entryName = prefix.isBlank() ? child.getName() : prefix + "/" + child.getName();
+            if (child.isDirectory()) {
+                zipDirectory(child, entryName, zipOutputStream);
+            } else if (child.isFile() && child.canRead()) {
+                zipOutputStream.putNextEntry(new ZipEntry(entryName));
+                Files.copy(child.toPath(), zipOutputStream);
+                zipOutputStream.closeEntry();
+            }
         }
     }
 
@@ -184,7 +234,7 @@ public class SimpleShareController {
         StringBuilder rows = new StringBuilder();
         String parentPath = parentPath(relativePath);
         if (parentPath != null)
-            rows.append(directoryRow("..", browseUrl(request, parentPath, checksum), "", checksum));
+            rows.append(directoryRow("..", browseUrl(request, parentPath, checksum), "", checksum, null));
 
         File[] children = directory.listFiles();
         if (children != null) {
@@ -194,10 +244,12 @@ public class SimpleShareController {
 
             for (File child : children) {
                 String childRelativePath = appendRelativePath(relativePath, child.getName());
-                if (child.isDirectory())
-                    rows.append(directoryRow(child.getName() + "/", browseUrl(request, childRelativePath, checksum), formatModifiedTime(child), checksum));
-                else
+                if (child.isDirectory()) {
+                    String zipUrl = baseUrl(request) + "/zip/" + encodePath(childRelativePath);
+                    rows.append(directoryRow(child.getName() + "/", browseUrl(request, childRelativePath, checksum), formatModifiedTime(child), checksum, zipUrl));
+                } else {
                     rows.append(fileRow(request, child, childRelativePath, checksum));
+                }
             }
         }
 
@@ -235,16 +287,17 @@ public class SimpleShareController {
                 """.formatted(checksum ? "<th>SHA-256</th>" : "", rows);
     }
 
-    private String directoryRow(String name, String url, String modifiedTime, boolean checksum) {
+    private String directoryRow(String name, String url, String modifiedTime, boolean checksum, String zipUrl) {
+        String actions = zipUrl == null ? "" : "<a href=\"" + escapeHtml(zipUrl) + "\">ZIP</a>";
         return """
                 <tr>
                     <td><a href="%s">%s</a></td>
                     <td>-</td>
                     <td>%s</td>
                     %s
-                    <td></td>
+                    <td>%s</td>
                 </tr>
-                """.formatted(url, escapeHtml(name), escapeHtml(modifiedTime), checksum ? "<td></td>" : "");
+                """.formatted(url, escapeHtml(name), escapeHtml(modifiedTime), checksum ? "<td></td>" : "", actions);
     }
 
     private String fileRow(HttpServletRequest request, File file, String relativePath, boolean checksum) {
@@ -327,13 +380,13 @@ public class SimpleShareController {
                 """.formatted(escapeHtml(title), escapeHtml(title), content);
     }
 
-    private HttpHeaders createDownloadHeaders(File file, Range range, long fileLength) throws IOException {
+    private HttpHeaders createDownloadHeaders(File file, HttpRangeUtil.Range range, long fileLength, boolean inline) throws IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(detectContentType(file));
         headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
         headers.setContentLength(range.length(fileLength));
         headers.setLastModified(file.lastModified());
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, contentDisposition(file.getName()));
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, contentDisposition(file.getName(), inline));
         return headers;
     }
 
@@ -370,9 +423,6 @@ public class SimpleShareController {
         return MediaType.parseMediaType(contentType);
     }
 
-    private InputStream limitedInputStream(File file, Range range) throws IOException {
-        return new RangeInputStream(new FileInputStream(file), range.start(), range.length(file.length()));
-    }
 
     private File resolveSharedFile(File root, String requestPath) {
         String normalizedPath = normalizeRelativePath(requestPath);
@@ -470,9 +520,10 @@ public class SimpleShareController {
                 .orElse("");
     }
 
-    private String contentDisposition(String fileName) {
+    private String contentDisposition(String fileName, boolean inline) {
         String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20");
-        return "attachment; filename=\"" + encodedFileName + "\"; filename*=UTF-8''" + encodedFileName;
+        String disposition = inline ? "inline" : "attachment";
+        return disposition + "; filename=\"" + encodedFileName + "\"; filename*=UTF-8''" + encodedFileName;
     }
 
     private String displayName(String relativePath, File file) {
@@ -535,98 +586,5 @@ public class SimpleShareController {
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;");
-    }
-
-    private Range parseRange(String rangeHeader, long fileLength) {
-        if (rangeHeader == null || rangeHeader.isBlank())
-            return Range.full();
-        if (!rangeHeader.startsWith("bytes="))
-            throw new IllegalArgumentException("Unsupported range unit");
-
-        String rangeValue = rangeHeader.substring("bytes=".length());
-        // Multipart ranges are unsupported; ignore the Range header per RFC 7233.
-        if (rangeValue.contains(","))
-            return Range.full();
-
-        String[] parts = rangeValue.split("-", 2);
-        long start;
-        long end;
-
-        if (parts[0].isBlank()) {
-            long suffixLength = Long.parseLong(parts[1]);
-            if (suffixLength <= 0)
-                throw new IllegalArgumentException("Invalid suffix range");
-            start = Math.max(0, fileLength - suffixLength);
-            end = fileLength - 1;
-        } else {
-            start = Long.parseLong(parts[0]);
-            end = parts.length > 1 && !parts[1].isBlank() ? Long.parseLong(parts[1]) : fileLength - 1;
-        }
-
-        if (start < 0 || end < start || start >= fileLength)
-            throw new IllegalArgumentException("Invalid range");
-
-        return new Range(start, Math.min(end, fileLength - 1));
-    }
-
-    private record Range(long start, long end, boolean partial) {
-        static Range full() {
-            return new Range(0, -1, false);
-        }
-
-        Range(long start, long end) {
-            this(start, end, true);
-        }
-
-        long length(long fileLength) {
-            if (!partial)
-                return fileLength;
-
-            return end - start + 1;
-        }
-    }
-
-    private static class RangeInputStream extends InputStream {
-        private final InputStream inputStream;
-        private long remaining;
-
-        private RangeInputStream(InputStream inputStream, long start, long length) throws IOException {
-            this.inputStream = inputStream;
-            this.remaining = length;
-            long skipped = 0;
-            while (skipped < start) {
-                long current = inputStream.skip(start - skipped);
-                if (current <= 0)
-                    throw new IOException("Unable to skip to range start");
-                skipped += current;
-            }
-        }
-
-        @Override
-        public int read() throws IOException {
-            if (remaining <= 0)
-                return -1;
-
-            int value = inputStream.read();
-            if (value != -1)
-                remaining--;
-            return value;
-        }
-
-        @Override
-        public int read(byte[] bytes, int off, int len) throws IOException {
-            if (remaining <= 0)
-                return -1;
-
-            int count = inputStream.read(bytes, off, (int) Math.min(len, remaining));
-            if (count != -1)
-                remaining -= count;
-            return count;
-        }
-
-        @Override
-        public void close() throws IOException {
-            inputStream.close();
-        }
     }
 }

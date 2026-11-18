@@ -117,6 +117,32 @@ public class UserRepository {
         return false;
     }
 
+    public static String generateArchiveId(String sessionId) {
+        String archiveId = UUID.randomUUID().toString();
+        users.get(sessionId).getArchiveIdList().put(archiveId, true);
+
+        return archiveId;
+    }
+
+    public static boolean verifyArchiveId(String sessionId, String archiveId) {
+        if (users.get(sessionId) != null && users.get(sessionId).getArchiveIdList().containsKey(archiveId)) {
+            if (users.get(sessionId).getArchiveIdList().get(archiveId)) {
+                users.get(sessionId).getArchiveIdList().put(archiveId, false);
+
+                // 延迟 10s 删除 archiveId
+                new java.util.concurrent.ScheduledThreadPoolExecutor(1)
+                        .schedule(() -> {
+                            if (!users.containsKey(sessionId)) return;
+                            users.get(sessionId).getArchiveIdList().remove(archiveId);
+                        }, 10, TimeUnit.SECONDS);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public static void sendListToAll() {
         Set<String> strings = users.keySet();
         for (String sessionId : strings) {

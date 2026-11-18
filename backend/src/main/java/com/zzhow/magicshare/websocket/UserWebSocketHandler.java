@@ -194,6 +194,31 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                     throw new RuntimeException(ex);
                 }
             }
+        } else if (message.getPayload().startsWith("Archive")) {
+            if (!UserRepository.containsUser(session.getId())) {
+                try {
+                    session.close(CloseStatus.NOT_ACCEPTABLE);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                return;
+            }
+
+            String archiveId = UserRepository.generateArchiveId(session.getId());
+            try {
+                // AES 加密数据
+                byte[] encryptedData = cryptoUtil.encryptAes(archiveId);
+                session.sendMessage(new TextMessage("Archive#" + message.getPayload().split("#")[1] + "#" + Base64.getEncoder().encodeToString(encryptedData)));
+            } catch (InvalidKeyException |
+                     InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
+                     IOException e) {
+                try {
+                    session.close(CloseStatus.SERVER_ERROR);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
         }
     }
 }

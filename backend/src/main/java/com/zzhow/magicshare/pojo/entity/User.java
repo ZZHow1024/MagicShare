@@ -12,6 +12,7 @@ import java.util.Map;
 public class User {
     private WebSocketSession session;
     private final Map<String, Boolean> downloadId = new HashMap<>();
+    private final Map<String, Boolean> archiveId = new HashMap<>();
 
     public User() {
     }
@@ -26,5 +27,9 @@ public class User {
 
     public Map<String, Boolean> getDownloadIdList() {
         return downloadId;
+    }
+
+    public Map<String, Boolean> getArchiveIdList() {
+        return archiveId;
     }
 }
