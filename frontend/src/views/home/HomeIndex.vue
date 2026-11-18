@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import axios from 'axios'
 import {
   decryptAES,
@@ -156,6 +156,22 @@ onMounted(async () => {
         const resolveUploadId = pendingUploadResolve
         pendingUploadResolve = null
         resolveUploadId(uploadId)
+      } else if (event.data.startsWith('Archive#')) {
+        if (pendingArchiveResolve === null) return
+        const archiveId = decryptAES(
+          wAesKey,
+          wIv,
+          new Uint8Array(
+            atob(event.data.split('#')[2])
+              .split('')
+              .map(function (c) {
+                return c.charCodeAt(0)
+              }),
+          ),
+        )
+        const resolveArchiveId = pendingArchiveResolve
+        pendingArchiveResolve = null
+        resolveArchiveId(archiveId)
       }
     }
   }
@@ -399,6 +415,62 @@ const beforeUpload = (file) => {
   // 阻止 antd 默认上传行为，改用分片上传
   return false
 }
+
+// ===== 打包下载与在线预览 =====
+const selectedRowKeys = ref([])
+let pendingArchiveResolve = null
+const selectedPaths = computed(() =>
+  data.value.filter((file) => selectedRowKeys.value.includes(file.fileId)).map((file) => file.path),
+)
+
+const onSelectionChange = (keys) => {
+  selectedRowKeys.value = keys
+}
+
+const requestArchiveId = () =>
+  new Promise((resolve, reject) => {
+    pendingArchiveResolve = resolve
+    wSocket.send('Archive#0')
+    setTimeout(() => {
+      if (pendingArchiveResolve !== null) {
+        pendingArchiveResolve = null
+        reject(new Error('request archive id timeout'))
+      }
+    }, 10000)
+  })
+
+const archiveDownload = async () => {
+  try {
+    const archiveId = await requestArchiveId()
+    const token = encryptWAES(wAesKey, wIv, sessionId + '#' + archiveId)
+    const response = await axios.post(`/api/archive?token=${encodeURIComponent(token)}`, selectedPaths.value, {
+      responseType: 'blob',
+    })
+    const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/zip' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'MagicShare-files.zip'
+    a.click()
+    window.URL.revokeObjectURL(url)
+    selectedRowKeys.value = []
+  } catch (error) {
+    selectedRowKeys.value = []
+  }
+}
+
+const previewFile = async (record) => {
+  try {
+    const archiveId = await requestArchiveId()
+    const token = encryptWAES(wAesKey, wIv, sessionId + '#' + archiveId)
+    const fileId = encryptWAES(wAesKey, wIv, record.fileId)
+    window.open(
+      `/api/preview?token=${encodeURIComponent(token)}&fileId=${encodeURIComponent(fileId)}`,
+      '_blank',
+    )
+  } catch (error) {
+    // 预览请求超时或失败时忽略
+  }
+}
 </script>
 
 <template>
@@ -409,12 +481,21 @@ const beforeUpload = (file) => {
       <a-button style="position: relative; margin-left: 36vw" type="primary" @click="showDrawer">{{
         $t('home.button')
       }}</a-button>
+      <a-button
+        style="position: relative; margin-left: 8px"
+        :disabled="selectedRowKeys.length === 0"
+        @click="archiveDownload"
+      >
+        {{ $t('home.archiveDownload') + ' (' + selectedRowKeys.length + ')' }}
+      </a-button>
     </div>
     <div :style="{ background: '#fff', padding: '24px', minHeight: '280px' }">
       <!-- 表格 -->
       <a-table
         :columns="columns"
         :data-source="data"
+        :row-key="(record) => record.fileId"
+        :row-selection="{ selectedRowKeys, onChange: onSelectionChange }"
         :locale="{ emptyText: $t('home.shareListIsEmpty') }"
         :scroll="{ y: 'calc(60vh)' }"
       >
@@ -439,6 +520,10 @@ const beforeUpload = (file) => {
 
           <template v-else-if="column.key === 'action'">
             <div>
+              <a class="ant-dropdown-link" @click="previewFile(record)">
+                {{ $t('home.preview') }}
+              </a>
+              <div style="height: 20px">-----</div>
               <a class="ant-dropdown-link" @click="onDownloadFile(record)">
                 {{ $t('home.quickDownload') }}
               </a>

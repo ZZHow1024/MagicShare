@@ -48,6 +48,8 @@ export default {
     shareListIsEmpty: 'Share list is empty',
     quickDownload: 'Quick download',
     encryptedDownloads: 'Encrypted download',
+    archiveDownload: 'Download as ZIP',
+    preview: 'Preview',
     upload: {
       title: 'Upload files',
       hint: 'Click or drag files here to upload (chunked transfer with resume support)',

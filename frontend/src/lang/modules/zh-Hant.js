@@ -44,6 +44,8 @@ export default {
     shareListIsEmpty: '分享清單為空',
     quickDownload: '快速下載',
     encryptedDownloads: '加密下載',
+    archiveDownload: '打包下載',
+    preview: '線上預覽',
     upload: {
       title: '上傳檔案',
       hint: '單擊或拖曳檔案至此處上傳（支援大檔案分片與斷點續傳）',
