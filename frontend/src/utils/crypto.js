@@ -131,6 +131,21 @@ export const decryptBufferAES = async (aesKey, iv, encryptedData) => {
   }
 }
 
+// Base64 -> Uint8Array（比 atob().split().map() 快约一个数量级）
+export const base64ToBytes = (base64) => {
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return bytes
+}
+
+// 二进制字符串 -> Uint8Array
+export const binaryToBytes = (binary) => {
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return bytes
+}
+
 // Uint8Array -> 二进制字符串
 const bytesToBinary = (bytes) => {
   let binary = ''

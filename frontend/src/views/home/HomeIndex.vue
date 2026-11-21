@@ -2,6 +2,8 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import axios from 'axios'
 import {
+  base64ToBytes,
+  binaryToBytes,
   decryptAES,
   decryptBufferAES,
   decryptRSA,
@@ -112,13 +114,7 @@ onMounted(async () => {
         const decryptedData = await decryptAES(
           wAesKey,
           wIv,
-          new Uint8Array(
-            atob(event.data.split('#')[1])
-              .split('')
-              .map(function (c) {
-                return c.charCodeAt(0)
-              }),
-          ),
+          base64ToBytes(event.data.split('#')[1]),
         )
 
         let obj = JSON.parse(decryptedData)
@@ -130,13 +126,7 @@ onMounted(async () => {
         downloadId = decryptAES(
           wAesKey,
           wIv,
-          new Uint8Array(
-            atob(event.data.split('#')[2])
-              .split('')
-              .map(function (c) {
-                return c.charCodeAt(0)
-              }),
-          ),
+          base64ToBytes(event.data.split('#')[2]),
         )
         if (event.data.split('#')[1] === '0') startQuickDownload()
         else startEncryptedDownload()
@@ -145,13 +135,7 @@ onMounted(async () => {
         const uploadId = decryptAES(
           wAesKey,
           wIv,
-          new Uint8Array(
-            atob(event.data.split('#')[2])
-              .split('')
-              .map(function (c) {
-                return c.charCodeAt(0)
-              }),
-          ),
+          base64ToBytes(event.data.split('#')[2]),
         )
         const resolveUploadId = pendingUploadResolve
         pendingUploadResolve = null
@@ -161,13 +145,7 @@ onMounted(async () => {
         const archiveId = decryptAES(
           wAesKey,
           wIv,
-          new Uint8Array(
-            atob(event.data.split('#')[2])
-              .split('')
-              .map(function (c) {
-                return c.charCodeAt(0)
-              }),
-          ),
+          base64ToBytes(event.data.split('#')[2]),
         )
         const resolveArchiveId = pendingArchiveResolve
         pendingArchiveResolve = null
@@ -238,41 +216,17 @@ const startEncryptedDownload = () => {
 
   socket.onmessage = async (event) => {
     if (event.data.startsWith('block#')) {
-      const block = decryptAES(
-        wAesKey,
-        wIv,
-        new Uint8Array(
-          atob(event.data.split('#')[1])
-            .split('')
-            .map(function (c) {
-              return c.charCodeAt(0)
-            }),
-        ),
-      )
+      const block = decryptAES(wAesKey, wIv, base64ToBytes(event.data.split('#')[1]))
       downloadProgress.value.totalBlock = parseInt(block)
 
       socket.send('b,' + fileId)
     } else if (event.data.startsWith('fin')) {
       socket.close()
     } else {
+      // 加密分块（Base64 文本帧，每块随机 IV：IV || ciphertext）
       downloadProgress.value.currentBlock++
-      const decryptedChunk = await decryptBufferAES(
-        wAesKey,
-        wIv,
-        new Uint8Array(
-          atob(event.data)
-            .split('')
-            .map(function (c) {
-              return c.charCodeAt(0)
-            }),
-        ),
-      )
-
-      const decryptedChunkUint8 = new Uint8Array(decryptedChunk.length)
-      for (let i = 0; i < decryptedChunkUint8.length; i++) {
-        decryptedChunkUint8[i] = decryptedChunk.charCodeAt(i)
-      }
-      chunks.value.push(decryptedChunkUint8)
+      const decryptedChunk = await decryptBufferAES(wAesKey, wIv, base64ToBytes(event.data))
+      chunks.value.push(binaryToBytes(decryptedChunk))
       downloadProgress.value.decryptionBlock++
       if (downloadProgress.value.decryptionBlock >= downloadProgress.value.totalBlock) mergeFiles()
     }

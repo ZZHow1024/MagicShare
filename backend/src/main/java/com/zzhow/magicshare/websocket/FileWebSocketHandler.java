@@ -23,7 +23,7 @@ import java.util.List;
  * @date 2025/01/16
  */
 public class FileWebSocketHandler extends TextWebSocketHandler {
-    private static final int CHUNK_SIZE = 8192;
+    private static final int CHUNK_SIZE = 64 * 1024;
     private final CryptoUtil cryptoUtil = CryptoUtil.getInstance();
     private final DownloadUserRepository downloadUserRepository = DownloadUserRepository.getInstance();
 
@@ -34,7 +34,7 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        // 消息格式：a,sessionId#downloadId,fileId
+        // 文本消息格式：a,sessionId#downloadId,fileId（控制消息）；加密分块以二进制帧发送
         if (message.getPayload().charAt(0) == 'a') {
             String[] split = message.getPayload().split(",");
 
@@ -67,7 +67,7 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
 
             downloadUserRepository.addUser(session.getId());
             session.sendMessage(new TextMessage("block#" + Base64.getEncoder().encodeToString(encryptedData)));
-        } else if ((message.getPayload().charAt(0) == 'b')) { // 消息格式：b,fileId
+        } else if ((message.getPayload().charAt(0) == 'b')) { // 文本消息格式：b,fileId
             // 身份验证
             if (!downloadUserRepository.containsUser(session.getId())) {
                 session.sendMessage(new TextMessage("Not Acceptable"));
@@ -96,7 +96,7 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
                 byte[] buffer = new byte[CHUNK_SIZE];
                 int bytesRead;
                 while ((bytesRead = bis.read(buffer)) != -1) {
-                    // 通过 WebSocket 传输文件数据（每块使用随机 IV：IV || ciphertext）
+                    // 通过 WebSocket 传输文件数据（每块使用随机 IV：IV || ciphertext，Base64 文本帧）
                     byte[] plain = bytesRead == CHUNK_SIZE ? buffer : Arrays.copyOf(buffer, bytesRead);
                     byte[] encryptedData = cryptoUtil.encryptAes(plain);
                     session.sendMessage(new TextMessage(new String(Base64.getEncoder().encode(encryptedData))));
