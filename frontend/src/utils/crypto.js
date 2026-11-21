@@ -27,7 +27,7 @@ export const encryptRSA = (publicKeyPem, data) => {
   const encrypted = publicKey.encrypt(data, 'RSA-OAEP', {
     md: forge.md.sha256.create(),
     mgf1: {
-      md: forge.md.sha1.create(),
+      md: forge.md.sha256.create(),
     },
   })
 
@@ -42,7 +42,7 @@ export const decryptRSA = async (privateKeyPem, encryptedBase64) => {
   const decrypted = privateKey.decrypt(encryptedData, 'RSA-OAEP', {
     md: forge.md.sha256.create(),
     mgf1: {
-      md: forge.md.sha1.create(),
+      md: forge.md.sha256.create(),
     },
   })
 
@@ -74,25 +74,33 @@ export const encryptAES = (data) => {
   }
 }
 
-// AES 加密
+// AES 加密（每消息随机 IV，输出 Base64(IV || ciphertext)，与后端协议一致）
 export const encryptWAES = (aesKey, iv, data) => {
-  // 加密数据
+  // 生成随机 IV（iv 参数保留以兼容旧调用，不再使用固定 IV）
+  const randomIv = forge.random.getBytesSync(16)
+
   const cipher = forge.cipher.createCipher('AES-CBC', aesKey)
-  cipher.start({ iv: iv })
+  cipher.start({ iv: randomIv })
   cipher.update(forge.util.createBuffer(data))
   cipher.finish()
 
-  // 获取加密结果
-  const encryptedData = cipher.output
+  // 组合 IV 与密文：Base64(IV || ciphertext)
+  const ivBinary = forge.util.decode64(forge.util.encode64(randomIv))
+  const cipherBinary = cipher.output.getBytes()
 
-  return forge.util.encode64(encryptedData.getBytes())
+  return forge.util.encode64(ivBinary + cipherBinary)
 }
 
-// AES 解密
-export const decryptAES = (aesKey, iv, encrypted) => {
+// AES 解密（输入 Uint8Array，格式为 IV || ciphertext，与后端协议一致；iv 参数保留以兼容旧调用）
+export const decryptAES = (aesKey, iv, encryptedData) => {
+  if (!encryptedData || encryptedData.length <= 16) {
+    console.error('Decryption failed: ciphertext too short')
+    return null
+  }
+
   const decipher = forge.cipher.createDecipher('AES-CBC', aesKey)
-  decipher.start({ iv: iv })
-  decipher.update(forge.util.createBuffer(encrypted))
+  decipher.start({ iv: forge.util.createBuffer(bytesToBinary(encryptedData.slice(0, 16))) })
+  decipher.update(forge.util.createBuffer(bytesToBinary(encryptedData.slice(16))))
   const success = decipher.finish()
 
   if (success) {
@@ -103,12 +111,16 @@ export const decryptAES = (aesKey, iv, encrypted) => {
   }
 }
 
-// AES 解密
+// AES 解密（输入 Uint8Array，格式为 IV || ciphertext，返回二进制字符串；iv 参数保留以兼容旧调用）
 export const decryptBufferAES = async (aesKey, iv, encryptedData) => {
-  const cipher = forge.cipher.createDecipher('AES-CBC', aesKey)
-  cipher.start({ iv: iv })
-  await cipher.update(forge.util.createBuffer(encryptedData))
+  if (!encryptedData || encryptedData.length <= 16) {
+    console.error('Decryption failed: ciphertext too short')
+    return null
+  }
 
+  const cipher = forge.cipher.createDecipher('AES-CBC', aesKey)
+  cipher.start({ iv: forge.util.createBuffer(bytesToBinary(encryptedData.slice(0, 16))) })
+  cipher.update(forge.util.createBuffer(bytesToBinary(encryptedData.slice(16))))
   const result = await cipher.finish()
 
   if (result) {
@@ -117,6 +129,13 @@ export const decryptBufferAES = async (aesKey, iv, encryptedData) => {
     console.error('Decryption failed')
     return null
   }
+}
+
+// Uint8Array -> 二进制字符串
+const bytesToBinary = (bytes) => {
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+  return binary
 }
 
 // SHA256 加密

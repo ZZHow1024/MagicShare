@@ -10,8 +10,6 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -94,25 +92,13 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
 
             String filePath = FileRepository.getBasePath() + files.get(index).getPath();
 
-            // 初始化 AES 加密器
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            IvParameterSpec ivSpec = new IvParameterSpec(UserRepository.getAesCrypto().getIv());
-            cipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
-
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath))) {
                 byte[] buffer = new byte[CHUNK_SIZE];
                 int bytesRead;
                 while ((bytesRead = bis.read(buffer)) != -1) {
-                    // 通过 WebSocket 传输文件数据
-                    // 每块显式重置 cipher 到初始 IV 状态，与前端逐块独立解密保持一致
-                    cipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
-                    byte[] encryptedData;
-                    if (bytesRead == CHUNK_SIZE)
-                        encryptedData = cipher.doFinal(buffer);
-                    else {
-                        byte[] newBuffer = Arrays.copyOf(buffer, bytesRead);
-                        encryptedData = cipher.doFinal(newBuffer);
-                    }
+                    // 通过 WebSocket 传输文件数据（每块使用随机 IV：IV || ciphertext）
+                    byte[] plain = bytesRead == CHUNK_SIZE ? buffer : Arrays.copyOf(buffer, bytesRead);
+                    byte[] encryptedData = cryptoUtil.encryptAes(plain);
                     session.sendMessage(new TextMessage(new String(Base64.getEncoder().encode(encryptedData))));
                 }
 

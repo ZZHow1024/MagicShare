@@ -48,8 +48,14 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                 if (UserRepository.getPassword() == null) {
                     UserRepository.addUser(session.getId(), session);
                     session.sendMessage(new TextMessage("Syn#202#" + Base64.getEncoder().encodeToString(encryptedSessionId)));
-                } else
-                    session.sendMessage(new TextMessage("ServerHello#" + Base64.getEncoder().encodeToString(encryptedSessionId)));
+                } else {
+                    // 签发随机挑战，防止认证重放
+                    String nonce = cryptoUtil.generateChallenge();
+                    UserRepository.putChallenge(session.getId(), nonce);
+                    byte[] encryptedNonce = cryptoUtil.encryptRsa(publicKey, nonce);
+                    session.sendMessage(new TextMessage("ServerHello#" + Base64.getEncoder().encodeToString(encryptedSessionId)
+                            + "#" + Base64.getEncoder().encodeToString(encryptedNonce)));
+                }
             } catch (IOException e) {
                 try {
                     session.close(CloseStatus.SERVER_ERROR);
@@ -61,11 +67,14 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
             byte[] decode = Base64.getDecoder().decode(message.getPayload().split("#")[1]);
 
             try {
-                String data = session.getId() + UserRepository.getPassword();
+                // 认证值 = SHA256(sessionId + password + 随机挑战)
+                String nonce = UserRepository.getChallenge(session.getId());
+                String data = session.getId() + UserRepository.getPassword() + (nonce == null ? "" : nonce);
                 byte[] hashBytes = cryptoUtil.sha256(data);
 
-                if (Arrays.equals(hashBytes, decode)) {
+                if (nonce != null && Arrays.equals(hashBytes, decode)) {
                     UserRepository.addUser(session.getId(), session);
+                    UserRepository.removeChallenge(session.getId());
                     session.sendMessage(new TextMessage("Syn#200"));
                 } else {
                     session.sendMessage(new TextMessage("Syn#401"));

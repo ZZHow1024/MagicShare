@@ -37,6 +37,7 @@ const router = useRouter()
 const wSocketStore = useWSocketStore()
 let wSocket = null
 let sessionId = null
+let nonce = null
 const connect = () => {
   const hostname = window.location.hostname
   const port = window.location.port
@@ -56,6 +57,8 @@ const connect = () => {
     wSocket.onmessage = async (event) => {
       if (event.data.startsWith('ServerHello#')) {
         sessionId = await decryptRSA(privateKey, event.data.split('#')[1])
+        // 解出服务端签发的随机挑战，用于认证防重放
+        nonce = await decryptRSA(privateKey, event.data.split('#')[2])
         wSocketStore.setSessionId(sessionId)
       } else if (event.data.startsWith('Syn#')) {
         if (event.data.split('#')[1] === '200') {
@@ -90,7 +93,8 @@ const pwdCheck = async (pwd) => {
     return
   }
 
-  const data = decryptSha256(sessionId + pwd)
+  // 认证值 = SHA256(sessionId + password + 随机挑战)，防止重放
+  const data = decryptSha256(sessionId + pwd + (nonce || ''))
   wSocket.send('Syn#' + data)
 }
 

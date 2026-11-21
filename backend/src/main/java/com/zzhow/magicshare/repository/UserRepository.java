@@ -28,6 +28,21 @@ public class UserRepository {
     private static String password = null;
     private static final Map<String, User> users = new HashMap<>();
 
+    // 连接密码认证的随机挑战（sessionId -> nonce，防止认证重放）
+    private static final Map<String, String> challengeNonces = new HashMap<>();
+
+    public static void putChallenge(String sessionId, String nonce) {
+        challengeNonces.put(sessionId, nonce);
+    }
+
+    public static String getChallenge(String sessionId) {
+        return challengeNonces.get(sessionId);
+    }
+
+    public static void removeChallenge(String sessionId) {
+        challengeNonces.remove(sessionId);
+    }
+
     // 一次性 ID 延迟清理专用守护线程池（避免每次验证都新建线程池导致线程泄漏）
     private static final ScheduledExecutorService ID_CLEANUP_EXECUTOR =
             Executors.newSingleThreadScheduledExecutor(r -> {
