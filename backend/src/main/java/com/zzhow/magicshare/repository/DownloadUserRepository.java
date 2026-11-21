@@ -1,7 +1,7 @@
 package com.zzhow.magicshare.repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author ZZHow
@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class DownloadUserRepository {
     private static final DownloadUserRepository instance = new DownloadUserRepository();
-    private final List<String> users = new ArrayList<>();
+    private final Set<String> users = ConcurrentHashMap.newKeySet();
 
     private DownloadUserRepository() {
 

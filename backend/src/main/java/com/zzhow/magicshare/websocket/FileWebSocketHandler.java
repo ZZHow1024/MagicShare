@@ -13,6 +13,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -59,7 +60,9 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
                 session.close(CloseStatus.NOT_ACCEPTABLE);
                 return;
             }
-            int block = (int) Math.ceil(files.get(index).getSize() / (CHUNK_SIZE / 1024.0));
+            // 按真实字节长度计算分块数（FileDetail.size 为 KB 近似值，小于 1KB 的文件会算出 0 块）
+            long fileLength = new File(FileRepository.getBasePath() + files.get(index).getPath()).length();
+            int block = (int) Math.max(1, Math.ceil(fileLength / (double) CHUNK_SIZE));
 
             // AES 加密数据
             byte[] encryptedData = cryptoUtil.encryptAes((block + ""));
@@ -101,6 +104,8 @@ public class FileWebSocketHandler extends TextWebSocketHandler {
                 int bytesRead;
                 while ((bytesRead = bis.read(buffer)) != -1) {
                     // 通过 WebSocket 传输文件数据
+                    // 每块显式重置 cipher 到初始 IV 状态，与前端逐块独立解密保持一致
+                    cipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
                     byte[] encryptedData;
                     if (bytesRead == CHUNK_SIZE)
                         encryptedData = cipher.doFinal(buffer);

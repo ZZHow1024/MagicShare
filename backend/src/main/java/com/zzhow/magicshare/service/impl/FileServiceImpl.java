@@ -37,9 +37,7 @@ public class FileServiceImpl implements FileService {
 
             // 返回加密数据
             return Base64.getEncoder().encodeToString(encryptedData);
-        } catch (IllegalBlockSizeException |
-                 BadPaddingException | InvalidKeyException | JsonProcessingException |
-                 InvalidAlgorithmParameterException e) {
+        } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 

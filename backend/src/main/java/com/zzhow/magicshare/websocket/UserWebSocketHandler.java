@@ -12,8 +12,6 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -52,8 +50,7 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                     session.sendMessage(new TextMessage("Syn#202#" + Base64.getEncoder().encodeToString(encryptedSessionId)));
                 } else
                     session.sendMessage(new TextMessage("ServerHello#" + Base64.getEncoder().encodeToString(encryptedSessionId)));
-            } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException |
-                     IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+            } catch (IOException e) {
                 try {
                     session.close(CloseStatus.SERVER_ERROR);
                 } catch (IOException ex) {
@@ -100,8 +97,7 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
 
                 // 返回加密的 AES 密钥和 IV
                 session.sendMessage(new TextMessage("Exc#" + Base64.getEncoder().encodeToString(encryptedAesKey) + "#" + Base64.getEncoder().encodeToString(UserRepository.getAesCrypto().getIv())));
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException |
-                     IllegalBlockSizeException | BadPaddingException | IOException | InvalidKeyException e) {
+            } catch (IOException e) {
                 try {
                     session.close(CloseStatus.SERVER_ERROR);
                 } catch (IOException ex) {
@@ -134,9 +130,7 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
 
                     // 发送加密数据
                     session.sendMessage(new TextMessage("List#" + Base64.getEncoder().encodeToString(encryptedData)));
-                } catch (IOException |
-                         InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
-                         InvalidKeyException e) {
+                } catch (IOException e) {
                     try {
                         session.close(CloseStatus.SERVER_ERROR);
                     } catch (IOException ex) {
@@ -160,9 +154,7 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                 // AES 加密数据
                 byte[] encryptedData = cryptoUtil.encryptAes(downloadId);
                 session.sendMessage(new TextMessage("Download#" + message.getPayload().split("#")[1] + "#" + Base64.getEncoder().encodeToString(encryptedData)));
-            } catch (InvalidKeyException |
-                     InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
-                     IOException e) {
+            } catch (IOException e) {
                 try {
                     session.close(CloseStatus.SERVER_ERROR);
                 } catch (IOException ex) {
@@ -185,9 +177,7 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                 // AES 加密数据
                 byte[] encryptedData = cryptoUtil.encryptAes(uploadId);
                 session.sendMessage(new TextMessage("Upload#" + message.getPayload().split("#")[1] + "#" + Base64.getEncoder().encodeToString(encryptedData)));
-            } catch (InvalidKeyException |
-                     InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
-                     IOException e) {
+            } catch (IOException e) {
                 try {
                     session.close(CloseStatus.SERVER_ERROR);
                 } catch (IOException ex) {
@@ -210,9 +200,7 @@ public class UserWebSocketHandler extends TextWebSocketHandler {
                 // AES 加密数据
                 byte[] encryptedData = cryptoUtil.encryptAes(archiveId);
                 session.sendMessage(new TextMessage("Archive#" + message.getPayload().split("#")[1] + "#" + Base64.getEncoder().encodeToString(encryptedData)));
-            } catch (InvalidKeyException |
-                     InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
-                     IOException e) {
+            } catch (IOException e) {
                 try {
                     session.close(CloseStatus.SERVER_ERROR);
                 } catch (IOException ex) {

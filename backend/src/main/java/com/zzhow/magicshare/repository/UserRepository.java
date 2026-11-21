@@ -1,6 +1,8 @@
 package com.zzhow.magicshare.repository;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zzhow.magicshare.util.CryptoUtil;
 import com.zzhow.magicshare.pojo.entity.AesCrypto;
 import com.zzhow.magicshare.pojo.entity.User;
 import com.zzhow.magicshare.pojo.vo.FileListVO;
@@ -9,10 +11,11 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
 import java.io.IOException;
 import java.security.*;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -24,6 +27,14 @@ public class UserRepository {
     private static KeyPair keyPair = null;
     private static String password = null;
     private static final Map<String, User> users = new HashMap<>();
+
+    // 一次性 ID 延迟清理专用守护线程池（避免每次验证都新建线程池导致线程泄漏）
+    private static final ScheduledExecutorService ID_CLEANUP_EXECUTOR =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread thread = new Thread(r, "magicshare-id-cleanup");
+                thread.setDaemon(true);
+                return thread;
+            });
 
     static {
         initialize();
@@ -104,11 +115,10 @@ public class UserRepository {
                 users.get(sessionId).getDownloadIdList().put(downloadId, false);
 
                 // 延迟 10s 删除 downloadId
-                new java.util.concurrent.ScheduledThreadPoolExecutor(1)
-                        .schedule(() -> {
-                            if (!users.containsKey(sessionId)) return;
-                            users.get(sessionId).getDownloadIdList().remove(downloadId);
-                        }, 10, TimeUnit.SECONDS);
+                ID_CLEANUP_EXECUTOR.schedule(() -> {
+                    if (!users.containsKey(sessionId)) return;
+                    users.get(sessionId).getDownloadIdList().remove(downloadId);
+                }, 10, TimeUnit.SECONDS);
             }
 
             return true;
@@ -130,11 +140,10 @@ public class UserRepository {
                 users.get(sessionId).getArchiveIdList().put(archiveId, false);
 
                 // 延迟 10s 删除 archiveId
-                new java.util.concurrent.ScheduledThreadPoolExecutor(1)
-                        .schedule(() -> {
-                            if (!users.containsKey(sessionId)) return;
-                            users.get(sessionId).getArchiveIdList().remove(archiveId);
-                        }, 10, TimeUnit.SECONDS);
+                ID_CLEANUP_EXECUTOR.schedule(() -> {
+                    if (!users.containsKey(sessionId)) return;
+                    users.get(sessionId).getArchiveIdList().remove(archiveId);
+                }, 10, TimeUnit.SECONDS);
             }
 
             return true;
@@ -144,6 +153,7 @@ public class UserRepository {
     }
 
     public static void sendListToAll() {
+        CryptoUtil cryptoUtil = CryptoUtil.getInstance();
         Set<String> strings = users.keySet();
         for (String sessionId : strings) {
             User user = users.get(sessionId);
@@ -151,21 +161,14 @@ public class UserRepository {
                 FileListVO fileListVO = new FileListVO(FileRepository.getUuid(), FileRepository.size(), FileRepository.getFiles());
 
                 try {
-                    // 初始化 AES 加密器
-                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-                    IvParameterSpec ivSpec = new IvParameterSpec(UserRepository.getAesCrypto().getIv());
-                    cipher.init(Cipher.ENCRYPT_MODE, UserRepository.getAesCrypto().getKey(), ivSpec);
-
                     // 加密数据
                     ObjectMapper objectMapper = new ObjectMapper();
                     String jsonString = objectMapper.writeValueAsString(fileListVO); // 将对象序列化为 JSON 字符串
-                    byte[] encryptedData = cipher.doFinal(jsonString.getBytes());
+                    byte[] encryptedData = cryptoUtil.encryptAes(jsonString);
 
                     // 发送加密数据
                     user.getSession().sendMessage(new TextMessage("List#" + Base64.getEncoder().encodeToString(encryptedData)));
-                } catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException |
-                         InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException |
-                         InvalidKeyException e) {
+                } catch (IOException e) {
                     try {
                         user.getSession().close(CloseStatus.SERVER_ERROR);
                     } catch (IOException ex) {
