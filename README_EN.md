@@ -97,7 +97,7 @@ https://github.com/ZZHow1024/MagicShare/releases
     - Currently supports Chinese (Simplified/Traditional) and English.
 - Download files
     - Click "Quick download" to use the browser downloader to quickly download files via HTTP protocol.
-    - Click "Encrypted download" to use MagicShare encrypted downloader to download files via WebSocket protocol and use RSA+AES hybrid encryption. It does not support simultaneous encrypted download of multiple files.
+    - Click "Encrypted download" to use MagicShare encrypted downloader to download files via WebSocket protocol and use RSA+AES hybrid encryption. Files of any size are supported (64 KB chunks with a random IV per chunk).
     - Select multiple files and click the "Download as ZIP" button to download the selected files as a single ZIP archive.
     - Click "Preview" to view images, text, audio/video and PDF files directly in a new browser tab, with seek support for audio and video.
 - Click the "Decryption download progress" button, and the encrypted download progress drawer will pop up at the bottom of the page.
@@ -156,6 +156,11 @@ This project requires the following libraries:
     - Support multiple languages.
         - Chinese (Simplified/Traditional)
         - English
+- MagicShare3.0.0
+    - Simple Share Mode: independent of the Vue frontend, supports wget/curl and legacy browsers, with directory ZIP download and inline file preview.
+    - Web Upload: recipients can send files to the sharer via browser or curl, with chunked transfer and resume support for large files.
+    - Archive download and online preview: download selected files as a ZIP archive, preview images, text, audio/video and PDF directly in the browser.
+    - Encryption upgrade: per-message random IVs, standardized RSA-OAEP (SHA-256), challenge-based password authentication against replay, encrypted downloads for files of any size with much larger chunks.
 
 ---
 
