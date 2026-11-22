@@ -49,6 +49,9 @@ const onChangeMenu = (page) => {
           <a-menu-item key="/home" @click="onChangeMenu('/home')">{{
             $t('home.title')
           }}</a-menu-item>
+          <a-menu-item key="/upload" @click="onChangeMenu('/upload')">{{
+            $t('home.upload.title')
+          }}</a-menu-item>
           <a-menu-item key="/about" @click="onChangeMenu('/about')">{{
             $t('about.title')
           }}</a-menu-item>

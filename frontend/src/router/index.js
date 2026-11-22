@@ -16,6 +16,11 @@ const router = createRouter({
           component: () => import('@/views/home/HomeIndex.vue'),
         },
         {
+          path: '/upload',
+          name: 'UploadPage',
+          component: () => import('@/views/upload/UploadPage.vue'),
+        },
+        {
           path: '/about',
           name: 'AboutPage',
           component: () => import('@/views/about/AboutPage.vue'),
