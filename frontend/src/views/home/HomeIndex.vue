@@ -366,6 +366,19 @@ const beforeUpload = (file) => {
 }
 
 // ===== 打包下载与在线预览 =====
+const PREVIEWABLE_EXTENSIONS = [
+  'txt', 'md', 'json', 'xml', 'log', 'csv', 'html', 'css', 'js', 'java', 'py',
+  'png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg',
+  'mp4', 'webm', 'mov', 'mkv', 'avi',
+  'mp3', 'wav', 'ogg', 'flac', 'm4a',
+  'pdf',
+]
+const isPreviewable = (record) => {
+  const name = String(record.name || '').toLowerCase()
+  const dot = name.lastIndexOf('.')
+  const ext = dot === -1 ? '' : name.slice(dot + 1)
+  return PREVIEWABLE_EXTENSIONS.includes(ext)
+}
 const selectedRowKeys = ref([])
 let pendingArchiveResolve = null
 const selectedPaths = computed(() =>
@@ -469,7 +482,11 @@ const previewFile = async (record) => {
 
           <template v-else-if="column.key === 'action'">
             <div>
-              <a class="ant-dropdown-link" @click="previewFile(record)">
+              <a
+                v-if="isPreviewable(record)"
+                class="ant-dropdown-link"
+                @click="previewFile(record)"
+              >
                 {{ $t('home.preview') }}
               </a>
               <div style="height: 20px">-----</div>

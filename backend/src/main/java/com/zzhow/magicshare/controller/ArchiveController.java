@@ -80,7 +80,7 @@ public class ArchiveController {
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("application/zip"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition("MagicShare-files.zip"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition("MagicShare-files.zip", false))
                 .body(body);
     }
 
@@ -122,7 +122,7 @@ public class ArchiveController {
             headers.setContentType(detectContentType(file));
             headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
             headers.setContentLength(range.length(fileLength));
-            headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline");
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, contentDisposition(file.getName(), true));
 
             if (range.partial()) {
                 headers.set(HttpHeaders.CONTENT_RANGE, "bytes " + range.start() + "-" + range.end() + "/" + fileLength);
@@ -171,9 +171,10 @@ public class ArchiveController {
         return normalizedPath;
     }
 
-    private String contentDisposition(String fileName) {
+    private String contentDisposition(String fileName, boolean inline) {
         String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20");
-        return "attachment; filename=\"" + encodedFileName + "\"; filename*=UTF-8''" + encodedFileName;
+        String disposition = inline ? "inline" : "attachment";
+        return disposition + "; filename=\"" + encodedFileName + "\"; filename*=UTF-8''" + encodedFileName;
     }
 
     private MediaType detectContentType(File file) throws IOException {
