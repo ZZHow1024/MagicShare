@@ -3,6 +3,7 @@ package com.zzhow.magicshare.ui.controller;
 import com.zzhow.magicshare.repository.ConnectionCountBinding;
 import com.zzhow.magicshare.repository.FileRepository;
 import com.zzhow.magicshare.pojo.entity.FileDetail;
+import com.zzhow.magicshare.pojo.entity.ReceivedFile;
 import com.zzhow.magicshare.repository.LanguageRepository;
 import com.zzhow.magicshare.repository.ReceiveRepository;
 import com.zzhow.magicshare.repository.UserRepository;
@@ -13,7 +14,9 @@ import com.zzhow.magicshare.ui.window.MainWindow;
 import com.zzhow.magicshare.util.InternetUtil;
 import com.zzhow.magicshare.util.MessageBox;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -31,7 +34,7 @@ import java.util.ResourceBundle;
 /**
  * @author ZZHow
  * create 2025/1/13
- * update 2026/11/17
+ * update 2026/11/22
  */
 public class MainController {
     @FXML
@@ -57,7 +60,13 @@ public class MainController {
     @FXML
     private Label label12;
     @FXML
-    private Label label13;
+    private Label label14;
+    @FXML
+    private Tab tabSend;
+    @FXML
+    private Tab tabReceive;
+    @FXML
+    private TableView<ReceivedFile> receiveTableView;
     @FXML
     private TextField textField1;
     @FXML
@@ -99,8 +108,8 @@ public class MainController {
 
     private boolean simpleShareMode = false;
 
-    // 最近接收的文件路径（用于语言切换时重建通知文本）
-    private String latestReceivedPath = null;
+    // 接收记录（最新在前）
+    private final ObservableList<ReceivedFile> receiveRecords = FXCollections.observableArrayList();
 
     @FXML
     private void initialize() {
@@ -113,11 +122,28 @@ public class MainController {
         // 显示接收目录
         receiveDirTextField.setText(ReceiveRepository.getReceiveDir());
 
-        // 上传完成通知
+        // 接收历史表列
+        TableColumn<ReceivedFile, String> receivedNameCol = new TableColumn<>("File name");
+        receivedNameCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().fileName()));
+        TableColumn<ReceivedFile, String> receivedSizeCol = new TableColumn<>("Size");
+        receivedSizeCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(formatSize(cellData.getValue().size())));
+        TableColumn<ReceivedFile, String> receivedTimeCol = new TableColumn<>("Received time");
+        receivedTimeCol.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().receivedTime()));
+        receiveTableView.getColumns().addAll(receivedNameCol, receivedSizeCol, receivedTimeCol);
+        receiveTableView.setPlaceholder(new Label("No files received"));
+        receiveTableView.widthProperty().addListener((obs, oldWidth, newWidth) -> {
+            double totalWidth = newWidth.doubleValue();
+            receivedNameCol.setPrefWidth(totalWidth * 0.50);
+            receivedSizeCol.setPrefWidth(totalWidth * 0.18);
+            receivedTimeCol.setPrefWidth(totalWidth * 0.32);
+        });
+
+        // 上传完成：写入接收历史表
         ReceiveRepository.setUploadCompleteListener(filePath -> Platform.runLater(() -> {
-            latestReceivedPath = filePath;
-            ResourceBundle bundle = LanguageRepository.bundle;
-            label13.setText(bundle.getString("latestReceivedFile") + new File(filePath).getName());
+            File file = new File(filePath);
+            String time = java.time.LocalDateTime.now()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            receiveRecords.add(0, new ReceivedFile(file.getName(), file.length(), time));
         }));
 
         // 创建列
@@ -279,6 +305,13 @@ public class MainController {
         }
 
         return selectedValue;
+    }
+
+    private String formatSize(long size) {
+        if (size < 1024) return size + " B";
+        if (size < 1024 * 1024) return String.format(Locale.ROOT, "%.1f KB", size / 1024.0);
+        if (size < 1024L * 1024 * 1024) return String.format(Locale.ROOT, "%.1f MB", size / 1024.0 / 1024.0);
+        return String.format(Locale.ROOT, "%.1f GB", size / 1024.0 / 1024.0 / 1024.0);
     }
 
     private boolean isSimpleShareMode() {
@@ -454,10 +487,16 @@ public class MainController {
         label11.setText(bundle.getString("shareMode"));
         checkBox1.setText(bundle.getString("checkBox1"));
         label12.setText(bundle.getString("receiveDirectory"));
+        label14.setText(bundle.getString("receiveHistory"));
+        tabSend.setText(bundle.getString("tab.send"));
+        tabReceive.setText(bundle.getString("tab.receive"));
+        ObservableList<TableColumn<ReceivedFile, ?>> receiveColumns = receiveTableView.getColumns();
+        receiveColumns.get(0).setText(bundle.getString("receivedName"));
+        receiveColumns.get(1).setText(bundle.getString("receivedSize"));
+        receiveColumns.get(2).setText(bundle.getString("receivedTime"));
+        receiveTableView.setPlaceholder(new Label(bundle.getString("noReceivedFiles")));
         allowUploadCheckBox.setText(bundle.getString("allowUpload"));
         button5.setText(bundle.getString("selectFolder"));
-        if (latestReceivedPath != null)
-            label13.setText(bundle.getString("latestReceivedFile") + new File(latestReceivedPath).getName());
         button2.setText(bundle.getString("button2"));
         button3.setText(bundle.getString("button3"));
         button4.setText(bundle.getString("button4"));
