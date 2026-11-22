@@ -60,9 +60,6 @@ const startQuickDownload = () => {
     ':' +
     port +
     `/api/download?fileId=${encodeURIComponent(data.fileId)}&token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
-
-  // 开发使用
-  // window.location.href = `http://localhost:1024/api/download?fileId=${encodeURIComponent(data.fileId)}&token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
 }
 
 const open = ref(false)
@@ -203,8 +200,6 @@ const startEncryptedDownload = () => {
   const port = window.location.port
 
   socket = new WebSocket('ws://' + hostname + ':' + port + '/ws/download')
-
-  // 开发使用
   // socket = new WebSocket('ws://localhost:1024/ws/download')
 
   downloadProgress.value.connection = 100

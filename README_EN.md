@@ -132,6 +132,29 @@ https://github.com/ZZHow1024/MagicShare/releases
 
 ---
 
+## **Development**
+
+- Frontend (frontend directory): requires Node.js and pnpm.
+
+    ```
+    cd frontend
+    pnpm install
+    pnpm dev     # hot-reload development; API and WebSocket requests are proxied to the local service
+    pnpm build   # standalone build (output in the dist directory)
+    ```
+
+- Backend and desktop client (backend directory): requires JDK 21 and Maven.
+
+    ```
+    cd backend
+    mvn javafx:run            # launch the desktop client (with embedded backend service)
+    mvn package               # all-in-one packaging: builds the frontend automatically and produces an executable Jar (run with java -jar)
+    ```
+
+- The single source of truth for the version is backend/pom.xml: it is injected during packaging into the desktop about page (version.properties) and the web about page (VITE_APP_VERSION).
+
+---
+
 ## **Dependencies**
 
 This project requires the following libraries:

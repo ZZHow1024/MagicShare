@@ -1,4 +1,7 @@
-<script setup></script>
+<script setup>
+// 版本号由构建注入：Maven 构建（VITE_APP_VERSION，来源 pom.xml）或独立构建回退 package.json
+const appVersion = __APP_VERSION__
+</script>
 
 <template>
   <div class="about-page">
@@ -22,7 +25,7 @@
         {{ $t('about.content') }}
       </div>
     </div>
-    <div class="content">Version：3.0.0-alpha.4<br />ZZHow.com</div>
+    <div class="content">Version：{{ appVersion }}<br />ZZHow.com</div>
   </div>
 </template>
 

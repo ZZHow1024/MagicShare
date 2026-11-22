@@ -4,11 +4,15 @@ import com.zzhow.magicshare.repository.LanguageRepository;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 /**
  * @author ZZHow
- * @date 2025/2/8
+ * create 2025/2/8
+ * update 2026/11/22
  */
 public class AboutController {
     @FXML
@@ -27,11 +31,24 @@ public class AboutController {
         switchLanguage();
     }
 
+    /**
+     * 读取构建时由 Maven 注入的版本号（version.properties，单一来源为 pom.xml）
+     */
+    private String readVersion() {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("version.properties")) {
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            return properties.getProperty("version", "unknown");
+        } catch (IOException | NullPointerException e) {
+            return "unknown";
+        }
+    }
+
     private void switchLanguage() {
         ResourceBundle bundle = LanguageRepository.bundle;
 
         if (LanguageRepository.getLanguage().contains("zh"))
-            label2.setText(bundle.getString("magicShare") + " 3.0.0-alpha.4");
+            label2.setText(bundle.getString("magicShare") + " " + readVersion());
         else
             label2.setVisible(false);
         label3.setText(bundle.getString("features"));

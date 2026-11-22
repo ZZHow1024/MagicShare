@@ -76,6 +76,17 @@
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>version.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>version.properties</exclude>
+                </excludes>
             </resource>
             <!-- 前端构建产物打包进 jar 的 static 目录（frontend-maven-plugin 在 generate-resources 阶段完成构建） -->
             <resource>
@@ -143,6 +154,10 @@
                         <phase>generate-resources</phase>
                         <configuration>
                             <arguments>run build</arguments>
+                            <!-- 版本号单一来源：pom.xml（前端经 import.meta.env.VITE_APP_VERSION 读取） -->
+                            <environmentVariables>
+                                <VITE_APP_VERSION>${project.version}</VITE_APP_VERSION>
+                            </environmentVariables>
                         </configuration>
                     </execution>
                 </executions>

@@ -132,6 +132,29 @@ https://github.com/ZZHow1024/MagicShare/releases
 
 ---
 
+## 开发环境
+
+- 前端（frontend 目录）：需要 Node.js 与 pnpm。
+
+    ```
+    cd frontend
+    pnpm install
+    pnpm dev     # 热更新开发，API 与 WebSocket 自动代理到本机服务
+    pnpm build   # 独立构建（产物在 dist 目录）
+    ```
+
+- 后端与桌面客户端（backend 目录）：需要 JDK 21 与 Maven。
+
+    ```
+    cd backend
+    mvn javafx:run            # 启动桌面客户端（内嵌后端服务）
+    mvn package               # 一体化打包：自动构建前端并产出可执行 Jar（java -jar 直接运行）
+    ```
+
+- 版本号单一来源为 backend/pom.xml：打包时自动注入桌面关于页（version.properties）与 Web 关于页（VITE_APP_VERSION）。
+
+---
+
 ## 依赖项
 
 该项目需要以下库：
