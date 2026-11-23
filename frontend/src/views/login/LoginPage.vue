@@ -51,25 +51,25 @@ const connect = () => {
 
   wSocket.onopen = async () => {
     const { publicKey, privateKey } = await generateKeyPair()
-    wSocket.send('ClientHello#' + btoa(publicKey))
+    wSocket.send('CLIENT_HELLO#' + btoa(publicKey))
 
     wSocket.onmessage = async (event) => {
-      if (event.data.startsWith('ServerHello#')) {
+      if (event.data.startsWith('CHALLENGE#')) {
         sessionId = await decryptRSA(privateKey, event.data.split('#')[1])
         // 解出服务端签发的随机挑战，用于认证防重放
         nonce = await decryptRSA(privateKey, event.data.split('#')[2])
         wSocketStore.setSessionId(sessionId)
-      } else if (event.data.startsWith('Syn#')) {
-        if (event.data.split('#')[1] === '200') {
+      } else if (event.data.startsWith('SESSION_ID#')) {
+        // 无连接密码：直接分配会话
+        sessionId = await decryptRSA(privateKey, event.data.split('#')[1])
+        wSocketStore.setSessionId(sessionId)
+        wSocketStore.setWSocket(wSocket)
+        router.replace('/home')
+      } else if (event.data.startsWith('AUTH_')) {
+        if (event.data === 'AUTH_OK') {
           // 密码正确
           wSocketStore.setWSocket(wSocket)
           message.success(vueI18n.global.t('login.passwordIsCorrect'))
-          router.replace('/home')
-        } else if (event.data.split('#')[1] === '202') {
-          // 无连接密码
-          sessionId = await decryptRSA(privateKey, event.data.split('#')[2])
-          wSocketStore.setSessionId(sessionId)
-          wSocketStore.setWSocket(wSocket)
           router.replace('/home')
         } else {
           // 密码错误
@@ -94,7 +94,7 @@ const pwdCheck = async (pwd) => {
 
   // 认证值 = SHA256(sessionId + password + 随机挑战)，防止重放
   const data = decryptSha256(sessionId + pwd + (nonce || ''))
-  wSocket.send('Syn#' + data)
+  wSocket.send('AUTH#' + data)
 }
 
 // 连接异常提示框

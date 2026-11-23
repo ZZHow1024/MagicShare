@@ -37,7 +37,7 @@ const clearTaskId = (storageKey) => {
 const requestUploadId = () =>
   new Promise((resolve, reject) => {
     pendingUploadResolve = resolve
-    wSocket.send('Upload#0')
+    wSocket.send('UPLOAD_ID')
     setTimeout(() => {
       if (pendingUploadResolve !== null) {
         pendingUploadResolve = null
@@ -145,9 +145,9 @@ onMounted(() => {
   })
 
   wSocket.onmessage = (event) => {
-    if (event.data.startsWith('Upload#')) {
+    if (event.data.startsWith('UPLOAD_ID#')) {
       if (pendingUploadResolve === null) return
-      const uploadId = decryptAES(wAesKey, wIv, base64ToBytes(event.data.split('#')[2]))
+      const uploadId = decryptAES(wAesKey, wIv, base64ToBytes(event.data.split('#')[1]))
       const resolveUploadId = pendingUploadResolve
       pendingUploadResolve = null
       resolveUploadId(uploadId)

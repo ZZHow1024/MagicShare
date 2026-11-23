@@ -40,7 +40,7 @@ const shareId = ref('')
 let quickDownloadList = []
 const onDownloadFile = (record) => {
   quickDownloadList.push(record.fileId)
-  wSocket.send('Download#0')
+  wSocket.send('DOWNLOAD_ID#QUICK')
 }
 
 const startQuickDownload = () => {
@@ -95,17 +95,17 @@ onMounted(async () => {
       const keyPair = await generateKeyPair()
       publicKey = keyPair.publicKey
       privateKey = keyPair.privateKey
-      wSocket.send('Exc#' + btoa(publicKey))
-    } else wSocket.send('List#')
+      wSocket.send('EXCHANGE#' + btoa(publicKey))
+    } else wSocket.send('FILE_LIST')
 
     wSocket.onmessage = async (event) => {
-      if (event.data.startsWith('Exc#')) {
+      if (event.data.startsWith('EXCHANGE#')) {
         wAesKey = await decryptRSA(privateKey, event.data.split('#')[1])
         wSocketStore.setWAesKey(wAesKey)
         wIv = atob(event.data.split('#')[2])
         wSocketStore.setWIv(wIv)
-        wSocket.send('List#')
-      } else if (event.data.startsWith('List#')) {
+        wSocket.send('FILE_LIST')
+      } else if (event.data.startsWith('FILE_LIST#')) {
         if (wAesKey === null || wIv === null) return
 
         const decryptedData = await decryptAES(
@@ -119,20 +119,20 @@ onMounted(async () => {
         shareId.value = obj.shareId
         count.value = obj.count
         data.value = obj.files
-      } else if (event.data.startsWith('Download#')) {
+      } else if (event.data.startsWith('DOWNLOAD_ID#')) {
         downloadId = decryptAES(
           wAesKey,
           wIv,
           base64ToBytes(event.data.split('#')[2]),
         )
-        if (event.data.split('#')[1] === '0') startQuickDownload()
+        if (event.data.split('#')[1] === 'QUICK') startQuickDownload()
         else startEncryptedDownload()
-      } else if (event.data.startsWith('Archive#')) {
+      } else if (event.data.startsWith('ARCHIVE_ID#')) {
         if (pendingArchiveResolve === null) return
         const archiveId = decryptAES(
           wAesKey,
           wIv,
-          base64ToBytes(event.data.split('#')[2]),
+          base64ToBytes(event.data.split('#')[1]),
         )
         const resolveArchiveId = pendingArchiveResolve
         pendingArchiveResolve = null
@@ -182,7 +182,7 @@ const encryptedDownload = (record) => {
   fileId = record.fileId
   fileName.value = record.name
 
-  wSocket.send('Download#1')
+  wSocket.send('DOWNLOAD_ID#ENCRYPTED')
 }
 
 const startEncryptedDownload = () => {
@@ -196,21 +196,21 @@ const startEncryptedDownload = () => {
 
   fileId = encryptWAES(wAesKey, wIv, fileId)
   socket.onopen = () => {
-    socket.send('a,' + encryptWAES(wAesKey, wIv, sessionId + '#' + downloadId) + ',' + fileId)
+    socket.send('DOWNLOAD_AUTH#' + encryptWAES(wAesKey, wIv, sessionId + '#' + downloadId) + '#' + fileId)
   }
 
   socket.onmessage = async (event) => {
-    if (event.data.startsWith('block#')) {
+    if (event.data.startsWith('CHUNK_COUNT#')) {
       const block = decryptAES(wAesKey, wIv, base64ToBytes(event.data.split('#')[1]))
       downloadProgress.value.totalBlock = parseInt(block)
 
-      socket.send('b,' + fileId)
-    } else if (event.data.startsWith('fin')) {
+      socket.send('DOWNLOAD_START#' + fileId)
+    } else if (event.data.startsWith('FINISHED')) {
       socket.close()
     } else {
       // 加密分块（Base64 文本帧，每块随机 IV：IV || ciphertext）
       downloadProgress.value.currentBlock++
-      const decryptedChunk = await decryptBufferAES(wAesKey, wIv, base64ToBytes(event.data))
+      const decryptedChunk = await decryptBufferAES(wAesKey, wIv, base64ToBytes(event.data.split('#', 2)[1]))
       chunks.value.push(binaryToBytes(decryptedChunk))
       downloadProgress.value.decryptionBlock++
       if (downloadProgress.value.decryptionBlock >= downloadProgress.value.totalBlock) mergeFiles()
@@ -275,7 +275,7 @@ const onSelectionChange = (keys) => {
 const requestArchiveId = () =>
   new Promise((resolve, reject) => {
     pendingArchiveResolve = resolve
-    wSocket.send('Archive#0')
+    wSocket.send('ARCHIVE_ID')
     setTimeout(() => {
       if (pendingArchiveResolve !== null) {
         pendingArchiveResolve = null
