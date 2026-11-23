@@ -12,8 +12,8 @@ import java.util.function.Consumer;
 public class ReceiveRepository {
     // 是否允许接收文件（默认关闭）
     private static boolean allowUpload = false;
-    // 接收目录（默认 用户目录/MagicShare）
-    private static String receiveDir = System.getProperty("user.home") + File.separator + "MagicShare";
+    // 接收目录（默认 用户下载目录：Windows/macOS/Linux 均为 {user.home}/Downloads 标准位置）
+    private static String receiveDir = System.getProperty("user.home") + File.separator + "Downloads";
     // 上传完成通知监听器（供桌面端注册）
     private static Consumer<String> uploadCompleteListener;
 

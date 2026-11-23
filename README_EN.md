@@ -104,7 +104,7 @@ https://github.com/ZZHow1024/MagicShare/releases
 
 ### Web upload
 
-- To enable uploading, check "Allow receiving files" on the desktop client before starting the service. Received files are saved to the "Receive directory" (defaults to the MagicShare folder under the user home directory, which can be changed with the "Select folder" button next to it).
+- To enable uploading, check "Allow receiving files" on the desktop client before starting the service. Received files are saved to the "Receive directory" (defaults to the system Downloads folder — user home/Downloads on Windows, macOS and Linux — changeable with the "Select folder" button next to it).
 - Standard share mode
     - Open the browser and visit the "Share URL", then click or drag files into the "Upload files" area.
     - Multiple files are queued with per-file progress display.
