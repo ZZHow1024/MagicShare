@@ -60,8 +60,6 @@ public class MainController {
     @FXML
     private Label label12;
     @FXML
-    private Label label14;
-    @FXML
     private Tab tabSend;
     @FXML
     private Tab tabReceive;
@@ -487,7 +485,6 @@ public class MainController {
         label11.setText(bundle.getString("shareMode"));
         checkBox1.setText(bundle.getString("checkBox1"));
         label12.setText(bundle.getString("receiveDirectory"));
-        label14.setText(bundle.getString("receiveHistory"));
         tabSend.setText(bundle.getString("tab.send"));
         tabReceive.setText(bundle.getString("tab.receive"));
         ObservableList<TableColumn<ReceivedFile, ?>> receiveColumns = receiveTableView.getColumns();
