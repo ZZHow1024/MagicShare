@@ -9,6 +9,7 @@ import { useRouter } from 'vue-router'
 const CHUNK_SIZE = 4 * 1024 * 1024
 const UPLOAD_STORAGE_KEY = 'magic-share-upload-tasks'
 const uploadTasks = ref([])
+const allowUpload = ref(true)
 let pendingUploadResolve = null
 const uploadQueue = []
 const isProcessingQueue = ref(false)
@@ -83,6 +84,8 @@ const uploadFile = async (task) => {
     clearTaskId(storageKey)
     task.statusKey = 'completed'
   } catch (error) {
+    // 服务端关闭接收（403）时同步本地门控状态
+    if (error?.response?.status === 403) allowUpload.value = false
     task.statusKey = 'failed'
   }
 }
@@ -136,6 +139,11 @@ onMounted(() => {
     router.replace('/login')
   }
 
+  // 门控：拉取接收开关状态（桌面端启动服务后状态即固定）
+  axios.get('/api/upload/status').then((response) => {
+    allowUpload.value = response.data.allowUpload === true
+  })
+
   wSocket.onmessage = (event) => {
     if (event.data.startsWith('Upload#')) {
       if (pendingUploadResolve === null) return
@@ -174,8 +182,15 @@ onMounted(() => {
       </div>
     </div>
 
+    <a-alert
+      v-if="!allowUpload"
+      type="warning"
+      show-icon
+      :message="$t('home.upload.notEnabled')"
+      style="margin: 0 3vw 16px"
+    />
     <div :style="{ background: '#fff', padding: '24px', margin: '0 3vw 16px' }">
-      <a-upload-dragger multiple :before-upload="beforeUpload" :show-upload-list="false" class="upload-dragger">
+      <a-upload-dragger multiple :disabled="!allowUpload" :before-upload="beforeUpload" :show-upload-list="false" class="upload-dragger">
         <div class="upload-dragger-content">
           <div class="upload-dragger-title">{{ $t('home.upload.title') }}</div>
           <div class="upload-dragger-hint">{{ $t('home.upload.hint') }}</div>

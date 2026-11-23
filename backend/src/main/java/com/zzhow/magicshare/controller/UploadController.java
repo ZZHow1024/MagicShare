@@ -9,6 +9,7 @@ import com.zzhow.magicshare.util.UploadFileUtil;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,6 +48,14 @@ public class UploadController {
     public static final long MAX_FILE_SIZE = 10L * 1024 * 1024 * 1024;
     // 单文件分片数上限
     public static final int MAX_TOTAL_CHUNKS = 200000;
+
+    /**
+     * 查询文件接收是否启用（供 Web 上传页门控展示，状态本身不敏感）
+     */
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> status() {
+        return ok(Map.of("allowUpload", ReceiveRepository.isAllowUpload()));
+    }
 
     @PostMapping("/init")
     public ResponseEntity<Map<String, Object>> init(@RequestBody UploadInitRequest initRequest, String token) {

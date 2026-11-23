@@ -57,6 +57,7 @@ export default {
       uploading: 'Uploading',
       completed: 'Completed',
       failed: 'Upload failed',
+      notEnabled: 'The sender has not enabled file receiving',
     },
     drawer: {
       title: 'Encrypted download progress',

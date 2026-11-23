@@ -53,6 +53,7 @@ export default {
       uploading: '上傳中',
       completed: '上傳完成',
       failed: '上傳失敗',
+      notEnabled: '接收方未啟用檔案接收，無法上傳',
     },
     drawer: {
       title: '加密下載進度',
