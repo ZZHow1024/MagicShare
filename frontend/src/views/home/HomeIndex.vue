@@ -44,9 +44,6 @@ const onDownloadFile = (record) => {
 }
 
 const startQuickDownload = () => {
-  const protocol = window.location.protocol
-  const hostname = window.location.hostname
-  const port = window.location.port
   const data = {
     token: encryptWAES(wAesKey, wIv, sessionId + '#' + downloadId),
     shareId: encryptWAES(wAesKey, wIv, shareId.value),
@@ -54,11 +51,7 @@ const startQuickDownload = () => {
   }
 
   window.location.href =
-    protocol +
-    '//' +
-    hostname +
-    ':' +
-    port +
+    location.origin +
     `/api/download?fileId=${encodeURIComponent(data.fileId)}&token=${encodeURIComponent(data.token)}&shareId=${encodeURIComponent(data.shareId)}`
 }
 
@@ -186,10 +179,8 @@ const encryptedDownload = (record) => {
 }
 
 const startEncryptedDownload = () => {
-  const hostname = window.location.hostname
-  const port = window.location.port
-
-  socket = new WebSocket('ws://' + hostname + ':' + port + '/ws/download')
+  // location.host 自带端口（默认端口自动省略），避免 host: 后跟空端口的畸形 URL
+  socket = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/download')
   // socket = new WebSocket('ws://localhost:1024/ws/download')
 
   downloadProgress.value.connection = 100

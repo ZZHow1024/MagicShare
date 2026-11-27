@@ -39,9 +39,8 @@ let wSocket = null
 let sessionId = null
 let nonce = null
 const connect = () => {
-  const hostname = window.location.hostname
-  const port = window.location.port
-  const webSocketUrl = 'ws://' + hostname + ':' + port + '/ws/connect'
+  // location.host 自带端口（默认端口自动省略），避免 host: 后跟空端口的畸形 URL
+  const webSocketUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws/connect'
 
   wSocket = new WebSocket(webSocketUrl) // WebSocket URL
 
