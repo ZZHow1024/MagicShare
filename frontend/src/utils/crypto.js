@@ -1,24 +1,166 @@
 import forge from 'node-forge'
 
+// 安全上下文（localhost / https）下 crypto.subtle 可用，node-forge 会自动走 Web Crypto 原生路径（毫秒级）。
+// 非安全上下文（如 http + 裸 IP 访问）缺少 crypto.subtle，node-forge 回退到纯 JS 路径时会创建
+// prime.worker.js Web Worker——Vite 打包产物中不存在该文件，Worker 404 后 forge 既不报错也不回退，
+// 导致密钥生成静默挂起。因此非安全上下文改用本文件的快速实现（实测 ~0.6s）：
+// jsbn 素数搜索（含小素数试除筛，复刻 node-forge prime.js 的 PRIMEINC 算法）+ forge 密钥组装，
+// 并通过时间预算化让步保持页面响应。
+const hasSubtleCrypto = typeof crypto !== 'undefined' && typeof crypto.subtle === 'object'
+
+// Miller-Rabin 轮次表（HAC 4.4 表，素性错误概率 (1/2)^80），与 node-forge prime.js 一致
+const millerRabinTests = (numBits) =>
+  numBits <= 100 ? 27
+  : numBits <= 150 ? 18
+  : numBits <= 200 ? 15
+  : numBits <= 250 ? 12
+  : numBits <= 300 ? 9
+  : numBits <= 350 ? 8
+  : numBits <= 400 ? 7
+  : numBits <= 500 ? 6
+  : numBits <= 600 ? 5
+  : numBits <= 800 ? 4
+  : numBits <= 1250 ? 3
+  : 2
+
+// 非安全上下文下的 RSA 密钥对生成
+const generateKeyPairByJsbn = async (bits = 2048) => {
+  const BigInteger = forge.jsbn.BigInteger
+  const ONE = BigInteger.ONE
+  const THIRTY = new BigInteger(null)
+  THIRTY.fromInt(30)
+  // 素数均为 30k+i（i ∈ {1,7,11,13,17,19,23,29}），候选步进
+  const GCD_30_DELTA = [6, 4, 2, 4, 2, 4, 6, 2]
+  const opOr = (x, y) => x | y
+  const rng = {
+    nextBytes: (array) => {
+      const bytes = forge.random.getBytesSync(array.length)
+      for (let i = 0; i < array.length; i++) array[i] = bytes.charCodeAt(i) & 0xff
+    },
+  }
+
+  // 与 node-forge prime.js generateRandom 相同：强制最高位置位并对齐 30k+1
+  const generateRandom = (numBits) => {
+    const num = new BigInteger(numBits, rng)
+    const topBit = numBits - 1
+    if (!num.testBit(topBit)) num.bitwiseTo(ONE.shiftLeft(topBit), opOr, num)
+    num.dAddOffset(31 - num.mod(THIRTY).byteValue(), 0)
+    return num
+  }
+
+  // 每 40ms 让出主线程一次（forge.util.setImmediate 走 MessageChannel，不受 setTimeout 钳制影响）
+  const yieldToUI = () => new Promise((resolve) => forge.util.setImmediate(resolve))
+
+  const findPrime = async (numBits, tests) => {
+    let num = generateRandom(numBits)
+    let deltaIdx = 0
+    let chunkStart = Date.now()
+    for (;;) {
+      // 溢出则重新生成随机数
+      if (num.bitLength() > numBits) {
+        num = generateRandom(numBits)
+        deltaIdx = 0
+      }
+      if (num.isProbablePrime(tests)) return num
+      num.dAddOffset(GCD_30_DELTA[deltaIdx++ % 8], 0)
+      if (Date.now() - chunkStart > 40) {
+        await yieldToUI()
+        chunkStart = Date.now()
+      }
+    }
+  }
+
+  const e = new BigInteger(null)
+  e.fromInt(0x10001)
+  const halfBits = bits >> 1
+  const tests = millerRabinTests(halfBits)
+  let p = null
+  let q = null
+
+  // 与 node-forge rsa.js finish() 相同的组装校验循环
+  for (;;) {
+    if (p === null) p = await findPrime(halfBits, tests)
+    if (q === null) q = await findPrime(halfBits, tests)
+
+    // 保证 p > q
+    if (p.compareTo(q) < 0) {
+      const tmp = p
+      p = q
+      q = tmp
+    }
+
+    // 保证 p、q 与 e 互素，不满足则重新生成
+    if (p.subtract(ONE).gcd(e).compareTo(ONE) !== 0) {
+      p = null
+      continue
+    }
+    if (q.subtract(ONE).gcd(e).compareTo(ONE) !== 0) {
+      q = null
+      continue
+    }
+
+    // 保证 e 与 φ(n) 互素，不满足则重新生成 p、q
+    const p1 = p.subtract(ONE)
+    const q1 = q.subtract(ONE)
+    const phi = p1.multiply(q1)
+    if (phi.gcd(e).compareTo(ONE) !== 0) {
+      p = null
+      q = null
+      continue
+    }
+
+    // 保证 n 恰为 bits 位，不满足则重新生成 q
+    const n = p.multiply(q)
+    if (n.bitLength() !== bits) {
+      q = null
+      continue
+    }
+
+    const d = e.modInverse(phi)
+    const privateKey = forge.pki.rsa.setPrivateKey(
+      n,
+      e,
+      d,
+      p,
+      q,
+      d.mod(p1),
+      d.mod(q1),
+      q.modInverse(p),
+    )
+    const publicKey = forge.pki.rsa.setPublicKey(n, e)
+
+    // 导出公私钥为 PEM 格式
+    return {
+      publicKey: forge.pki.publicKeyToPem(publicKey),
+      privateKey: forge.pki.privateKeyToPem(privateKey),
+    }
+  }
+}
+
 // 生成公私钥对
 export const generateKeyPair = async () => {
-  // 创建 RSA 密钥对
-  const rsa = forge.pki.rsa
-  const keyPair = await new Promise((resolve, reject) => {
-    rsa.generateKeyPair({ bits: 2048, e: 0x10001 }, (err, keyPair) => {
-      if (err) reject(err)
-      resolve(keyPair)
+  if (hasSubtleCrypto) {
+    // 创建 RSA 密钥对（安全上下文下 node-forge 自动使用 Web Crypto 原生路径）
+    const rsa = forge.pki.rsa
+    const keyPair = await new Promise((resolve, reject) => {
+      rsa.generateKeyPair({ bits: 2048, e: 0x10001 }, (err, keyPair) => {
+        if (err) reject(err)
+        resolve(keyPair)
+      })
     })
-  })
 
-  // 导出公钥和私钥为 PEM 格式
-  const publicKey = forge.pki.publicKeyToPem(keyPair.publicKey)
-  const privateKey = forge.pki.privateKeyToPem(keyPair.privateKey)
+    // 导出公私钥为 PEM 格式
+    const publicKey = forge.pki.publicKeyToPem(keyPair.publicKey)
+    const privateKey = forge.pki.privateKeyToPem(keyPair.privateKey)
 
-  return {
-    publicKey,
-    privateKey,
+    return {
+      publicKey,
+      privateKey,
+    }
   }
+
+  // 非安全上下文：使用快速纯 JS 实现
+  return generateKeyPairByJsbn()
 }
 
 // RSA 加密
