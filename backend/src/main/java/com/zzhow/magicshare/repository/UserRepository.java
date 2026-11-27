@@ -26,10 +26,11 @@ public class UserRepository {
     private static AesCrypto aesCrypto = null;
     private static KeyPair keyPair = null;
     private static String password = null;
-    private static final Map<String, User> users = new HashMap<>();
+    // 并发安全：多个 WebSocket 连接会并发读写这些映射
+    private static final Map<String, User> users = new java.util.concurrent.ConcurrentHashMap<>();
 
     // 连接密码认证的随机挑战（sessionId -> nonce，防止认证重放）
-    private static final Map<String, String> challengeNonces = new HashMap<>();
+    private static final Map<String, String> challengeNonces = new java.util.concurrent.ConcurrentHashMap<>();
 
     public static void putChallenge(String sessionId, String nonce) {
         challengeNonces.put(sessionId, nonce);
